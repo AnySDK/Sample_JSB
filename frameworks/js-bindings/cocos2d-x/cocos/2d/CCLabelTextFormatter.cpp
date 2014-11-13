@@ -151,16 +151,20 @@ bool LabelTextFormatter::multilineText(Label *theLabel)
             else
             {
                 StringUtils::trimUTF16Vector(last_word);
+                //issue #8492:endless loop if not using system font, and constrained length is less than one character width
+                if (isStartOfLine && last_word.size() == 0)
+                    last_word.push_back(character);
+                else
+                    --j;
 
                 last_word.push_back('\n');
-                
                 multiline_string.insert(multiline_string.end(), last_word.begin(), last_word.end());
                 last_word.clear();
+                
                 isStartOfWord = false;
                 isStartOfLine = false;
                 startOfWord = -1;
                 startOfLine = -1;
-                --j;
             }
         }
         else
@@ -186,7 +190,7 @@ bool LabelTextFormatter::alignText(Label *theLabel)
     int i = 0;
     
     int lineNumber = 0;
-    int strLen = static_cast<int>(theLabel->_currentUTF16String.length());
+    int strLen = theLabel->_limitShowCount;
     std::vector<char16_t> lastLine;
     auto strWhole = theLabel->_currentUTF16String;
 
@@ -384,7 +388,7 @@ bool LabelTextFormatter::createStringSprites(Label *theLabel)
             continue;
         }
 
-        nextFontPositionX += charAdvance + kernings[i];
+        nextFontPositionX += charAdvance + kernings[i] + theLabel->_additionalKerning;
         
         if (longestLine < nextFontPositionX)
         {

@@ -24,7 +24,9 @@
  ****************************************************************************/
 
 /**
- * @namespace Base singleton object for ccs.sceneReader
+ * ccs.sceneReader is the reader for Cocos Studio scene editor.
+ * @class
+ * @name ccs.sceneReader
  */
 ccs.sceneReader = /** @lends ccs.sceneReader# */{
     _baseBath:"",
@@ -33,23 +35,25 @@ ccs.sceneReader = /** @lends ccs.sceneReader# */{
     _node: null,
 
     /**
-     * create node with json file that exported by CocoStudio scene editor
+     * Creates a node with json file that exported by CocoStudio scene editor
      * @param pszFileName
      * @returns {cc.Node}
      */
     createNodeWithSceneFile: function (pszFileName) {
-        this._baseBath = cc.path.dirname(pszFileName);
-        var jsonDict = cc.loader.getRes(pszFileName);
-
-        if (!jsonDict) throw "Please load the resource first : " + pszFileName;
-
-        this._node = this.createObject(jsonDict, null);
-        ccs.triggerManager.parse(jsonDict["Triggers"]||[]);
+        this._node  = null;
+        do{
+            this._baseBath = cc.path.dirname(pszFileName);
+            var jsonDict = cc.loader.getRes(pszFileName);
+            if (!jsonDict)
+                throw "Please load the resource first : " + pszFileName;
+            this._node = this.createObject(jsonDict, null);
+            ccs.triggerManager.parse(jsonDict["Triggers"]||[]);
+        }while(0);
         return this._node;
     },
 
     /**
-     *  create object from data
+     *  create UI object from data
      * @param {Object} inputFiles
      * @param {cc.Node} parenet
      * @returns {cc.Node}
@@ -59,10 +63,10 @@ ccs.sceneReader = /** @lends ccs.sceneReader# */{
         if (className == "CCNode") {
             var gb = null;
             if (!parenet) {
-                gb = cc.Node.create();
+                gb = new cc.Node();
             }
             else {
-                gb = cc.Node.create();
+                gb = new cc.Node();
                 parenet.addChild(gb);
             }
 
@@ -74,7 +78,7 @@ ccs.sceneReader = /** @lends ccs.sceneReader# */{
                 if (!subDict) {
                     break;
                 }
-                var className = subDict["classname"];
+                className = subDict["classname"];
                 var comName = subDict["name"];
 
                 var fileData = subDict["fileData"];
@@ -98,7 +102,7 @@ ccs.sceneReader = /** @lends ccs.sceneReader# */{
 
                     if (resType == 0) {
                         if (pathExtname != ".png") continue;
-                        sprite = cc.Sprite.create(path);
+                        sprite = new cc.Sprite(path);
                     }
                     else if (resType == 1) {
                         if (pathExtname != ".plist") continue;
@@ -106,13 +110,13 @@ ccs.sceneReader = /** @lends ccs.sceneReader# */{
                         plistFile = cc.path.join(this._baseBath, plistFile);
                         var pngFile = cc.path.changeExtname(plistFile, ".png");
                         cc.spriteFrameCache.addSpriteFrames(plistFile, pngFile);
-                        sprite = cc.Sprite.create("#" + fileData["path"]);
+                        sprite = new cc.Sprite("#" + fileData["path"]);
                     }
                     else {
                         continue;
                     }
 
-                    var render = ccs.ComRender.create(sprite, "CCSprite");
+                    var render = new ccs.ComRender(sprite, "CCSprite");
                     if (comName != null) {
                         render.setName(comName);
                     }
@@ -124,13 +128,13 @@ ccs.sceneReader = /** @lends ccs.sceneReader# */{
                     var tmx = null;
                     if (resType == 0) {
                         if (pathExtname != ".tmx") continue;
-                        tmx = cc.TMXTiledMap.create(path);
+                        tmx = new cc.TMXTiledMap(path);
                     }
                     else {
                         continue;
                     }
 
-                    var render = ccs.ComRender.create(tmx, "CCTMXTiledMap");
+                    var render = new ccs.ComRender(tmx, "CCTMXTiledMap");
                     if (comName != null) {
                         render.setName(comName);
                     }
@@ -142,7 +146,7 @@ ccs.sceneReader = /** @lends ccs.sceneReader# */{
 
                     var particle = null;
                     if (resType == 0) {
-                        particle = cc.ParticleSystem.create(path);
+                        particle = new cc.ParticleSystem(path);
                     }
                     else {
                         cc.log("unknown resourcetype on CCParticleSystemQuad!");
@@ -150,7 +154,7 @@ ccs.sceneReader = /** @lends ccs.sceneReader# */{
                     }
 
                     particle.setPosition(0, 0);
-                    var render = ccs.ComRender.create(particle, "CCParticleSystemQuad");
+                    var render = new ccs.ComRender(particle, "CCParticleSystemQuad");
                     if (comName != null) {
                         render.setName(comName);
                     }
@@ -169,8 +173,9 @@ ccs.sceneReader = /** @lends ccs.sceneReader# */{
 
                     ccs.armatureDataManager.addArmatureFileInfo(path);
 
-                    var armature = ccs.Armature.create(name);
-                    var render = ccs.ComRender.create(armature, "CCArmature");
+                    var armature = new ccs.Armature(name);
+
+                    var render = new ccs.ComRender(armature, "CCArmature");
                     if (comName != null) {
                         render.setName(comName);
                     }
@@ -187,7 +192,7 @@ ccs.sceneReader = /** @lends ccs.sceneReader# */{
                 else if (className == "CCComAudio") {
                     var audio = null;
                     if (resType == 0) {
-                        audio = ccs.ComAudio.create();
+                        audio = new ccs.ComAudio();
                     }
                     else {
                         continue;
@@ -202,7 +207,7 @@ ccs.sceneReader = /** @lends ccs.sceneReader# */{
                 else if (className == "CCComAttribute") {
                     var attribute = null;
                     if (resType == 0) {
-                        attribute = ccs.ComAttribute.create();
+                        attribute = new ccs.ComAttribute();
                         if (path != "") attribute.parse(path);
                     }
                     else {
@@ -219,7 +224,7 @@ ccs.sceneReader = /** @lends ccs.sceneReader# */{
                     if(!pathExtname) continue;
                     if(resType!=0) continue;
 
-                    var audio  = ccs.ComAudio.create();
+                    var audio  = new ccs.ComAudio();
                     audio.preloadBackgroundMusic(path);
                     audio.setFile(path);
                     var bLoop = Boolean(subDict["loop"] || 0);
@@ -233,7 +238,7 @@ ccs.sceneReader = /** @lends ccs.sceneReader# */{
                 }
                 else if (className == "GUIComponent") {
                     var widget = ccs.uiReader.widgetFromJsonFile(path);
-                    var render = ccs.ComRender.create(widget, "GUIComponent");
+                    var render = new ccs.ComRender(widget, "GUIComponent");
                     if (comName != null) {
                         render.setName(comName);
                     }
@@ -245,11 +250,18 @@ ccs.sceneReader = /** @lends ccs.sceneReader# */{
             var gameobjects = inputFiles["gameobjects"];
             for (var i = 0; i < gameobjects.length; i++) {
                 var subDict = gameobjects[i];
-                if (!subDict) {
+                if (!subDict)
                     break;
-                }
                 this.createObject(subDict, gb);
                 subDict = null;
+            }
+
+            var canvasSizeDict = inputFiles["CanvasSize"];
+            if (canvasSizeDict)
+            {
+                var width = canvasSizeDict["_width"];
+                var height = canvasSizeDict["_height"];
+                gb.setContentSize(cc.size(width, height));
             }
 
             return gb;
@@ -258,83 +270,94 @@ ccs.sceneReader = /** @lends ccs.sceneReader# */{
         return null;
     },
 
-
-    nodeByTag: function (parent, tag) {
-        if (parent == null) {
+    _nodeByTag: function (parent, tag) {
+        if (parent == null)
             return null;
-        }
         var retNode = null;
         var children = parent.getChildren();
-
         for (var i = 0; i < children.length; i++) {
             var child = children[i];
             if (child && child.getTag() == tag) {
                 retNode = child;
                 break;
-            }
-            else {
-                retNode = this.nodeByTag(child, tag);
-                if (retNode) {
+            } else {
+                retNode = this._nodeByTag(child, tag);
+                if (retNode)
                     break;
-                }
             }
         }
         return retNode;
     },
 
+    /**
+     * Get a node by tag.
+     * @param {Number} tag
+     * @returns {cc.Node|null}
+     */
     getNodeByTag: function (tag) {
-        if (this._node == null) {
+        if (this._node == null)
             return null;
-        }
-        if (this._node.getTag() == tag) {
+        if (this._node.getTag() == tag)
             return this._node;
-        }
-        return this.nodeByTag(this._node, tag);
+        return this._nodeByTag(this._node, tag);
     },
 
     /**
-     * set property
+     * Sets properties from json dictionary.
      * @param {cc.Node} node
      * @param {Object} dict
      */
     setPropertyFromJsonDict: function (node, dict) {
-        var x = (typeof dict["x"] === 'undefined')?0:dict["x"];
-        var y = (typeof dict["y"] === 'undefined')?0:dict["y"];
+        var x = (cc.isUndefined(dict["x"]))?0:dict["x"];
+        var y = (cc.isUndefined(dict["y"]))?0:dict["y"];
         node.setPosition(x, y);
 
-        var bVisible = Boolean((typeof dict["visible"] === 'undefined')?1:dict["visible"]);
+        var bVisible = Boolean((cc.isUndefined(dict["visible"]))?1:dict["visible"]);
         node.setVisible(bVisible);
 
-        var nTag = (typeof dict["objecttag"] === 'undefined')?-1:dict["objecttag"];
+        var nTag = (cc.isUndefined(dict["objecttag"]))?-1:dict["objecttag"];
         node.setTag(nTag);
 
-        var nZorder = (typeof dict["zorder"] === 'undefined')?0:dict["zorder"];
+        var nZorder = (cc.isUndefined(dict["zorder"]))?0:dict["zorder"];
         node.setLocalZOrder(nZorder);
 
-        var fScaleX = (typeof dict["scalex"] === 'undefined')?1:dict["scalex"];
-        var fScaleY = (typeof dict["scaley"] === 'undefined')?1:dict["scaley"];
+        var fScaleX = (cc.isUndefined(dict["scalex"]))?1:dict["scalex"];
+        var fScaleY = (cc.isUndefined(dict["scaley"]))?1:dict["scaley"];
         node.setScaleX(fScaleX);
         node.setScaleY(fScaleY);
 
-        var fRotationZ = (typeof dict["rotation"] === 'undefined')?0:dict["rotation"];
+        var fRotationZ = (cc.isUndefined(dict["rotation"]))?0:dict["rotation"];
         node.setRotation(fRotationZ);
+
+        var sName = dict["name"] || "";
+        node.setName(sName);
     },
+
+    /**
+     * Sets the listener to reader.
+     * @param {function} selector
+     * @param {Object} listener the target object.
+     */
     setTarget : function(selector,listener){
         this._listener = listener;
         this._selector = selector;
     },
+
     _callSelector:function(obj,subDict){
-        if(this._selector){
+        if(this._selector)
             this._selector.call(this._listener,obj,subDict);
-        }
     },
 
+    /**
+     * Returns the version of ccs.SceneReader.
+     * @returns {string}
+     */
 	version: function () {
 		return "1.2.0.0";
 	},
 
     /**
-     * Clear data
+     * Clear all triggers and stops all sounds.
      */
     clear: function () {
 	    ccs.triggerManager.removeAll();

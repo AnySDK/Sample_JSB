@@ -14,10 +14,12 @@ typedef std::map<std::string, std::string> TIAPDeveloperInfo;
 /// \typedef std::map<std::string, std::string> TProductInfo
 /// typedef TProductInfo.
 typedef std::map<std::string, std::string> TProductInfo;
+/// typedef TProductsInfo.
+typedef std::map<std::string, TProductInfo> AllProductsInfo;
 /** @brief PayResultCode enum, with inline docs */
 typedef enum 
 {
-    kPaySuccess = 0,/**< enum value is callback of succeeding in paying . */
+    kPaySuccess = 30000,/**< enum value is callback of succeeding in paying . */
     kPayFail,/**< enum value is callback of failing to pay . */
     kPayCancel,/**< enum value is callback of canceling to pay . */
     kPayNetworkError,/**< enum value is callback of network error . */
@@ -26,6 +28,12 @@ typedef enum
 	kPayInitFail,/**< enum value is callback of failing to init sdk . */
 	kPayNowPaying,/**< enum value is callback of paying now . */
 } PayResultCode;
+/** @brief RequestResultCode enum, with inline docs */
+typedef enum
+{
+    kRequestSuccess = 0,/**< enum value is callback of succeeding in paying . */
+    kRequestFail/**< enum value is callback of failing to pay . */
+} RequestResultCode;
 /**   
  *@class  PayResultListener
  *@brief the interface of pay callback  
@@ -38,8 +46,15 @@ public:
 	 *@param the id of callback
 	 *@param the information of callback
 	 *@param the info of pay
-	 */
+     */
     virtual void onPayResult(PayResultCode ret, const char* msg, TProductInfo info) = 0;
+    /**
+     *@brief the interface of request callback
+     *@param the id of callback
+     *@param the information of callback
+     *@param the info of request product
+     */
+    virtual void onRequestResult(RequestResultCode ret, const char* msg, AllProductsInfo info)  {}
 };
 /**   
  *@class  ProtocolIAP

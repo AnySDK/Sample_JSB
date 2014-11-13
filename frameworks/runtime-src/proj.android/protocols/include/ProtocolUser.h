@@ -14,7 +14,7 @@ typedef std::map<std::string, std::string> TUserDeveloperInfo;
 /** @brief Plugin_type enum, with inline docs */
 typedef enum
 {
-	kInitSuccess = 0,/**< enum value is callback of succeeding in initing sdk. */
+	kInitSuccess = 50000,/**< enum value is callback of succeeding in initing sdk. */
 	kInitFail,/**< enum  value is callback of failing to init sdk. */
     kLoginSuccess,/**< enum value is callback of succeeding in login.*/
     kLoginNetworkError,/**< enum value is callback of network error*/
@@ -78,9 +78,11 @@ public:
      @brief User login
      	 	if the process of logining need to know  the param of server_id ,
      	 	you can use the function
+     	 	and if you must change oauthloginserver, you can add the param of oauthLoginServer
      @param server_id
+     @param oauthLoginServer
     */
-     virtual  void login(std::string server_id) = 0 ;
+     virtual  void login(std::string server_id, std::string oauthLoginServer = "") = 0 ;
 
 
     /**
@@ -113,7 +115,7 @@ public:
      @return if the function support ,return true
      	 	 else retur false
      */
-    virtual bool isSupportFunction(std::string functionName) = 0 ;
+    virtual bool isFunctionSupported(std::string functionName) = 0 ;
     /**
      @brief get plugin id
      @return the plugin id

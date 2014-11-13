@@ -24,7 +24,13 @@ THE SOFTWARE.
 ****************************************************************************/
 
 #include "InputEvent.h"
-#include "CCGLView.h"
+
+#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8
+#include "CCGLViewImpl-wp8.h"
+#else
+#include "CCGLViewImpl-winrt.h"
+#endif
+
 #include "base/CCEventAcceleration.h"
 
 NS_CC_BEGIN
@@ -57,13 +63,13 @@ void PointerEvent::execute()
     switch(m_type)
     {
     case PointerEventType::PointerPressed:
-        GLView::sharedOpenGLView()->OnPointerPressed(m_args.Get());
+        GLViewImpl::sharedOpenGLView()->OnPointerPressed(m_args.Get());
         break;
     case PointerEventType::PointerMoved:
-        GLView::sharedOpenGLView()->OnPointerMoved(m_args.Get());
+        GLViewImpl::sharedOpenGLView()->OnPointerMoved(m_args.Get());
         break;           
     case PointerEventType::PointerReleased:
-        GLView::sharedOpenGLView()->OnPointerReleased(m_args.Get());
+        GLViewImpl::sharedOpenGLView()->OnPointerReleased(m_args.Get());
         break;
     }
 }
@@ -86,11 +92,12 @@ void KeyboardEvent::execute()
     {
     case Cocos2dKeyEvent::Text:
     {
-        char szUtf8[8] = { 0 };
-        int nLen = WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR) m_text.Get()->Data(), 1, szUtf8, sizeof(szUtf8), NULL, NULL);
-        IMEDispatcher::sharedDispatcher()->dispatchInsertText(szUtf8, nLen);
+        char szUtf8[256] = { 0 };
+        int nLen = WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR) m_text.Get()->Data(), -1, szUtf8, sizeof(szUtf8), NULL, NULL);
+        IMEDispatcher::sharedDispatcher()->dispatchInsertText(szUtf8, nLen - 1);
         break;
     }
+
     default:
         switch (m_type)
         {
@@ -119,8 +126,18 @@ BackButtonEvent::BackButtonEvent()
 
 void BackButtonEvent::execute()
 {
-    GLView::sharedOpenGLView()->OnBackKeyPress();
+    GLViewImpl::sharedOpenGLView()->OnBackKeyPress();
 }
+
+CustomInputEvent::CustomInputEvent(const std::function<void()>& fun)
+: m_fun(fun)
+{
+}
+void CustomInputEvent::execute()
+{
+    m_fun();
+}
+
 
 
 NS_CC_END

@@ -56,14 +56,12 @@ IDrawingSurfaceBackgroundContentProvider^ Direct3DInterop::CreateContentProvider
 // Interface With Direct3DContentProvider
 HRESULT Direct3DInterop::Connect(_In_ IDrawingSurfaceRuntimeHostNative* host, _In_ ID3D11Device1* device)
 {
-    //m_renderer->SetDevice(device);
     return S_OK;
 }
 
 void Direct3DInterop::Disconnect()
 {
-    std::lock_guard<std::mutex> guard(mRenderingMutex);
-    m_renderer->Disconnect();
+    m_renderer->Disconnect();  
 }
 
 // IDrawingSurfaceManipulationHandler
@@ -92,43 +90,57 @@ IAsyncAction^ Direct3DInterop::OnSuspending()
 
 void Direct3DInterop::OnBackKeyPress()
 {
-    cocos2d::GLView::sharedOpenGLView()->QueueBackKeyPress();
+    cocos2d::GLViewImpl::sharedOpenGLView()->QueueBackKeyPress();
 }
 
 // Pointer Event Handlers. We need to queue up pointer events to pass them to the drawing thread
 void Direct3DInterop::OnPointerPressed(DrawingSurfaceManipulationHost^ sender, PointerEventArgs^ args)
 {
-    cocos2d::GLView::sharedOpenGLView()->QueuePointerEvent(cocos2d::PointerEventType::PointerPressed, args);
+    cocos2d::GLViewImpl::sharedOpenGLView()->QueuePointerEvent(cocos2d::PointerEventType::PointerPressed, args);
 }
 
 void Direct3DInterop::OnPointerMoved(DrawingSurfaceManipulationHost^ sender, PointerEventArgs^ args)
 {
-    cocos2d::GLView::sharedOpenGLView()->QueuePointerEvent(cocos2d::PointerEventType::PointerMoved, args);
+    cocos2d::GLViewImpl::sharedOpenGLView()->QueuePointerEvent(cocos2d::PointerEventType::PointerMoved, args);
 }
 
 void Direct3DInterop::OnPointerReleased(DrawingSurfaceManipulationHost^ sender, PointerEventArgs^ args)
 {
-    cocos2d::GLView::sharedOpenGLView()->QueuePointerEvent(cocos2d::PointerEventType::PointerReleased, args);
+    cocos2d::GLViewImpl::sharedOpenGLView()->QueuePointerEvent(cocos2d::PointerEventType::PointerReleased, args);
+}
+
+void Direct3DInterop::OnOrientationChanged(Windows::Graphics::Display::DisplayOrientations orientation)
+{
+    std::shared_ptr<cocos2d::InputEvent> e(new cocos2d::CustomInputEvent([this, orientation]()
+    {
+        m_renderer->OnOrientationChanged(orientation);
+    }));
+    cocos2d::GLViewImpl::sharedOpenGLView()->QueueEvent(e);
 }
 
 void Direct3DInterop::OnCocos2dKeyEvent(Cocos2dKeyEvent key)
 {
     std::shared_ptr<cocos2d::InputEvent> e(new cocos2d::KeyboardEvent(key));
-    cocos2d::GLView::sharedOpenGLView()->QueueEvent(e);
+    cocos2d::GLViewImpl::sharedOpenGLView()->QueueEvent(e);
 }
 
 
 void Direct3DInterop::OnCocos2dKeyEvent(Cocos2dKeyEvent key, Platform::String^ text)
 {
     std::shared_ptr<cocos2d::InputEvent> e(new cocos2d::KeyboardEvent(key,text));
-    cocos2d::GLView::sharedOpenGLView()->QueueEvent(e);
+    cocos2d::GLViewImpl::sharedOpenGLView()->QueueEvent(e);
 }
 
 
 void Direct3DInterop::OnCocos2dEditboxEvent(Object^ sender, Platform::String^ args, Windows::Foundation::EventHandler<Platform::String^>^ handler)
 {
 	std::shared_ptr<cocos2d::InputEvent> e(new EditBoxEvent(sender, args, handler));
-    cocos2d::GLView::sharedOpenGLView()->QueueEvent(e);
+    cocos2d::GLViewImpl::sharedOpenGLView()->QueueEvent(e);
+}
+
+void Direct3DInterop::OnCocos2dOpenURL(Platform::String^ url)
+{
+    m_openURLDelegate->Invoke(url);
 }
 
 
@@ -143,18 +155,9 @@ HRESULT Direct3DInterop::PrepareResources(_In_ const LARGE_INTEGER* presentTarge
 
 HRESULT Direct3DInterop::Draw(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1* context, _In_ ID3D11RenderTargetView* renderTargetView)
 {
-    std::lock_guard<std::mutex> guard(mRenderingMutex);
-
     m_renderer->UpdateDevice(device, context, renderTargetView);
-#if 0
-    if(mCurrentOrientation != WindowOrientation)
-    {
-        mCurrentOrientation = WindowOrientation;
-        m_renderer->OnOrientationChanged(mCurrentOrientation);
-    }  
-#endif // 0
 
-    cocos2d::GLView::sharedOpenGLView()->ProcessEvents();
+    cocos2d::GLViewImpl::sharedOpenGLView()->ProcessEvents();
     m_renderer->Render();
 	RequestAdditionalFrame();
 	return S_OK;
@@ -178,12 +181,19 @@ void Direct3DInterop::SetCocos2dEditBoxDelegate(Cocos2dEditBoxDelegate ^ delegat
     m_renderer->SetXamlEditBoxDelegate(delegate);
 }
 
+void Direct3DInterop::SetCocos2dOpenURLDelegate(Cocos2dOpenURLDelegate ^ delegate)
+{
+    m_openURLDelegate = delegate;
+    m_renderer->SetXamlOpenURLDelegate(delegate);
+}
+
 
 bool Direct3DInterop::SendCocos2dEvent(Cocos2dEvent event)
 {
+    Platform::String^ str;
     if(m_delegate)
     {
-        m_delegate->Invoke(event);
+        m_delegate->Invoke(event, str);
         return true;
     }
     return false;

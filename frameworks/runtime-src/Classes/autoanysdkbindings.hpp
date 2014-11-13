@@ -64,6 +64,7 @@ bool js_autoanysdkbindings_ProtocolAnalytics_setCaptureUncaughtException(JSConte
 bool js_autoanysdkbindings_ProtocolAnalytics_setSessionContinueMillis(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_ProtocolAnalytics_startSession(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_ProtocolAnalytics_stopSession(JSContext *cx, uint32_t argc, jsval *vp);
+bool js_autoanysdkbindings_ProtocolAnalytics_isFunctionSupported(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_ProtocolAnalytics_logTimedEventEnd(JSContext *cx, uint32_t argc, jsval *vp);
 
 extern JSClass  *jsb_anysdk_framework_ProtocolAds_class;
@@ -75,9 +76,10 @@ void js_register_autoanysdkbindings_ProtocolAds(JSContext *cx, JSObject *global)
 void register_all_autoanysdkbindings(JSContext* cx, JSObject* obj);
 bool js_autoanysdkbindings_ProtocolAds_showAds(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_ProtocolAds_hideAds(JSContext *cx, uint32_t argc, jsval *vp);
+bool js_autoanysdkbindings_ProtocolAds_preloadAds(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_ProtocolAds_queryPoints(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_ProtocolAds_spendPoints(JSContext *cx, uint32_t argc, jsval *vp);
-bool js_autoanysdkbindings_ProtocolAds_isSupportFunction(JSContext *cx, uint32_t argc, jsval *vp);
+bool js_autoanysdkbindings_ProtocolAds_isAdTypeSupported(JSContext *cx, uint32_t argc, jsval *vp);
 
 extern JSClass  *jsb_anysdk_framework_ProtocolSocial_class;
 extern JSObject *jsb_anysdk_framework_ProtocolSocial_prototype;
@@ -101,7 +103,7 @@ void js_register_autoanysdkbindings_ProtocolUser(JSContext *cx, JSObject *global
 void register_all_autoanysdkbindings(JSContext* cx, JSObject* obj);
 bool js_autoanysdkbindings_ProtocolUser_isLogined(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_ProtocolUser_getUserID(JSContext *cx, uint32_t argc, jsval *vp);
-bool js_autoanysdkbindings_ProtocolUser_isSupportFunction(JSContext *cx, uint32_t argc, jsval *vp);
+bool js_autoanysdkbindings_ProtocolUser_isFunctionSupported(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_ProtocolUser_login(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_ProtocolUser_getPluginId(JSContext *cx, uint32_t argc, jsval *vp);
 

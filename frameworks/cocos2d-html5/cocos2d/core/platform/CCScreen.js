@@ -25,8 +25,9 @@
  ****************************************************************************/
 
 /**
- * @namespace The fullscreen API provides an easy way for web content to be presented using the user's entire screen.
- * It's invalid on safari,QQbrowser and android browser
+ * The fullscreen API provides an easy way for web content to be presented using the user's entire screen.
+ * It's invalid on safari, QQbrowser and android browser
+ * @class
  * @name cc.screen
  */
 cc.screen = /** @lends cc.screen# */{
@@ -74,6 +75,10 @@ cc.screen = /** @lends cc.screen# */{
 		]
 	],
 
+    /**
+     * initialize
+     * @function
+     */
     init: function () {
 	    this._fn = {};
 	    var i, val, map = this._fnMap, valL;
@@ -123,6 +128,7 @@ cc.screen = /** @lends cc.screen# */{
 
     /**
      * exit the full mode.
+     * @return {Boolean}
      */
     exitFullScreen: function () {
         return this._supportsFullScreen ? document[ this._fn.exitFullscreen ]() : true;

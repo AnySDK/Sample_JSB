@@ -34,13 +34,16 @@
  * length is the how many pixels the texture is stretched across. The texture               <br/>
  * is vertically aligned along the streak segment.
  * @class
- * @extends cc.NodeRGBA
+ * @extends cc.Node
  *
  * @property {cc.Texture2D} texture                         - Texture used for the motion streak.
  * @property {Boolean}      fastMode                        - Indicate whether use fast mode.
  * @property {Boolean}      startingPositionInitialized     - Indicate whether starting position initialized.
+ * @example
+ * //example
+ * new cc.MotionStreak(2, 3, 32, cc.color.GREEN, s_streak);
  */
-cc.MotionStreak = cc.NodeRGBA.extend(/** @lends cc.MotionStreak# */{
+cc.MotionStreak = cc.Node.extend(/** @lends cc.MotionStreak# */{
     texture:null,
     fastMode:false,
     startingPositionInitialized:false,
@@ -55,7 +58,7 @@ cc.MotionStreak = cc.NodeRGBA.extend(/** @lends cc.MotionStreak# */{
     _nuPoints:0,
     _previousNuPoints:0,
 
-    /** Pointers */
+    /* Pointers */
     _pointVertexes:null,
     _pointState:null,
 
@@ -79,7 +82,7 @@ cc.MotionStreak = cc.NodeRGBA.extend(/** @lends cc.MotionStreak# */{
      * @param {string|cc.Texture2D} texture texture filename or texture
      */
     ctor: function (fade, minSeg, stroke, color, texture) {
-        cc.NodeRGBA.prototype.ctor.call(this);
+        cc.Node.prototype.ctor.call(this);
         this._positionR = cc.p(0, 0);
         this._blendFunc = new cc.BlendFunc(cc.SRC_ALPHA, cc.ONE_MINUS_SRC_ALPHA);
         this._vertexWebGLBuffer = cc._renderContext.createBuffer();
@@ -114,7 +117,12 @@ cc.MotionStreak = cc.NodeRGBA.extend(/** @lends cc.MotionStreak# */{
             this.initWithFade(fade, minSeg, stroke, color, texture);
     },
 
+    _initRendererCmd:function(){
+        this._rendererCmd = new cc.MotionStreakCmdWebGL(this);
+    },
+
     /**
+     * Gets the texture.
      * @return {cc.Texture2D}
      */
     getTexture:function () {
@@ -122,6 +130,7 @@ cc.MotionStreak = cc.NodeRGBA.extend(/** @lends cc.MotionStreak# */{
     },
 
     /**
+     * Set the texture.
      * @param {cc.Texture2D} texture
      */
     setTexture:function (texture) {
@@ -130,6 +139,7 @@ cc.MotionStreak = cc.NodeRGBA.extend(/** @lends cc.MotionStreak# */{
     },
 
     /**
+     * Gets the blend func.
      * @return {cc.BlendFunc}
      */
     getBlendFunc:function () {
@@ -137,6 +147,7 @@ cc.MotionStreak = cc.NodeRGBA.extend(/** @lends cc.MotionStreak# */{
     },
 
     /**
+     * Set the blend func.
      * @param {Number} src
      * @param {Number} dst
      */
@@ -149,22 +160,50 @@ cc.MotionStreak = cc.NodeRGBA.extend(/** @lends cc.MotionStreak# */{
         }
     },
 
+    /**
+     * Gets opacity.
+     * @warning cc.MotionStreak.getOpacity has not been supported.
+     * @returns {number}
+     */
     getOpacity:function () {
         cc.log("cc.MotionStreak.getOpacity has not been supported.");
         return 0;
     },
 
+    /**
+     * Set opacity.
+     * @warning cc.MotionStreak.setOpacity has not been supported.
+     * @param opacity
+     */
     setOpacity:function (opacity) {
         cc.log("cc.MotionStreak.setOpacity has not been supported.");
     },
 
+    /**
+     * set opacity modify RGB.
+     * @warning cc.MotionStreak.setOpacityModifyRGB has not been supported.
+     * @param value
+     */
     setOpacityModifyRGB:function (value) {
     },
 
+    /**
+     * Checking OpacityModifyRGB.
+     * @returns {boolean}
+     */
     isOpacityModifyRGB:function () {
         return false;
     },
 
+    /**
+     * <p>
+     * callback that is called every time the node leaves the 'stage'.                                         <br/>
+     * If the node leaves the 'stage' with a transition, this callback is called when the transition finishes. <br/>
+     * During onExit you can't access a sibling node.                                                             <br/>
+     * If you override onExit, you shall call its parent's onExit with this._super().
+     * </p>
+     * @function
+     */
     onExit:function(){
         cc.Node.prototype.onExit.call(this);
         if(this._verticesBuffer)
@@ -175,6 +214,10 @@ cc.MotionStreak = cc.NodeRGBA.extend(/** @lends cc.MotionStreak# */{
             cc._renderContext.deleteBuffer(this._colorPointerBuffer);
     },
 
+    /**
+     * Checking fast mode.
+     * @returns {boolean}
+     */
     isFastMode:function () {
         return this.fastMode;
     },
@@ -187,10 +230,18 @@ cc.MotionStreak = cc.NodeRGBA.extend(/** @lends cc.MotionStreak# */{
         this.fastMode = fastMode;
     },
 
+    /**
+     * Checking starting position initialized.
+     * @returns {boolean}
+     */
     isStartingPositionInitialized:function () {
         return this.startingPositionInitialized;
     },
 
+    /**
+     * Set Starting Position Initialized.
+     * @param {Boolean} startingPositionInitialized
+     */
     setStartingPositionInitialized:function (startingPositionInitialized) {
         this.startingPositionInitialized = startingPositionInitialized;
     },
@@ -208,7 +259,7 @@ cc.MotionStreak = cc.NodeRGBA.extend(/** @lends cc.MotionStreak# */{
         if(!texture)
             throw "cc.MotionStreak.initWithFade(): Invalid filename or texture";
 
-        if (typeof(texture) === "string")
+        if (cc.isString(texture))
             texture = cc.textureCache.addImage(texture);
 
         cc.Node.prototype.setPosition.call(this, cc.p(0,0));
@@ -286,8 +337,10 @@ cc.MotionStreak = cc.NodeRGBA.extend(/** @lends cc.MotionStreak# */{
     },
 
     /**
-     * @override
-     * @param {cc.Point} position
+     * Set the position. <br />
+     *
+     * @param {cc.Point|Number} position
+     * @param {Number} [yValue=undefined] If not exists, the first parameter must be cc.Point.
      */
     setPosition:function (position, yValue) {
         this.startingPositionInitialized = true;
@@ -301,6 +354,7 @@ cc.MotionStreak = cc.NodeRGBA.extend(/** @lends cc.MotionStreak# */{
     },
 
     /**
+     * Gets the position.x
      * @return {Number}
      */
     getPositionX:function () {
@@ -308,6 +362,7 @@ cc.MotionStreak = cc.NodeRGBA.extend(/** @lends cc.MotionStreak# */{
     },
 
     /**
+     * Set the position.x
      * @param {Number} x
      */
     setPositionX:function (x) {
@@ -317,6 +372,7 @@ cc.MotionStreak = cc.NodeRGBA.extend(/** @lends cc.MotionStreak# */{
     },
 
     /**
+     * Gets the position.y
      * @return {Number}
      */
     getPositionY:function () {
@@ -324,6 +380,7 @@ cc.MotionStreak = cc.NodeRGBA.extend(/** @lends cc.MotionStreak# */{
     },
 
     /**
+     * Set the position.y
      * @param {Number} y
      */
     setPositionY:function (y) {
@@ -333,8 +390,9 @@ cc.MotionStreak = cc.NodeRGBA.extend(/** @lends cc.MotionStreak# */{
     },
 
     /**
-     * @override
-     * @param {WebGLRenderingContext} ctx
+     * Render function using the canvas 2d context or WebGL context, internal usage only, please do not call this function
+     * @function
+     * @param {CanvasRenderingContext2D | WebGLRenderingContext} ctx The render context
      */
     draw:function (ctx) {
         if (this._nuPoints <= 1)
@@ -369,7 +427,10 @@ cc.MotionStreak = cc.NodeRGBA.extend(/** @lends cc.MotionStreak# */{
     },
 
     /**
-     * @override
+     * <p>schedules the "update" method.                                                                           <br/>
+     * It will use the order number 0. This method will be called every frame.                                  <br/>
+     * Scheduled methods with a lower order value will be called before the ones that have a higher order value.<br/>
+     * Only one "update" method could be scheduled per node.</p>
      * @param {Number} delta
      */
     update:function (delta) {
@@ -494,13 +555,18 @@ cc.MotionStreak = cc.NodeRGBA.extend(/** @lends cc.MotionStreak# */{
 });
 
 /**
- * creates and initializes a motion streak with fade in seconds, minimum segments, stroke's width, color, texture filename or texture
+ * Please use new cc.MotionStreak instead. <br />
+ * Creates and initializes a motion streak with fade in seconds, minimum segments, stroke's width, color, texture filename or texture
+ * @deprecated since v3.0 please use new cc.MotionStreak instead.
  * @param {Number} fade time to fade
  * @param {Number} minSeg minimum segment size
  * @param {Number} stroke stroke's width
  * @param {Number} color
  * @param {string|cc.Texture2D} texture texture filename or texture
  * @return {cc.MotionStreak}
+ * @example
+ * //example
+ * new cc.MotionStreak(2, 3, 32, cc.color.GREEN, s_streak);
  */
 cc.MotionStreak.create = function (fade, minSeg, stroke, color, texture) {
     return new cc.MotionStreak(fade, minSeg, stroke, color, texture);

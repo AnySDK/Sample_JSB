@@ -35,55 +35,111 @@
 cc.NodeGrid = cc.Node.extend({
     grid: null,
     _target: null,
+    _gridBeginCommand:null,
+    _gridEndCommand:null,
 
+    ctor: function(){
+        cc.Node.prototype.ctor.call(this);
+        if(cc._renderType === cc._RENDER_TYPE_WEBGL){
+            this._gridBeginCommand = new cc.CustomRenderCmdWebGL(this, this.onGridBeginDraw);
+            this._gridEndCommand = new cc.CustomRenderCmdWebGL(this, this.onGridEndDraw);
+        }
+    },
+
+    /**
+     * Gets the grid object.
+     * @returns {cc.GridBase}
+     */
     getGrid: function () {
         return this.grid;
     },
 
+    /**
+     * Set the grid object.
+     * @param {cc.GridBase} grid
+     */
     setGrid: function (grid) {
         this.grid = grid;
     },
 
+    /**
+     * Set the target
+     * @param {cc.Node} target
+     */
     setTarget: function (target) {
-        //var self = this;
-        //self._target && self.removeChild(self._target);
         this._target = target;
-        //self.addChild(self._target);
     },
 
-    addChild: function (child, zOrder, tag) {
-        cc.Node.prototype.addChild.call(this, child, zOrder, tag);
-
-        if (child && !this._target)
-            this._target = child;
+    onGridBeginDraw: function(){
+        var isWebGL = cc._renderType == cc._RENDER_TYPE_WEBGL, locGrid = this.grid;
+        if (isWebGL && locGrid && locGrid._active)
+            locGrid.beforeDraw();
     },
 
+    onGridEndDraw: function(){
+        var isWebGL = cc._renderType == cc._RENDER_TYPE_WEBGL, locGrid = this.grid;
+        if (isWebGL && locGrid && locGrid._active)
+            locGrid.afterDraw(this._target);
+    },
+
+    /**
+     * Recursive method that visit its children and draw them
+     */
     visit: function () {
         var self = this;
         // quick return if not visible
         if (!self._visible)
             return;
 
-        var isWebGL = cc._renderType == cc._RENDER_TYPE_WEBGL;
-        var locGrid = self.grid;
-        if (isWebGL && locGrid && locGrid._active)
-            locGrid.beforeDraw();
+        var isWebGL = cc._renderType == cc._RENDER_TYPE_WEBGL, locGrid = this.grid;
+        if(isWebGL){
+            var currentStack = cc.current_stack;
+            currentStack.stack.push(currentStack.top);
+            cc.kmMat4Assign(this._stackMatrix, currentStack.top);
+            currentStack.top = this._stackMatrix;
+        }
 
         self.transform();
+
+        if(isWebGL){
+
+            var beforeProjectionType = cc.director.PROJECTION_DEFAULT;
+            if (locGrid && locGrid._active){
+                //var backMatrix = new cc.kmMat4();
+                //cc.kmMat4Assign(backMatrix, this._stackMatrix);
+
+                beforeProjectionType = cc.director.getProjection();
+                //locGrid.set2DProjection();
+
+                //reset this._stackMatrix to current_stack.top
+                //cc.kmMat4Assign(currentStack.top, backMatrix);
+            }
+            if(this._gridBeginCommand)
+                cc.renderer.pushRenderCommand(this._gridBeginCommand);
+
+            if(this._target)
+                this._target.visit();
+        }
 
         var locChildren = this._children;
         if (locChildren && locChildren.length > 0) {
             var childLen = locChildren.length;
             this.sortAllChildren();
             // draw children
-            for (i = 0; i < childLen; i++) {
+            for (var i = 0; i < childLen; i++) {
                 var child = locChildren[i];
                 child && child.visit();
             }
         }
 
-        if (isWebGL && locGrid && locGrid._active)
-            locGrid.afterDraw(self._target);
+        if(isWebGL){
+            if(locGrid && locGrid._active){
+                //cc.director.setProjection(beforeProjectionType);
+            }
+            if(this._gridEndCommand)
+                cc.renderer.pushRenderCommand(this._gridEndCommand);
+            currentStack.top = currentStack.stack.pop();
+        }
     },
 
     _transformForWebGL: function () {
@@ -141,9 +197,10 @@ cc.defineGetterSetter(_p, "target", null, _p.setTarget);
 
 
 /**
- * Creates a NodeGrid
+ * Creates a NodeGrid. <br />
  * Implementation cc.NodeGrid
- * @return {cc.NodeGrid|null}
+ * @deprecated since v3.0 please new cc.NodeGrid instead.
+ * @return {cc.NodeGrid}
  */
 cc.NodeGrid.create = function () {
     return new cc.NodeGrid();

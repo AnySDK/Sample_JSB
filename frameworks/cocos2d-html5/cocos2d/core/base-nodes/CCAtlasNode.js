@@ -24,27 +24,33 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-/** <p> cc.AtlasNode is a subclass of cc.Node that implements the cc.RGBAProtocol and<br/>
- * cc.TextureProtocol protocol</p>
+/**
+ * <p>cc.AtlasNode is a subclass of cc.Node, it knows how to render a TextureAtlas object. </p>
  *
- * <p> It knows how to render a TextureAtlas object.  <br/>
- * If you are going to render a TextureAtlas consider subclassing cc.AtlasNode (or a subclass of cc.AtlasNode)</p>
+ * <p>If you are going to render a TextureAtlas consider subclassing cc.AtlasNode (or a subclass of cc.AtlasNode)</p>
  *
- * <p> All features from cc.Node are valid, plus the following features:  <br/>
- * - opacity and RGB colors </p>
+ * <p>All features from cc.Node are valid</p>
+ *
+ * <p>You can create a cc.AtlasNode with an Atlas file, the width, the height of each item and the quantity of items to render</p>
+ *
  * @class
- * @extends cc.NodeRGBA
+ * @extends cc.Node
+ *
+ * @param {String} tile
+ * @param {Number} tileWidth
+ * @param {Number} tileHeight
+ * @param {Number} itemsToRender
+ * @example
+ * var node = new cc.AtlasNode("pathOfTile", 16, 16, 1);
  *
  * @property {cc.Texture2D}     texture         - Current used texture
  * @property {cc.TextureAtlas}  textureAtlas    - Texture atlas for cc.AtlasNode
  * @property {Number}           quadsToDraw     - Number of quads to draw
- *
  */
-cc.AtlasNode = cc.NodeRGBA.extend(/** @lends cc.AtlasNode# */{
+cc.AtlasNode = cc.Node.extend(/** @lends cc.AtlasNode# */{
     textureAtlas: null,
     quadsToDraw: 0,
 
-    RGBAProtocol: true,
     //! chars per row
     _itemsPerRow: 0,
     //! chars per column
@@ -60,21 +66,19 @@ cc.AtlasNode = cc.NodeRGBA.extend(/** @lends cc.AtlasNode# */{
     _opacityModifyRGB: false,
     _blendFunc: null,
 
-    _ignoreContentScaleFactor: false,                               // This variable is only used for CCLabelAtlas FPS display. So plz don't modify its value.
+    // This variable is only used for CCLabelAtlas FPS display. So plz don't modify its value.
+    _ignoreContentScaleFactor: false,
     _className: "AtlasNode",
 
     /**
-     * Creates a cc.AtlasNode with an Atlas file the width and height of each item and the quantity of items to render
-     * Constructor of cc.AtlasNode
+     * <p>Constructor function, override it to extend the construction behavior, remember to call "this._super()" in the extended "ctor" function.</p>
      * @param {String} tile
      * @param {Number} tileWidth
      * @param {Number} tileHeight
      * @param {Number} itemsToRender
-     * @example
-     * var node = new cc.AtlasNode("pathOfTile", 16, 16, 1);
      */
     ctor: function (tile, tileWidth, tileHeight, itemsToRender) {
-        cc.NodeRGBA.prototype.ctor.call(this);
+        cc.Node.prototype.ctor.call(this);
         this._colorUnmodified = cc.color.WHITE;
         this._blendFunc = {src: cc.BLEND_SRC, dst: cc.BLEND_DST};
         this._ignoreContentScaleFactor = false;
@@ -82,23 +86,35 @@ cc.AtlasNode = cc.NodeRGBA.extend(/** @lends cc.AtlasNode# */{
         itemsToRender !== undefined && this.initWithTileFile(tile, tileWidth, tileHeight, itemsToRender);
     },
 
-    /** updates the Atlas (indexed vertex array).
-     * Shall be overridden in subclasses
+    _initRendererCmd: function () {
+        if(cc._renderType === cc._RENDER_TYPE_WEBGL)
+            this._rendererCmd = new cc.AtlasNodeRenderCmdWebGL(this);
+    },
+
+    /**
+     * Updates the Atlas (indexed vertex array).
+     * Empty implementation, shall be overridden in subclasses
+     * @function
      */
     updateAtlasValues: function () {
         cc.log(cc._LogInfos.AtlasNode_updateAtlasValues);
     },
 
-    /** cc.AtlasNode - RGBA protocol
+    /**
+     * Get color value of the atlas node
+     * @function
      * @return {cc.Color}
      */
     getColor: function () {
         if (this._opacityModifyRGB)
             return this._colorUnmodified;
-        return cc.NodeRGBA.prototype.getColor.call(this);
+        return cc.Node.prototype.getColor.call(this);
     },
 
     /**
+     * Set whether color should be changed with the opacity value,
+     * if true, node color will change while opacity changes.
+     * @function
      * @param {Boolean} value
      */
     setOpacityModifyRGB: function (value) {
@@ -108,13 +124,17 @@ cc.AtlasNode = cc.NodeRGBA.extend(/** @lends cc.AtlasNode# */{
     },
 
     /**
+     * Get whether color should be changed with the opacity value
+     * @function
      * @return {Boolean}
      */
     isOpacityModifyRGB: function () {
         return this._opacityModifyRGB;
     },
 
-    /** cc.AtlasNode - CocosNodeTexture protocol
+    /**
+     * Get node's blend function
+     * @function
      * @return {cc.BlendFunc}
      */
     getBlendFunc: function () {
@@ -122,7 +142,9 @@ cc.AtlasNode = cc.NodeRGBA.extend(/** @lends cc.AtlasNode# */{
     },
 
     /**
-     * BlendFunc setter
+     * Set node's blend function
+     * This function accept either cc.BlendFunc object or source value and destination value
+     * @function
      * @param {Number | cc.BlendFunc} src
      * @param {Number} dst
      */
@@ -134,13 +156,17 @@ cc.AtlasNode = cc.NodeRGBA.extend(/** @lends cc.AtlasNode# */{
     },
 
     /**
-     * @param {cc.TextureAtlas} value
+     * Set the atlas texture
+     * @function
+     * @param {cc.TextureAtlas} value The texture
      */
     setTextureAtlas: function (value) {
         this.textureAtlas = value;
     },
 
     /**
+     * Get the atlas texture
+     * @function
      * @return {cc.TextureAtlas}
      */
     getTextureAtlas: function () {
@@ -148,6 +174,8 @@ cc.AtlasNode = cc.NodeRGBA.extend(/** @lends cc.AtlasNode# */{
     },
 
     /**
+     * Get the number of quads to be rendered
+     * @function
      * @return {Number}
      */
     getQuadsToDraw: function () {
@@ -155,6 +183,8 @@ cc.AtlasNode = cc.NodeRGBA.extend(/** @lends cc.AtlasNode# */{
     },
 
     /**
+     * Set the number of quads to be rendered
+     * @function
      * @param {Number} quadsToDraw
      */
     setQuadsToDraw: function (quadsToDraw) {
@@ -167,11 +197,13 @@ cc.AtlasNode = cc.NodeRGBA.extend(/** @lends cc.AtlasNode# */{
     _uniformColor: null,
     _colorF32Array: null,
 
-    /** initializes an cc.AtlasNode  with an Atlas file the width and height of each item and the quantity of items to render
-     * @param {String} tile
-     * @param {Number} tileWidth
-     * @param {Number} tileHeight
-     * @param {Number} itemsToRender
+    /**
+     * Initializes an cc.AtlasNode object with an atlas texture file name, the width, the height of each tile and the quantity of tiles to render
+     * @function
+     * @param {String} tile             The atlas texture file name
+     * @param {Number} tileWidth        The width of each tile
+     * @param {Number} tileHeight       The height of each tile
+     * @param {Number} itemsToRender    The quantity of tiles to be rendered
      * @return {Boolean}
      */
     initWithTileFile: function (tile, tileWidth, tileHeight, itemsToRender) {
@@ -182,11 +214,12 @@ cc.AtlasNode = cc.NodeRGBA.extend(/** @lends cc.AtlasNode# */{
     },
 
     /**
-     * initializes an CCAtlasNode  with a texture the width and height of each item measured in points and the quantity of items to render
-     * @param {cc.Texture2D} texture
-     * @param {Number} tileWidth
-     * @param {Number} tileHeight
-     * @param {Number} itemsToRender
+     * Initializes an CCAtlasNode with an atlas texture, the width, the height of each tile and the quantity of tiles to render
+     * @function
+     * @param {cc.Texture2D} texture    The atlas texture
+     * @param {Number} tileWidth        The width of each tile
+     * @param {Number} tileHeight       The height of each tile
+     * @param {Number} itemsToRender    The quantity of tiles to be rendered
      * @return {Boolean}
      */
     initWithTexture: null,
@@ -238,22 +271,27 @@ cc.AtlasNode = cc.NodeRGBA.extend(/** @lends cc.AtlasNode# */{
         return true;
     },
 
+    /**
+     * Render function using the canvas 2d context or WebGL context, internal usage only, please do not call this function
+     * @function
+     * @param {CanvasRenderingContext2D | WebGLRenderingContext} ctx The render context
+     */
     draw: null,
 
-    /**
-     * @param {WebGLRenderingContext} ctx renderContext
-     */
     _drawForWebGL: function (ctx) {
         var context = ctx || cc._renderContext;
         cc.nodeDrawSetup(this);
         cc.glBlendFunc(this._blendFunc.src, this._blendFunc.dst);
-        context.uniform4fv(this._uniformColor, this._colorF32Array);
-        this.textureAtlas.drawNumberOfQuads(this.quadsToDraw, 0);
+        if(this._uniformColor && this._colorF32Array){
+            context.uniform4fv(this._uniformColor, this._colorF32Array);
+            this.textureAtlas.drawNumberOfQuads(this.quadsToDraw, 0);
+        }
     },
 
     /**
+     * Set node's color
      * @function
-     * @param {cc.Color} color3
+     * @param {cc.Color} color Color object created with cc.color(r, g, b).
      */
     setColor: null,
 
@@ -270,20 +308,26 @@ cc.AtlasNode = cc.NodeRGBA.extend(/** @lends cc.AtlasNode# */{
             temp.g = temp.g * locDisplayedOpacity / 255;
             temp.b = temp.b * locDisplayedOpacity / 255;
         }
-        cc.NodeRGBA.prototype.setColor.call(this, color3);
+//        cc.Node.prototype.setColor.call(this, color3);
+        this._changeTextureColor();
+    },
 
-        if (this.texture) {
+    _changeTextureColor: function(){
+        var locTexture = this.getTexture();
+        if (locTexture && this._originalTexture) {
             var element = this._originalTexture.getHtmlElementObj();
-            if (!element)
+            if(!element)
                 return;
-            var cacheTextureForColor = cc.textureCache.getTextureColors(element);
-            if (cacheTextureForColor) {
-                var textureRect = cc.rect(0, 0, element.width, element.height);
-                element = cc.generateTintImage(element, cacheTextureForColor, this._realColor, textureRect);
-                var locTexture = new cc.Texture2D();
-                locTexture.initWithElement(element);
+            var locElement = locTexture.getHtmlElementObj();
+            var textureRect = cc.rect(0, 0, element.width, element.height);
+            if (locElement instanceof HTMLCanvasElement)
+                cc.generateTintImageWithMultiply(element, this._colorUnmodified, textureRect, locElement);
+            else {
+                locElement = cc.generateTintImageWithMultiply(element, this._colorUnmodified, textureRect);
+                locTexture = new cc.Texture2D();
+                locTexture.initWithElement(locElement);
                 locTexture.handleLoadedTexture();
-                this.texture = locTexture;
+                this.setTexture(locTexture);
             }
         }
     },
@@ -297,21 +341,22 @@ cc.AtlasNode = cc.NodeRGBA.extend(/** @lends cc.AtlasNode# */{
             temp.g = temp.g * locDisplayedOpacity / 255;
             temp.b = temp.b * locDisplayedOpacity / 255;
         }
-        cc.NodeRGBA.prototype.setColor.call(this, color3);
+        cc.Node.prototype.setColor.call(this, color3);
         var locDisplayedColor = this._displayedColor;
         this._colorF32Array = new Float32Array([locDisplayedColor.r / 255.0, locDisplayedColor.g / 255.0,
             locDisplayedColor.b / 255.0, locDisplayedOpacity / 255.0]);
     },
 
     /**
+     * Set node's opacity
      * @function
-     * @param {Number} opacity
+     * @param {Number} opacity The opacity value
      */
     setOpacity: function (opacity) {
     },
 
     _setOpacityForCanvas: function (opacity) {
-        cc.NodeRGBA.prototype.setOpacity.call(this, opacity);
+        cc.Node.prototype.setOpacity.call(this, opacity);
         // special opacity for premultiplied textures
         if (this._opacityModifyRGB) {
             this.color = this._colorUnmodified;
@@ -319,7 +364,7 @@ cc.AtlasNode = cc.NodeRGBA.extend(/** @lends cc.AtlasNode# */{
     },
 
     _setOpacityForWebGL: function (opacity) {
-        cc.NodeRGBA.prototype.setOpacity.call(this, opacity);
+        cc.Node.prototype.setOpacity.call(this, opacity);
         // special opacity for premultiplied textures
         if (this._opacityModifyRGB) {
             this.color = this._colorUnmodified;
@@ -330,9 +375,8 @@ cc.AtlasNode = cc.NodeRGBA.extend(/** @lends cc.AtlasNode# */{
         }
     },
 
-    // cc.Texture protocol
     /**
-     * returns the used texture
+     * Get the current texture
      * @function
      * @return {cc.Texture2D}
      */
@@ -347,9 +391,9 @@ cc.AtlasNode = cc.NodeRGBA.extend(/** @lends cc.AtlasNode# */{
     },
 
     /**
-     * sets a new texture. it will be retained
+     * Replace the current texture with a new one
      * @function
-     * @param {cc.Texture2D} texture
+     * @param {cc.Texture2D} texture    The new texture
      */
     setTexture: null,
 
@@ -416,6 +460,29 @@ if (cc._renderType === cc._RENDER_TYPE_WEBGL) {
     _p.getTexture = _p._getTextureForCanvas;
     _p.setTexture = _p._setTextureForCanvas;
     _p._calculateMaxItems = _p._calculateMaxItemsForCanvas;
+    if(!cc.sys._supportCanvasNewBlendModes)
+        _p._changeTextureColor = function(){
+            var locElement, locTexture = this.getTexture();
+            if (locTexture && this._originalTexture) {
+                locElement = locTexture.getHtmlElementObj();
+                if (!locElement)
+                    return;
+                var element = this._originalTexture.getHtmlElementObj();
+                var cacheTextureForColor = cc.textureCache.getTextureColors(element);
+                if (cacheTextureForColor) {
+                    var textureRect = cc.rect(0, 0, element.width, element.height);
+                    if (locElement instanceof HTMLCanvasElement)
+                        cc.generateTintImage(locElement, cacheTextureForColor, this._displayedColor, textureRect, locElement);
+                    else {
+                        locElement = cc.generateTintImage(locElement, cacheTextureForColor, this._displayedColor, textureRect);
+                        locTexture = new cc.Texture2D();
+                        locTexture.initWithElement(locElement);
+                        locTexture.handleLoadedTexture();
+                        this.setTexture(locTexture);
+                    }
+                }
+            }
+        };
 }
 
 // Override properties
@@ -432,15 +499,16 @@ _p.textureAtlas;
 _p.quadsToDraw;
 
 
-/** creates a cc.AtlasNode with an Atlas file the width and height of each item and the quantity of items to render
+/**
+ * Creates a cc.AtlasNode with an Atlas file the width and height of each item and the quantity of items to render
+ * @deprecated since v3.0, please use new construction instead
+ * @function
+ * @static
  * @param {String} tile
  * @param {Number} tileWidth
  * @param {Number} tileHeight
  * @param {Number} itemsToRender
  * @return {cc.AtlasNode}
- * @example
- * // example
- * var node = cc.AtlasNode.create("pathOfTile", 16, 16, 1);
  */
 cc.AtlasNode.create = function (tile, tileWidth, tileHeight, itemsToRender) {
     return new cc.AtlasNode(tile, tileWidth, tileHeight, itemsToRender);

@@ -23,14 +23,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
 
-#include "base/CCPlatformConfig.h"
+#include "platform/CCPlatformConfig.h"
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT) ||  (CC_TARGET_PLATFORM == CC_PLATFORM_WP8) 
 
 #include "cocos2d.h"
 #include "platform/CCDevice.h"
 #include "platform/CCFileUtils.h"
 #include "platform/winrt/CCFreeTypeFont.h"
-#include "CCStdC.h"
+#include "platform/CCStdC.h"
 
 using namespace Windows::Graphics::Display;
 using namespace Windows::Devices::Sensors;
@@ -53,6 +53,14 @@ void Device::setAccelerometerEnabled(bool isEnabled)
 {
     static Windows::Foundation::EventRegistrationToken sToken;
     static bool sEnabled = false;
+
+    // we always need to reset the accelerometer
+    if (sAccelerometer)
+    {
+        sAccelerometer->ReadingChanged -= sToken;
+        sAccelerometer = nullptr;
+        sEnabled = false;
+    }
 
 	if (isEnabled)
 	{
@@ -84,7 +92,7 @@ void Device::setAccelerometerEnabled(bool isEnabled)
             acc.timestamp = 0;
 
 #if CC_TARGET_PLATFORM == CC_PLATFORM_WP8
-            auto orientation = GLView::sharedOpenGLView()->getDeviceOrientation();
+            auto orientation = GLViewImpl::sharedOpenGLView()->getDeviceOrientation();
 
             switch (orientation)
             {
@@ -114,21 +122,13 @@ void Device::setAccelerometerEnabled(bool isEnabled)
                 break;
             }
 #endif
+
+#ifndef WP8_SHADER_COMPILER
 	        std::shared_ptr<cocos2d::InputEvent> event(new AccelerometerEvent(acc));
-            cocos2d::GLView::sharedOpenGLView()->QueueEvent(event);
+            cocos2d::GLViewImpl::sharedOpenGLView()->QueueEvent(event);
+#endif
 		});
 	}
-	else
-	{
-        if (sAccelerometer)
-        {
-            sAccelerometer->ReadingChanged -= sToken;
-            sAccelerometer = nullptr;
-        }
-
-        sEnabled = false;
-	}
-
 }
 
 void Device::setAccelerometerInterval(float interval)
@@ -161,6 +161,10 @@ Data Device::getTextureDataForText(const char * text, const FontDefinition& text
     }
 
     return ret;
+}
+
+void Device::setKeepScreenOn(bool value)
+{
 }
 
 NS_CC_END

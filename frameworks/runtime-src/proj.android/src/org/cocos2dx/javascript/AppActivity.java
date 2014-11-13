@@ -39,9 +39,26 @@ public class AppActivity extends Cocos2dxActivity {
         super.onCreate(savedState);
         PluginWrapper.init(this); // for plugins
     }
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data){
 		super.onActivityResult(requestCode, resultCode, data);
 		PluginWrapper.onActivityResult(requestCode, resultCode, data);
+	}
+	@Override
+	protected void onResume() {
+	    super.onResume();
+	    PluginWrapper.onResume();
+	}
+	@Override
+	public void onPause(){
+	    PluginWrapper.onPause();
+	    super.onPause();
+	}
+	
+	@Override
+	protected void onNewIntent(Intent intent) {
+	    PluginWrapper.onNewIntent(intent);
+	    super.onNewIntent(intent);
 	}
 }

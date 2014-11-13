@@ -23,9 +23,13 @@
  THE SOFTWARE.
  ****************************************************************************/
 
+//todo maybe need change here
+
+
 /**
- * UI Helper
- * @type {Object}
+ * ccui.helper is the singleton object which is the Helper object contains some functions for seek widget
+ * @class
+ * @name ccui.helper
  */
 ccui.helper = {
 	/**
@@ -35,20 +39,18 @@ ccui.helper = {
 	 * @returns {ccui.Widget}
 	 */
 	seekWidgetByTag: function (root, tag) {
-	    if (!root) {
+	    if (!root)
 	        return null;
-	    }
-	    if (root.getTag() == tag) {
+	    if (root.getTag() == tag)
 	        return root;
-	    }
+
 	    var arrayRootChildren = root.getChildren();
 	    var length = arrayRootChildren.length;
 	    for (var i = 0; i < length; i++) {
 	        var child = arrayRootChildren[i];
-	        var res = this.seekWidgetByTag(child, tag);
-	        if (res != null) {
+	        var res = ccui.helper.seekWidgetByTag(child, tag);
+	        if (res != null)
 	            return res;
-	        }
 	    }
 	    return null;
 	},
@@ -60,20 +62,17 @@ ccui.helper = {
 	 * @returns {ccui.Widget}
 	 */
 	seekWidgetByName: function (root, name) {
-	    if (!root) {
+	    if (!root)
 	        return null;
-	    }
-	    if (root.getName() == name) {
+	    if (root.getName() == name)
 	        return root;
-	    }
 	    var arrayRootChildren = root.getChildren();
 	    var length = arrayRootChildren.length;
 	    for (var i = 0; i < length; i++) {
 	        var child = arrayRootChildren[i];
-	        var res = this.seekWidgetByName(child, name);
-	        if (res != null) {
+	        var res = ccui.helper.seekWidgetByName(child, name);
+	        if (res != null)
 	            return res;
-	        }
 	    }
 	    return null;
 	},
@@ -86,39 +85,37 @@ ccui.helper = {
 	 * @returns {ccui.Widget}
 	 */
 	seekWidgetByRelativeName: function (root, name) {
-	    if (!root) {
+	    if (!root)
 	        return null;
-	    }
 	    var arrayRootChildren = root.getChildren();
 	    var length = arrayRootChildren.length;
 	    for (var i = 0; i < length; i++) {
 	        var child = arrayRootChildren[i];
 	        var layoutParameter = child.getLayoutParameter(ccui.LayoutParameter.RELATIVE);
-	        if (layoutParameter && layoutParameter.getRelativeName() == name) {
+	        if (layoutParameter && layoutParameter.getRelativeName() == name)
 	            return child;
-	        }
 	    }
 	    return null;
 	},
 
-	/*temp action*/
+    /**
+     * Finds a widget whose action tag equals to param name from root widget.
+     * @param {ccui.Widget} root
+     * @param {Number} tag
+     * @returns {ccui.Widget}
+     */
 	seekActionWidgetByActionTag: function (root, tag) {
-	    if (!root) {
+	    if (!root)
 	        return null;
-	    }
-	    if (root.getActionTag() == tag) {
+	    if (root.getActionTag() == tag)
 	        return root;
-	    }
 	    var arrayRootChildren = root.getChildren();
 	    for (var i = 0; i < arrayRootChildren.length; i++) {
 	        var child = arrayRootChildren[i];
-	        var res = this.seekActionWidgetByActionTag(child, tag);
-	        if (res != null) {
+	        var res = ccui.helper.seekActionWidgetByActionTag(child, tag);
+	        if (res != null)
 	            return res;
-	        }
 	    }
 	    return null;
 	}
-
 };
-ccui.helper;

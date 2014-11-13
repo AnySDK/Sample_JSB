@@ -30,7 +30,7 @@
  * It renders the inner sprite according to the percentage.<br/>
  * The progress can be Radial, Horizontal or vertical.
  * @class
- * @extends cc.NodeRGBA
+ * @extends cc.Node
  *
  * @property {cc.Point}     midPoint        <p>- Midpoint is used to modify the progress start position.<br/>
  *                                          If you're using radials type then the midpoint changes the center point<br/>
@@ -45,8 +45,9 @@
  * @property {Number}       percentage      - Percentage to change progress, from 0 to 100.
  * @property {cc.Sprite}    sprite          - The sprite to show the progress percentage.
  * @property {Boolean}      reverseDir      - Indicate whether the direction is reversed.
+ *
  */
-cc.ProgressTimer = cc.NodeRGBA.extend(/** @lends cc.ProgressTimer# */{
+cc.ProgressTimer = cc.Node.extend(/** @lends cc.ProgressTimer# */{
     _type:null,
     _percentage:0.0,
     _sprite:null,
@@ -131,14 +132,23 @@ cc.ProgressTimer = cc.NodeRGBA.extend(/** @lends cc.ProgressTimer# */{
             this._updateProgress();
         }
     },
-
+    /**
+     * only use for jsbinding
+     * @param bValue
+     */
     setOpacityModifyRGB:function (bValue) {
     },
-
+    /**
+     * only use for jsbinding
+     * @returns {boolean}
+     */
     isOpacityModifyRGB:function () {
         return false;
     },
-
+    /**
+     * return if reverse direction
+     * @returns {boolean}
+     */
     isReverseDirection:function () {
         return this._reverseDirection;
     },
@@ -154,23 +164,21 @@ cc.ProgressTimer = cc.NodeRGBA.extend(/** @lends cc.ProgressTimer# */{
         return cc.p(0,0);
     },
 
-    _origin:null,
-    _startAngle:270,
-    _endAngle:270,
-    _radius:0,
-    _counterClockWise:false,
-    _barRect:null,
-
     _vertexDataCount:0,
     _vertexData:null,
     _vertexArrayBuffer:null,
     _vertexWebGLBuffer:null,
     _vertexDataDirty:false,
 
+    /**
+     * constructor of cc.cc.ProgressTimer
+     * @function
+     * @param {cc.Sprite} sprite
+     */
     ctor: null,
 
-    _ctorForCanvas: function () {
-        cc.NodeRGBA.prototype.ctor.call(this);
+    _ctorForCanvas: function (sprite) {
+        cc.Node.prototype.ctor.call(this);
 
         this._type = cc.ProgressTimer.TYPE_RADIAL;
         this._percentage = 0.0;
@@ -179,17 +187,12 @@ cc.ProgressTimer = cc.NodeRGBA.extend(/** @lends cc.ProgressTimer# */{
         this._reverseDirection = false;
 
         this._sprite = null;
-
-        this._origin = cc.p(0,0);
-        this._startAngle = 270;
-        this._endAngle = 270;
-        this._radius = 0;
-        this._counterClockWise = false;
-        this._barRect = cc.rect(0, 0, 0, 0);
+        this._rendererCmd = new cc.ProgressRenderCmdCanvas(this);
+        sprite && this._initWithSpriteForCanvas(sprite);
     },
 
-    _ctorForWebGL: function () {
-        cc.NodeRGBA.prototype.ctor.call(this);
+    _ctorForWebGL: function (sprite) {
+        cc.Node.prototype.ctor.call(this);
         this._type = cc.ProgressTimer.TYPE_RADIAL;
         this._percentage = 0.0;
         this._midPoint = cc.p(0, 0);
@@ -203,6 +206,9 @@ cc.ProgressTimer = cc.NodeRGBA.extend(/** @lends cc.ProgressTimer# */{
         this._vertexData = null;
         this._vertexArrayBuffer = null;
         this._vertexDataDirty = false;
+        this._rendererCmd = new cc.ProgressRenderCmdWebGL(this);
+
+        sprite && this._initWithSpriteForWebGL(sprite);
     },
 
     /**
@@ -215,7 +221,7 @@ cc.ProgressTimer = cc.NodeRGBA.extend(/** @lends cc.ProgressTimer# */{
     },
 
     /**
-     * Opacity
+     *  set opacity of sprite
      * @param {Number} opacity
      */
     setOpacity:function (opacity) {
@@ -240,6 +246,7 @@ cc.ProgressTimer = cc.NodeRGBA.extend(/** @lends cc.ProgressTimer# */{
     },
 
     /**
+     * set reverse cc.ProgressTimer
      * @function
      * @param {Boolean} reverse
      */
@@ -262,6 +269,7 @@ cc.ProgressTimer = cc.NodeRGBA.extend(/** @lends cc.ProgressTimer# */{
     },
 
     /**
+     * set sprite for cc.ProgressTimer
      * @function
      * @param {cc.Sprite} sprite
      */
@@ -270,6 +278,7 @@ cc.ProgressTimer = cc.NodeRGBA.extend(/** @lends cc.ProgressTimer# */{
     _setSpriteForCanvas:function (sprite) {
         if (this._sprite != sprite) {
             this._sprite = sprite;
+            this._rendererCmd._sprite = sprite;
             this.width = this._sprite.width;
 	        this.height = this._sprite.height;
         }
@@ -298,8 +307,10 @@ cc.ProgressTimer = cc.NodeRGBA.extend(/** @lends cc.ProgressTimer# */{
     setType:null,
 
     _setTypeForCanvas:function (type) {
-        if (type !== this._type)
+        if (type !== this._type){
             this._type = type;
+            this._rendererCmd._type = type;
+        }
     },
 
     _setTypeForWebGL:function (type) {
@@ -416,73 +427,6 @@ cc.ProgressTimer = cc.NodeRGBA.extend(/** @lends cc.ProgressTimer# */{
      * @param {CanvasRenderingContext2D} ctx
      */
     draw:null,
-
-    _drawForCanvas:function (ctx) {
-        var context = ctx || cc._renderContext;
-
-        var locSprite = this._sprite;
-        if (locSprite._isLighterMode)
-            context.globalCompositeOperation = 'lighter';
-
-        var locEGL_ScaleX = cc.view.getScaleX(), locEGL_ScaleY = cc.view.getScaleY();
-
-        context.globalAlpha = locSprite._displayedOpacity / 255;
-        var locRect = locSprite._rect, locContentSize = locSprite._contentSize, locOffsetPosition = locSprite._offsetPosition, locDrawSizeCanvas = locSprite._drawSize_Canvas;
-        var flipXOffset = 0 | (locOffsetPosition.x), flipYOffset = -locOffsetPosition.y - locRect.height, locTextureCoord = locSprite._textureRect_Canvas;
-        locDrawSizeCanvas.width = locRect.width * locEGL_ScaleX;
-        locDrawSizeCanvas.height = locRect.height * locEGL_ScaleY;
-
-        context.save();
-        if (locSprite._flippedX) {
-            flipXOffset = -locOffsetPosition.x - locRect.width;
-            context.scale(-1, 1);
-        }
-        if (locSprite._flippedY) {
-            flipYOffset = locOffsetPosition.y;
-            context.scale(1, -1);
-        }
-
-        flipXOffset *= locEGL_ScaleX;
-        flipYOffset *= locEGL_ScaleY;
-
-        //clip
-        if (this._type == cc.ProgressTimer.TYPE_BAR) {
-            var locBarRect = this._barRect;
-            context.beginPath();
-            context.rect(locBarRect.x * locEGL_ScaleX, locBarRect.y * locEGL_ScaleY, locBarRect.width * locEGL_ScaleX, locBarRect.height * locEGL_ScaleY);
-            context.clip();
-            context.closePath();
-        } else if (this._type == cc.ProgressTimer.TYPE_RADIAL) {
-            var locOriginX = this._origin.x * locEGL_ScaleX;
-            var locOriginY = this._origin.y * locEGL_ScaleY;
-            context.beginPath();
-            context.arc(locOriginX, locOriginY, this._radius * locEGL_ScaleY, (Math.PI / 180) * this._startAngle, (Math.PI / 180) * this._endAngle, this._counterClockWise);
-            context.lineTo(locOriginX, locOriginY);
-            context.clip();
-            context.closePath();
-        }
-
-        //draw sprite
-        if (locSprite._texture && locTextureCoord.validRect) {
-            var image = locSprite._texture.getHtmlElementObj();
-            if (this._colorized) {
-                context.drawImage(image,
-                    0, 0, locTextureCoord.width, locTextureCoord.height,
-                    flipXOffset, flipYOffset, locDrawSizeCanvas.width, locDrawSizeCanvas.height);
-            } else {
-                context.drawImage(image,
-                    locTextureCoord.x, locTextureCoord.y, locTextureCoord.width,  locTextureCoord.height,
-                    flipXOffset, flipYOffset, locDrawSizeCanvas.width , locDrawSizeCanvas.height);
-            }
-        } else if (locContentSize.width !== 0) {
-            var curColor = this.color;
-            context.fillStyle = "rgba(" + curColor.r + "," + curColor.g + "," + curColor.b + ",1)";
-            context.fillRect(flipXOffset, flipYOffset, locContentSize.width * locEGL_ScaleX, locContentSize.height * locEGL_ScaleY);
-        }
-
-        context.restore();
-        cc.incrementGLDraws(1);
-    },
 
     _drawForWebGL:function (ctx) {
         var context = ctx || cc._renderContext;
@@ -789,10 +733,11 @@ cc.ProgressTimer = cc.NodeRGBA.extend(/** @lends cc.ProgressTimer# */{
         var locSprite = this._sprite;
         var sw = locSprite.width, sh = locSprite.height;
         var locMidPoint = this._midPoint;
+        var locCmd = this._rendererCmd;
 
         if (this._type == cc.ProgressTimer.TYPE_RADIAL) {
-            this._radius = Math.round(Math.sqrt(sw * sw + sh * sh));
-            var locStartAngle, locEndAngle, locCounterClockWise = false, locOrigin = this._origin;
+            locCmd._radius = Math.round(Math.sqrt(sw * sw + sh * sh));
+            var locStartAngle, locEndAngle, locCounterClockWise = false, locOrigin = locCmd._origin;
             locOrigin.x = sw * locMidPoint.x;
             locOrigin.y = -sh * locMidPoint.y;
 
@@ -819,13 +764,13 @@ cc.ProgressTimer = cc.NodeRGBA.extend(/** @lends cc.ProgressTimer# */{
                 locEndAngle= -locEndAngle;
             }
 
-            this._startAngle = locStartAngle;
-            this._endAngle = locEndAngle;
-            this._counterClockWise = locCounterClockWise;
+            locCmd._startAngle = locStartAngle;
+            locCmd._endAngle = locEndAngle;
+            locCmd._counterClockWise = locCounterClockWise;
         } else {
             var locBarChangeRate = this._barChangeRate;
             var percentageF = this._percentage / 100;
-            var locBarRect = this._barRect;
+            var locBarRect = locCmd._barRect;
 
             var drawedSize = cc.size((sw * (1 - locBarChangeRate.x)), (sh * (1 - locBarChangeRate.y)));
             var drawingSize = cc.size((sw - drawedSize.width) * percentageF, (sh - drawedSize.height) * percentageF);
@@ -834,17 +779,13 @@ cc.ProgressTimer = cc.NodeRGBA.extend(/** @lends cc.ProgressTimer# */{
             var startPoint = cc.p(sw * locMidPoint.x, sh * locMidPoint.y);
 
             var needToLeft = startPoint.x - currentDrawSize.width / 2;
-            if (locMidPoint.x > 0.5) {
-                if (currentDrawSize.width / 2 >= sw - startPoint.x) {
-                    needToLeft = sw - currentDrawSize.width;
-                }
+            if ((locMidPoint.x > 0.5) && (currentDrawSize.width / 2 >= sw - startPoint.x)) {
+                needToLeft = sw - currentDrawSize.width;
             }
 
             var needToTop = startPoint.y - currentDrawSize.height / 2;
-            if (locMidPoint.y > 0.5) {
-                if (currentDrawSize.height / 2 >= sh - startPoint.y) {
-                    needToTop = sh - currentDrawSize.height;
-                }
+            if ((locMidPoint.y > 0.5) && (currentDrawSize.height / 2 >= sh - startPoint.y)) {
+                needToTop = sh - currentDrawSize.height;
             }
 
             //left pos
@@ -929,17 +870,12 @@ cc.defineGetterSetter(_p, "reverseDir", _p.isReverseDirection, _p.setReverseDire
 
 /**
  * create a progress timer object with image file name that renders the inner sprite according to the percentage
+ * @deprecated since v3.0,please use new cc.ProgressTimer(sprite) instead.
  * @param {cc.Sprite} sprite
  * @return {cc.ProgressTimer}
- * @example
- * // Example
- * var progress = cc.ProgressTimer.create('progress.png')
  */
 cc.ProgressTimer.create = function (sprite) {
-    var progressTimer = new cc.ProgressTimer();
-    if (progressTimer.initWithSprite(sprite))
-        return progressTimer;
-    return null;
+    return new cc.ProgressTimer(sprite);
 };
 
 /**

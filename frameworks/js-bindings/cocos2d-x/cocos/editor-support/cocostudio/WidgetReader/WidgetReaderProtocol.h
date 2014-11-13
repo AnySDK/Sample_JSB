@@ -27,6 +27,17 @@
 
 #include "cocos2d.h"
 #include "cocostudio/DictionaryHelper.h"
+#include "cocostudio/CocosStudioExport.h"
+
+namespace protocolbuffers
+{
+    class NodeTree;
+}
+
+namespace tinyxml2
+{
+    class XMLElement;
+}
 
 namespace cocos2d
 {
@@ -38,11 +49,17 @@ namespace cocos2d
 
 namespace cocostudio
 {
-    class WidgetReaderProtocol
+    class CocoLoader;
+    struct stExpCocoNode;
+    
+    class CC_STUDIO_DLL WidgetReaderProtocol
     {
     public:
         virtual ~WidgetReaderProtocol() {};
         virtual void setPropsFromJsonDictionary(cocos2d::ui::Widget* widget, const rapidjson::Value& options) = 0;
+        virtual void setPropsFromBinary(cocos2d::ui::Widget* widget, CocoLoader* cocoLoader,  stExpCocoNode*	pCocoNode) = 0;
+        virtual void setPropsFromProtocolBuffers(cocos2d::ui::Widget* widget, const protocolbuffers::NodeTree& nodeTree) = 0;
+        virtual void setPropsFromXML(cocos2d::ui::Widget* widget, const tinyxml2::XMLElement* objectData) = 0;
     };
 }
 

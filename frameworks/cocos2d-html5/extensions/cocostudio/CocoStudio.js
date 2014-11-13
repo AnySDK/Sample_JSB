@@ -23,7 +23,8 @@
  THE SOFTWARE.
  ****************************************************************************/
 /**
- * @namespace Base namespace of cocostuidio
+ * The main namespace of Cocostudio, all classes, functions, properties and constants of Spine are defined in this namespace
+ * @namespace
  * @name ccs
  */
 var ccs = ccs || {};
@@ -44,14 +45,6 @@ ccs.Node = ccs.Node || cc.Node;
 ccs.Node.extend = ccs.Node.extend || cc.Node.extend;
 
 /**
- * The same as cc.RBGA
- * @class
- * @extends ccs.Class
- */
-ccs.NodeRGBA = ccs.NodeRGBA || cc.NodeRGBA;
-ccs.NodeRGBA.extend = ccs.NodeRGBA.extend || cc.NodeRGBA.extend;
-
-/**
  * The same as cc.Sprite
  * @class
  * @extends ccs.Class
@@ -69,6 +62,7 @@ ccs.Component.extend = ccs.Component.extend || cc.Component.extend;
 
 /**
  * CocoStudio version
+ * @constant
  * @type {string}
  */
 ccs.cocostudioVersion = "v1.3.0.0";

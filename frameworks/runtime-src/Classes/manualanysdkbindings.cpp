@@ -264,7 +264,7 @@ bool jsb_anysdk_PluginParam_getMapValue(JSContext *cx, uint32_t argc, jsval *vp)
 	}
 
 	JS_ReportError(cx, "jsb_anysdk_PluginParam_getMapValue : wrong number of arguments: %d, was expecting %d", argc, 0);
-	return false;
+	return true;
 }
 
 bool jsb_anysdk_PluginParam_getStrMapValue(JSContext *cx, uint32_t argc, jsval *vp)
@@ -445,6 +445,27 @@ bool jsb_anysdk_ProtocolShare_setResultListener(JSContext *cx, uint32_t argc, js
 	return true;
 }
 
+bool jsb_anysdk_ProtocolShare_setDebugMode(JSContext *cx, uint32_t argc, jsval *vp)
+{
+	jsval *argv = JS_ARGV(cx, vp);
+	bool ok = true;
+	JSObject *obj = JS_THIS_OBJECT(cx, vp);
+	js_proxy_t *proxy = jsb_get_js_proxy(obj);
+	ProtocolShare* cobj = (ProtocolShare *)(proxy ? proxy->ptr : NULL);
+	JSB_PRECONDITION2( cobj, cx, false, "js_autoanysdkbindings_PluginProtocol_setDebugMode : Invalid Native Object");
+	if (argc == 1) {
+		bool arg0;
+		arg0 = JS::ToBoolean(JS::RootedValue(cx, argv[0]));
+		JSB_PRECONDITION2(ok, cx, false, "js_autoanysdkbindings_PluginProtocol_setDebugMode : Error processing arguments");
+		cobj->setDebugMode(arg0);
+		JS_SET_RVAL(cx, vp, JSVAL_VOID);
+		return true;
+	}
+
+	JS_ReportError(cx, "js_autoanysdkbindings_PluginProtocol_setDebugMode : wrong number of arguments: %d, was expecting %d", argc, 1);
+	return false;
+}
+
 bool jsb_anysdk_ProtocolShare_share(JSContext *cx, uint32_t argc, jsval *vp){
 	CCLOG("in ProtocolShare_share, argc:%d.", argc);
     JSObject *obj = JS_THIS_OBJECT(cx, vp);
@@ -536,6 +557,7 @@ void js_register_anysdkbindings_ProtocolShare(JSContext *cx, JSObject *global) {
 
 	static JSFunctionSpec funcs[] = {
 		JS_FN("share", jsb_anysdk_ProtocolShare_share, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("setDebugMode", jsb_anysdk_ProtocolShare_setDebugMode, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("setResultListener", jsb_anysdk_ProtocolShare_setResultListener, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FS_END
 	};
@@ -586,7 +608,7 @@ static bool jsb_anysdk_framework_PluginProtocol_callFuncWithParam(JSContext *cx,
     	ok &= jsval_to_std_string(cx, argv[0], &arg0);
     	CCLOG("arg0: %s\n", arg0.c_str());
     	cobj->callFuncWithParam(arg0.c_str(), NULL);
-        return false;
+        return true;
     }
     else if (argc == 0) {
     	JS_ReportError(cx, "Invalid number of arguments");
@@ -633,7 +655,7 @@ static bool jsb_anysdk_framework_PluginProtocol_callFuncWithParam(JSContext *cx,
             }
 		}
 		cobj->callFuncWithParam(arg0.c_str(), params);
-    	return false;
+    	return true;
     }
 }
 
@@ -650,8 +672,11 @@ static bool jsb_anysdk_framework_PluginProtocol_callStringFuncWithParam(JSContex
     	std::string arg0;
     	ok &= jsval_to_std_string(cx, argv[0], &arg0);
     	CCLOG("arg0: %s\n", arg0.c_str());
-    	cobj->callStringFuncWithParam(arg0.c_str(), NULL);
-        return false;
+    	std::string ret = cobj->callStringFuncWithParam(arg0.c_str(), NULL);
+		jsval jsret = JSVAL_NULL;
+		jsret = std_string_to_jsval(cx, ret);
+		JS_SET_RVAL(cx, vp, jsret);
+        return true;
     }
     else if (argc == 0) {
     	JS_ReportError(cx, "Invalid number of arguments");
@@ -697,8 +722,11 @@ static bool jsb_anysdk_framework_PluginProtocol_callStringFuncWithParam(JSContex
                 params.push_back(param);
             }
 		}
-		cobj->callStringFuncWithParam(arg0.c_str(), params);
-    	return false;
+		std::string ret = cobj->callStringFuncWithParam(arg0.c_str(), params);
+		jsval jsret = JSVAL_NULL;
+		jsret = std_string_to_jsval(cx, ret);
+		JS_SET_RVAL(cx, vp, jsret);
+    	return true;
     }
 }
 
@@ -715,8 +743,11 @@ static bool jsb_anysdk_framework_PluginProtocol_callIntFuncWithParam(JSContext *
     	std::string arg0;
     	ok &= jsval_to_std_string(cx, argv[0], &arg0);
     	CCLOG("arg0: %s\n", arg0.c_str());
-    	cobj->callIntFuncWithParam(arg0.c_str(), NULL);
-        return false;
+    	int ret =cobj->callIntFuncWithParam(arg0.c_str(), NULL);
+		jsval jsret = JSVAL_NULL;
+		jsret = INT_TO_JSVAL(ret);
+		JS_SET_RVAL(cx, vp, jsret);
+        return true;
     }
     else if (argc == 0) {
     	JS_ReportError(cx, "Invalid number of arguments");
@@ -762,8 +793,11 @@ static bool jsb_anysdk_framework_PluginProtocol_callIntFuncWithParam(JSContext *
                 params.push_back(param);
             }
 		}
-		cobj->callIntFuncWithParam(arg0.c_str(), params);
-    	return false;
+		int ret = cobj->callIntFuncWithParam(arg0.c_str(), params);
+		jsval jsret = JSVAL_NULL;
+		jsret = INT_TO_JSVAL(ret);
+		JS_SET_RVAL(cx, vp, jsret);
+    	return true;
     }
 }
 
@@ -780,8 +814,11 @@ static bool jsb_anysdk_framework_PluginProtocol_callBoolFuncWithParam(JSContext 
     	std::string arg0;
     	ok &= jsval_to_std_string(cx, argv[0], &arg0);
     	CCLOG("arg0: %s\n", arg0.c_str());
-    	cobj->callBoolFuncWithParam(arg0.c_str(), NULL);
-        return false;
+    	bool ret = cobj->callBoolFuncWithParam(arg0.c_str(), NULL);
+		jsval jsret = JSVAL_NULL;
+		jsret = BOOLEAN_TO_JSVAL(ret);
+		JS_SET_RVAL(cx, vp, jsret);
+        return true;
     }
     else if (argc == 0) {
     	JS_ReportError(cx, "Invalid number of arguments");
@@ -827,8 +864,11 @@ static bool jsb_anysdk_framework_PluginProtocol_callBoolFuncWithParam(JSContext 
                 params.push_back(param);
             }
 		}
-		cobj->callBoolFuncWithParam(arg0.c_str(), params);
-    	return false;
+		bool ret = cobj->callBoolFuncWithParam(arg0.c_str(), params);
+		jsval jsret = JSVAL_NULL;
+		jsret = BOOLEAN_TO_JSVAL(ret);
+		JS_SET_RVAL(cx, vp, jsret);
+    	return true;
     }
 }
 
@@ -845,8 +885,11 @@ static bool jsb_anysdk_framework_PluginProtocol_callFloatFuncWithParam(JSContext
     	std::string arg0;
     	ok &= jsval_to_std_string(cx, argv[0], &arg0);
     	CCLOG("arg0: %s\n", arg0.c_str());
-    	cobj->callFloatFuncWithParam(arg0.c_str(), NULL);
-        return false;
+    	double ret = cobj->callFloatFuncWithParam(arg0.c_str(), NULL);
+		jsval jsret = JSVAL_NULL;
+		jsret = DOUBLE_TO_JSVAL(ret);
+		JS_SET_RVAL(cx, vp, jsret);
+        return true;
     }
     else if (argc == 0) {
     	JS_ReportError(cx, "Invalid number of arguments");
@@ -892,8 +935,11 @@ static bool jsb_anysdk_framework_PluginProtocol_callFloatFuncWithParam(JSContext
                 params.push_back(param);
             }
 		}
-		cobj->callFloatFuncWithParam(arg0.c_str(), params);
-    	return false;
+		double ret = cobj->callFloatFuncWithParam(arg0.c_str(), params);
+		jsval jsret = JSVAL_NULL;
+		jsret = DOUBLE_TO_JSVAL(ret);
+		JS_SET_RVAL(cx, vp, jsret);
+    	return true;
     }
 }
 
@@ -1071,6 +1117,48 @@ static bool jsb_anysdk_framework_ProtocolAds_removeListener(JSContext *cx, uint3
     if(argc != 0)
     	CCLOG("ProtocolAds_removeListener has wrong number of arguments.");
 	return true;
+}
+
+static bool jsb_anysdk_framework_ProtocolAds_setDebugMode(JSContext *cx, uint32_t argc, jsval *vp)
+{
+	jsval *argv = JS_ARGV(cx, vp);
+	bool ok = true;
+	JSObject *obj = JS_THIS_OBJECT(cx, vp);
+	js_proxy_t *proxy = jsb_get_js_proxy(obj);
+	ProtocolAds* cobj = (ProtocolAds *)(proxy ? proxy->ptr : NULL);
+	JSB_PRECONDITION2( cobj, cx, false, "js_autoanysdkbindings_PluginProtocol_setDebugMode : Invalid Native Object");
+	if (argc == 1) {
+		bool arg0;
+		arg0 = JS::ToBoolean(JS::RootedValue(cx, argv[0]));
+		JSB_PRECONDITION2(ok, cx, false, "js_autoanysdkbindings_PluginProtocol_setDebugMode : Error processing arguments");
+		cobj->setDebugMode(arg0);
+		JS_SET_RVAL(cx, vp, JSVAL_VOID);
+		return true;
+	}
+
+	JS_ReportError(cx, "js_autoanysdkbindings_PluginProtocol_setDebugMode : wrong number of arguments: %d, was expecting %d", argc, 1);
+	return false;
+}
+
+static bool jsb_anysdk_framework_ProtocolAnalytics_setDebugMode(JSContext *cx, uint32_t argc, jsval *vp)
+{
+	jsval *argv = JS_ARGV(cx, vp);
+	bool ok = true;
+	JSObject *obj = JS_THIS_OBJECT(cx, vp);
+	js_proxy_t *proxy = jsb_get_js_proxy(obj);
+	ProtocolAnalytics* cobj = (ProtocolAnalytics *)(proxy ? proxy->ptr : NULL);
+	JSB_PRECONDITION2( cobj, cx, false, "js_autoanysdkbindings_PluginProtocol_setDebugMode : Invalid Native Object");
+	if (argc == 1) {
+		bool arg0;
+		arg0 = JS::ToBoolean(JS::RootedValue(cx, argv[0]));
+		JSB_PRECONDITION2(ok, cx, false, "js_autoanysdkbindings_PluginProtocol_setDebugMode : Error processing arguments");
+		cobj->setDebugMode(arg0);
+		JS_SET_RVAL(cx, vp, JSVAL_VOID);
+		return true;
+	}
+
+	JS_ReportError(cx, "js_autoanysdkbindings_PluginProtocol_setDebugMode : wrong number of arguments: %d, was expecting %d", argc, 1);
+	return false;
 }
 
 static bool jsb_anysdk_framework_ProtocolAnalytics_logEvent(JSContext *cx, uint32_t argc, jsval *vp)
@@ -1293,6 +1381,27 @@ static bool jsb_anysdk_framework_ProtocolIAP_removeListener(JSContext *cx, uint3
 	return true;
 }
 
+static bool jsb_anysdk_framework_ProtocolIAP_setDebugMode(JSContext *cx, uint32_t argc, jsval *vp)
+{
+	jsval *argv = JS_ARGV(cx, vp);
+	bool ok = true;
+	JSObject *obj = JS_THIS_OBJECT(cx, vp);
+	js_proxy_t *proxy = jsb_get_js_proxy(obj);
+	ProtocolIAP* cobj = (ProtocolIAP *)(proxy ? proxy->ptr : NULL);
+	JSB_PRECONDITION2( cobj, cx, false, "js_autoanysdkbindings_PluginProtocol_setDebugMode : Invalid Native Object");
+	if (argc == 1) {
+		bool arg0;
+		arg0 = JS::ToBoolean(JS::RootedValue(cx, argv[0]));
+		JSB_PRECONDITION2(ok, cx, false, "js_autoanysdkbindings_PluginProtocol_setDebugMode : Error processing arguments");
+		cobj->setDebugMode(arg0);
+		JS_SET_RVAL(cx, vp, JSVAL_VOID);
+		return true;
+	}
+
+	JS_ReportError(cx, "js_autoanysdkbindings_PluginProtocol_setDebugMode : wrong number of arguments: %d, was expecting %d", argc, 1);
+	return false;
+}
+
 static bool jsb_anysdk_framework_ProtocolIAP_payForProduct(JSContext *cx, uint32_t argc, jsval *vp)
 {
 	CCLOG("in ProtocolIAP_payForProduct, argc:%d.", argc);
@@ -1478,6 +1587,27 @@ static bool jsb_anysdk_framework_ProtocolPush_removeListener(JSContext *cx, uint
 	return true;
 }
 
+static bool jsb_anysdk_framework_ProtocolPush_setDebugMode(JSContext *cx, uint32_t argc, jsval *vp)
+{
+	jsval *argv = JS_ARGV(cx, vp);
+	bool ok = true;
+	JSObject *obj = JS_THIS_OBJECT(cx, vp);
+	js_proxy_t *proxy = jsb_get_js_proxy(obj);
+	ProtocolPush* cobj = (ProtocolPush *)(proxy ? proxy->ptr : NULL);
+	JSB_PRECONDITION2( cobj, cx, false, "js_autoanysdkbindings_PluginProtocol_setDebugMode : Invalid Native Object");
+	if (argc == 1) {
+		bool arg0;
+		arg0 = JS::ToBoolean(JS::RootedValue(cx, argv[0]));
+		JSB_PRECONDITION2(ok, cx, false, "js_autoanysdkbindings_PluginProtocol_setDebugMode : Error processing arguments");
+		cobj->setDebugMode(arg0);
+		JS_SET_RVAL(cx, vp, JSVAL_VOID);
+		return true;
+	}
+
+	JS_ReportError(cx, "js_autoanysdkbindings_PluginProtocol_setDebugMode : wrong number of arguments: %d, was expecting %d", argc, 1);
+	return false;
+}
+
 static bool jsb_anysdk_framework_ProtocolPush_setTags(JSContext *cx, uint32_t argc, jsval *vp)
 {
 	CCLOG("in ProtocolPush_setActionListener, argc:%d.", argc);
@@ -1492,41 +1622,35 @@ static bool jsb_anysdk_framework_ProtocolPush_setTags(JSContext *cx, uint32_t ar
     jsval *argv = JS_ARGV(cx, vp);
     jsval arg0 = argv[0];
 	if ( arg0.isObject() ){
-		JSObject* tmp = JSVAL_TO_OBJECT(arg0);
-	    if (!tmp) {
-	        CCLOG("%s", "jsval_to_ccvaluemap: the jsval is not an object.");
-	        return false;
-	    }
-	    
-	    JSObject* it = JS_NewPropertyIterator(cx, tmp);
-
 	    list<std::string> arg;
+    	JS::RootedObject jsobj(cx);
+	    bool ok = JS_ValueToObject( cx, JS::RootedValue(cx, arg0), &jsobj );
+	    JSB_PRECONDITION3( ok, cx, false, "Error converting value to object");
+	    JSB_PRECONDITION3( jsobj && JS_IsArrayObject( cx, jsobj), cx, false, "Object must be an array");
+
+	    uint32_t len;
+	    JS_GetArrayLength(cx, jsobj, &len);
 	    
-	    while (true)
-	    {
-	        jsid idp;
-	        jsval key;
-	        if (! JS_NextProperty(cx, it, &idp) || ! JS_IdToValue(cx, idp, &key)) {
-	            return false; // error
-	        }
-	        
-	        if (key == JSVAL_VOID) {
-	            break; // end of iteration
-	        }
-	        
-	        if (!JSVAL_IS_STRING(key)) {
-	            continue; // ignore integer properties
-	        }
-	        
-	        JSStringWrapper keyWrapper(JSVAL_TO_STRING(key), cx);
+	    for( uint32_t i=0; i< len;i++ ) {
+	        JS::RootedValue valarg(cx);
+	        JS_GetElement(cx, jsobj, i, &valarg);
 
-			std::string v1;
-
-	        v1 = keyWrapper.get();
-			CCLOG("v1:%s\n", v1.c_str());
-	        arg.push_back( v1 );
+	        if( valarg.isString() )
+	        {
+	        	CCLOG("value is string;");
+	        	std::string key;
+	        	ok = jsval_to_std_string(cx, valarg, &key);
+	        	if (ok)
+	        	{
+	        		CCLOG("key: %s.", key.c_str());
+	        		arg.push_back( key );
+	        	}
+	        }
 	    }
 	    cobj->setTags(arg);
+	}
+	else {
+		CCLOG("settags: is not object.");
 	}
 	return true;
 }
@@ -1545,39 +1669,30 @@ static bool jsb_anysdk_framework_ProtocolPush_delTags(JSContext *cx, uint32_t ar
     jsval *argv = JS_ARGV(cx, vp);
     jsval arg0 = argv[0];
 	if ( arg0.isObject() ){
-		JSObject* tmp = JSVAL_TO_OBJECT(arg0);
-	    if (!tmp) {
-	        CCLOG("%s", "jsval_to_ccvaluemap: the jsval is not an object.");
-	        return false;
-	    }
-	    
-	    JSObject* it = JS_NewPropertyIterator(cx, tmp);
-
 	    list<std::string> arg;
+    	JS::RootedObject jsobj(cx);
+	    bool ok = JS_ValueToObject( cx, JS::RootedValue(cx, arg0), &jsobj );
+	    JSB_PRECONDITION3( ok, cx, false, "Error converting value to object");
+	    JSB_PRECONDITION3( jsobj && JS_IsArrayObject( cx, jsobj), cx, false, "Object must be an array");
+
+	    uint32_t len;
+	    JS_GetArrayLength(cx, jsobj, &len);
 	    
-	    while (true)
-	    {
-	        jsid idp;
-	        jsval key;
-	        if (! JS_NextProperty(cx, it, &idp) || ! JS_IdToValue(cx, idp, &key)) {
-	            return false; // error
-	        }
-	        
-	        if (key == JSVAL_VOID) {
-	            break; // end of iteration
-	        }
-	        
-	        if (!JSVAL_IS_STRING(key)) {
-	            continue; // ignore integer properties
-	        }
-	        
-	        JSStringWrapper keyWrapper(JSVAL_TO_STRING(key), cx);
+	    for( uint32_t i=0; i< len;i++ ) {
+	        JS::RootedValue valarg(cx);
+	        JS_GetElement(cx, jsobj, i, &valarg);
 
-			std::string v1;
-
-	        v1 = keyWrapper.get();
-			CCLOG("v1:%s\n", v1.c_str());
-	        arg.push_back( v1 );
+	        if( valarg.isString() )
+	        {
+	        	CCLOG("value is string;");
+	        	std::string key;
+	        	ok = jsval_to_std_string(cx, valarg, &key);
+	        	if (ok)
+	        	{
+	        		CCLOG("key: %s.", key.c_str());
+	        		arg.push_back( key );
+	        	}
+	        }
 	    }
 	    cobj->delTags(arg);
 	}
@@ -1700,6 +1815,27 @@ static bool jsb_anysdk_framework_ProtocolUser_removeListener(JSContext *cx, uint
 	return true;
 }
 
+static bool jsb_anysdk_framework_ProtocolUser_setDebugMode(JSContext *cx, uint32_t argc, jsval *vp)
+{
+	jsval *argv = JS_ARGV(cx, vp);
+	bool ok = true;
+	JSObject *obj = JS_THIS_OBJECT(cx, vp);
+	js_proxy_t *proxy = jsb_get_js_proxy(obj);
+	ProtocolUser* cobj = (ProtocolUser *)(proxy ? proxy->ptr : NULL);
+	JSB_PRECONDITION2( cobj, cx, false, "js_autoanysdkbindings_PluginProtocol_setDebugMode : Invalid Native Object");
+	if (argc == 1) {
+		bool arg0;
+		arg0 = JS::ToBoolean(JS::RootedValue(cx, argv[0]));
+		JSB_PRECONDITION2(ok, cx, false, "js_autoanysdkbindings_PluginProtocol_setDebugMode : Error processing arguments");
+		cobj->setDebugMode(arg0);
+		JS_SET_RVAL(cx, vp, JSVAL_VOID);
+		return true;
+	}
+
+	JS_ReportError(cx, "js_autoanysdkbindings_PluginProtocol_setDebugMode : wrong number of arguments: %d, was expecting %d", argc, 1);
+	return false;
+}
+
 class ProtocolSocialListener : public SocialListener
 {
 public:
@@ -1818,6 +1954,27 @@ static bool jsb_anysdk_framework_ProtocolSocial_removeListener(JSContext *cx, ui
 	return true;
 }
 
+static bool jsb_anysdk_framework_ProtocolSocial_setDebugMode(JSContext *cx, uint32_t argc, jsval *vp)
+{
+	jsval *argv = JS_ARGV(cx, vp);
+	bool ok = true;
+	JSObject *obj = JS_THIS_OBJECT(cx, vp);
+	js_proxy_t *proxy = jsb_get_js_proxy(obj);
+	ProtocolSocial* cobj = (ProtocolSocial *)(proxy ? proxy->ptr : NULL);
+	JSB_PRECONDITION2( cobj, cx, false, "js_autoanysdkbindings_PluginProtocol_setDebugMode : Invalid Native Object");
+	if (argc == 1) {
+		bool arg0;
+		arg0 = JS::ToBoolean(JS::RootedValue(cx, argv[0]));
+		JSB_PRECONDITION2(ok, cx, false, "js_autoanysdkbindings_PluginProtocol_setDebugMode : Error processing arguments");
+		cobj->setDebugMode(arg0);
+		JS_SET_RVAL(cx, vp, JSVAL_VOID);
+		return true;
+	}
+
+	JS_ReportError(cx, "js_autoanysdkbindings_PluginProtocol_setDebugMode : wrong number of arguments: %d, was expecting %d", argc, 1);
+	return false;
+}
+
 static bool jsb_anysdk_framework_ProtocolSocial_unlockAchievement(JSContext *cx, uint32_t argc, jsval *vp)
 {
 	CCLOG("in ProtocolSocial_unlockAchievement, argc:%d.", argc);
@@ -1921,27 +2078,33 @@ void register_all_anysdk_manual(JSContext* cx, JSObject* obj) {
 	//ProtocolAds
 	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolAds_prototype, "setAdsListener", jsb_anysdk_framework_ProtocolAds_setAdsListener, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolAds_prototype, "removeListener", jsb_anysdk_framework_ProtocolAds_removeListener, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolAds_prototype, "setDebugMode", jsb_anysdk_framework_ProtocolAds_setDebugMode, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 
 	//ProtocolAnalytics
 	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolAnalytics_prototype, "logEvent", jsb_anysdk_framework_ProtocolAnalytics_logEvent, 2, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolAnalytics_prototype, "setDebugMode", jsb_anysdk_framework_ProtocolAnalytics_setDebugMode, 2, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 
 	//ProtocolIAP
 	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolIAP_prototype, "setResultListener", jsb_anysdk_framework_ProtocolIAP_setResultListener, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolIAP_prototype, "removeListener", jsb_anysdk_framework_ProtocolIAP_removeListener, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolIAP_prototype, "setDebugMode", jsb_anysdk_framework_ProtocolIAP_setDebugMode, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolIAP_prototype, "payForProduct", jsb_anysdk_framework_ProtocolIAP_payForProduct, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 	
 	//ProtocolSocial
 	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolSocial_prototype, "setListener", jsb_anysdk_framework_ProtocolSocial_setListener, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolSocial_prototype, "removeListener", jsb_anysdk_framework_ProtocolSocial_removeListener, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolSocial_prototype, "setDebugMode", jsb_anysdk_framework_ProtocolSocial_setDebugMode, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolSocial_prototype, "unlockAchievement", jsb_anysdk_framework_ProtocolSocial_unlockAchievement, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 
 	//ProtocolPush
 	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolPush_prototype, "setActionListener", jsb_anysdk_framework_ProtocolPush_setActionListener, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolPush_prototype, "removeListener", jsb_anysdk_framework_ProtocolPush_removeListener, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolPush_prototype, "setDebugMode", jsb_anysdk_framework_ProtocolPush_setDebugMode, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolPush_prototype, "setTags", jsb_anysdk_framework_ProtocolPush_setTags, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolPush_prototype, "delTags", jsb_anysdk_framework_ProtocolPush_delTags, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 
 	//ProtocolUser
 	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolUser_prototype, "setActionListener", jsb_anysdk_framework_ProtocolUser_setActionListener, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolUser_prototype, "removeListener", jsb_anysdk_framework_ProtocolUser_removeListener, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolUser_prototype, "setDebugMode", jsb_anysdk_framework_ProtocolUser_setDebugMode, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 }

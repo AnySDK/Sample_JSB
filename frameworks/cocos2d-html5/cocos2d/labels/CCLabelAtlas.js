@@ -30,44 +30,56 @@
  * @extends cc.AtlasNode
  *
  * @property {String}   string  - Content string of label
+ *
+ * @param {String} strText
+ * @param {String} charMapFile  charMapFile or fntFile
+ * @param {Number} [itemWidth=0]
+ * @param {Number} [itemHeight=0]
+ * @param {Number} [startCharMap=""]
+ * @example
+ * //creates the cc.LabelAtlas with a string, a char map file(the atlas), the width and height of each element and the starting char of the atlas
+ * var myLabel = new cc.LabelAtlas('Text to display', 'CharMapfile.png', 12, 20, ' ')
+ *
+ * //creates the cc.LabelAtlas with a string, a fnt file
+ * var myLabel = new cc.LabelAtlas('Text to display', 'CharMapFile.plist‘);
  */
 cc.LabelAtlas = cc.AtlasNode.extend(/** @lends cc.LabelAtlas# */{
+
+    //property String is Getter and Setter
+
     // string to render
     _string: null,
     // the first char in the charmap
     _mapStartChar: null,
 
     _textureLoaded: false,
-    _loadedEventListeners: null,
     _className: "LabelAtlas",
 
     /**
      * <p>
-     *  Create a label atlas.
-     *  It accepts two groups of parameters:                                                            <br/>
-     * a) string, fntFile                                                                               <br/>
-     * b) label, textureFilename, width, height, startChar                                              <br/>
+     *  Constructor function, override it to extend the construction behavior, remember to call "this._super()" in the extended "ctor" function. <br />
+     *  Create a label atlas. <br />
+     *  It accepts two groups of parameters: <br/>
+     * a) string, fntFile <br/>
+     * b) label, textureFilename, width, height, startChar <br/>
      * </p>
      * @param {String} strText
      * @param {String} charMapFile  charMapFile or fntFile
      * @param {Number} [itemWidth=0]
      * @param {Number} [itemHeight=0]
      * @param {Number} [startCharMap=""]
-     * @example
-     * //creates the cc.LabelAtlas with a string, a char map file(the atlas), the width and height of each element and the starting char of the atlas
-     * var myLabel = new cc.LabelAtlas('Text to display', 'CharMapfile.png', 12, 20, ' ')
-     *
-     * //creates the cc.LabelAtlas with a string, a fnt file
-     * var myLabel = new cc.LabelAtlas('Text to display', 'CharMapFile.plist‘);
      */
     ctor: function (strText, charMapFile, itemWidth, itemHeight, startCharMap) {
         cc.AtlasNode.prototype.ctor.call(this);
+
+        this._cascadeOpacityEnabled = true;
+        this._cascadeColorEnabled = true;
 
         charMapFile && cc.LabelAtlas.prototype.initWithString.call(this, strText, charMapFile, itemWidth, itemHeight, startCharMap);
     },
 
     /**
-     * return  texture is loaded
+     * Return  texture is loaded.
      * @returns {boolean}
      */
     textureLoaded: function () {
@@ -75,34 +87,22 @@ cc.LabelAtlas = cc.AtlasNode.extend(/** @lends cc.LabelAtlas# */{
     },
 
     /**
-     * add texture loaded event listener
+     * Add texture loaded event listener.
      * @param {Function} callback
-     * @param {Object} target
+     * @param {cc.Node} target
+     * @deprecated since 3.1, please use addEventListener instead
      */
     addLoadedEventListener: function (callback, target) {
-        if (!this._loadedEventListeners)
-            this._loadedEventListeners = [];
-        this._loadedEventListeners.push({eventCallback: callback, eventTarget: target});
+        this.addEventListener("load", callback, target);
     },
 
-    _callLoadedEventCallbacks: function () {
-        if (!this._loadedEventListeners)
-            return;
-        this._textureLoaded = true;
-        var locListeners = this._loadedEventListeners;
-        for (var i = 0, len = locListeners.length; i < len; i++) {
-            var selCallback = locListeners[i];
-            selCallback.eventCallback.call(selCallback.eventTarget, this);
-        }
-        locListeners.length = 0;
-    },
     /**
      * <p>
-     * initializes the cc.LabelAtlas with a string, a char map file(the atlas),                     <br/>
-     * the width and height of each element and the starting char of the atlas                      <br/>
-     *  It accepts two groups of parameters:                                                        <br/>
-     * a) string, fntFile                                                                           <br/>
-     * b) label, textureFilename, width, height, startChar                                          <br/>
+     *  initializes the cc.LabelAtlas with a string, a char map file(the atlas), <br/>
+     *  the width and height of each element and the starting char of the atlas <br/>
+     *  It accepts two groups of parameters: <br/>
+     * a) string, fntFile <br/>
+     * b) label, textureFilename, width, height, startChar <br/>
      * </p>
      * @param {String} strText
      * @param {String|cc.Texture2D} charMapFile  charMapFile or fntFile or texture file
@@ -140,10 +140,10 @@ cc.LabelAtlas = cc.AtlasNode.extend(/** @lends cc.LabelAtlas# */{
         var locLoaded = texture.isLoaded();
         this._textureLoaded = locLoaded;
         if (!locLoaded) {
-            texture.addLoadedEventListener(function (sender) {
+            texture.addEventListener("load", function (sender) {
                 this.initWithTexture(texture, width, height, label.length);
                 this.string = label;
-                this._callLoadedEventCallbacks();
+                this.dispatchEvent("load");
             }, this);
         }
         if (this.initWithTexture(texture, width, height, label.length)) {
@@ -155,12 +155,14 @@ cc.LabelAtlas = cc.AtlasNode.extend(/** @lends cc.LabelAtlas# */{
     },
 
     /**
+     * Set the color.
      * @param {cc.Color} color3
      */
     setColor: function (color3) {
         cc.AtlasNode.prototype.setColor.call(this, color3);
         this.updateAtlasValues();
     },
+
     /**
      * return the text of this label
      * @return {String}
@@ -184,17 +186,17 @@ cc.LabelAtlas = cc.AtlasNode.extend(/** @lends cc.LabelAtlas# */{
 
     _addChildForCanvas: function(child, zOrder, tag){
         child._lateChild = true;
-        cc.NodeRGBA.prototype.addChild.call(this, child, zOrder, tag);
+        cc.Node.prototype.addChild.call(this, child, zOrder, tag);
     },
 
     /**
-     * @function
      * Atlas generation
+     * @function
      */
     updateAtlasValues: null,
 
     _updateAtlasValuesForCanvas: function () {
-        var locString = this._string;
+        var locString = this._string || "";
         var n = locString.length;
         var texture = this.texture;
         var locItemWidth = this._itemWidth , locItemHeight = this._itemHeight;     //needn't multiply cc.contentScaleFactor(), because sprite's draw will do this
@@ -215,7 +217,7 @@ cc.LabelAtlas = cc.AtlasNode.extend(/** @lends cc.LabelAtlas# */{
                 } else
                     fontChar.initWithTexture(texture, rect);
 
-                cc.NodeRGBA.prototype.addChild.call(this, fontChar, 0, i);
+                cc.Node.prototype.addChild.call(this, fontChar, 0, i);
             } else {
                 if (c == 32) {
                     fontChar.init();
@@ -225,7 +227,6 @@ cc.LabelAtlas = cc.AtlasNode.extend(/** @lends cc.LabelAtlas# */{
                     fontChar.initWithTexture(texture, rect);
                     // restore to default in case they were modified
                     fontChar.visible = true;
-                    fontChar.opacity = this._displayedOpacity;
                 }
             }
             fontChar.setPosition(i * locItemWidth + locItemWidth / 2, locItemHeight / 2);
@@ -347,18 +348,12 @@ cc.LabelAtlas = cc.AtlasNode.extend(/** @lends cc.LabelAtlas# */{
         this.quadsToDraw = len;
     },
 
+    /**
+     * set the opacity
+     * @function
+     * @param {Number} opacity
+     */
     setOpacity: null,
-
-    _setOpacityForCanvas: function (opacity) {
-        if (this._displayedOpacity !== opacity) {
-            cc.AtlasNode.prototype.setOpacity.call(this, opacity);
-            var locChildren = this._children;
-            for (var i = 0, len = locChildren.length; i < len; i++) {
-                if (locChildren[i])
-                    locChildren[i].opacity = opacity;
-            }
-        }
-    },
 
     _setOpacityForWebGL: function (opacity) {
         if (this._opacity !== opacity)
@@ -367,6 +362,7 @@ cc.LabelAtlas = cc.AtlasNode.extend(/** @lends cc.LabelAtlas# */{
 });
 
 var _p = cc.LabelAtlas.prototype;
+cc.EventHelper.prototype.apply(_p);
 if (cc._renderType === cc._RENDER_TYPE_WEBGL) {
     _p.updateAtlasValues = _p._updateAtlasValuesForWebGL;
     _p.setString = _p._setStringForWebGL;
@@ -380,6 +376,7 @@ if (cc._renderType === cc._RENDER_TYPE_WEBGL) {
 
 // Override properties
 cc.defineGetterSetter(_p, "opacity", _p.getOpacity, _p.setOpacity);
+cc.defineGetterSetter(_p, "color", _p.getColor, _p.setColor);
 
 // Extended properties
 /** @expose */
@@ -388,24 +385,19 @@ cc.defineGetterSetter(_p, "string", _p.getString, _p.setString);
 
 /**
  * <p>
- *  Create a label atlas.
- *  It accepts two groups of parameters:                                                            <br/>
- * a) string, fntFile                                                                               <br/>
- * b) label, textureFilename, width, height, startChar                                              <br/>
+ *     Please use new cc.LabelAtlas instead. <br />
+ *     Create a label atlas. <br />
+ *     It accepts two groups of parameters:                                                            <br/>
+ *         a) string, fntFile                                                                               <br/>
+ *         b) label, textureFilename, width, height, startChar                                              <br/>
  * </p>
+ * @deprecated since v3.0 please use new cc.LabelAtlas
  * @param {String} strText
  * @param {String} charMapFile  charMapFile or fntFile
  * @param {Number} [itemWidth=0]
  * @param {Number} [itemHeight=0]
  * @param {Number} [startCharMap=""]
- * @return {cc.LabelAtlas|Null} returns the LabelAtlas object on success
- * @example
- * //Example
- * //creates the cc.LabelAtlas with a string, a char map file(the atlas), the width and height of each element and the starting char of the atlas
- * var myLabel = cc.LabelAtlas.create('Text to display', 'CharMapfile.png', 12, 20, ' ')
- *
- * //creates the cc.LabelAtlas with a string, a fnt file
- * var myLabel = cc.LabelAtlas.create('Text to display', 'CharMapFile.plist‘);
+ * @return {cc.LabelAtlas} returns the LabelAtlas object on success
  */
 cc.LabelAtlas.create = function (strText, charMapFile, itemWidth, itemHeight, startCharMap) {
     return new cc.LabelAtlas(strText, charMapFile, itemWidth, itemHeight, startCharMap);
