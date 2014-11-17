@@ -96,7 +96,8 @@ var UserActionResultCode = {
     kRealNameRegister:50014,	/**< enum value is callback after registering realname. */
     kAccountSwitchSuccess:50015,	/**< enum alue is callback of succeeding in switching account. */
     kAccountSwitchFail:50016,	/**< enum value is callback of failing to switch account. */
-    kOpenShop:50017            /**< enum value is callback of open the shop. */
+    kOpenShop:50017  ,           /**< enum value is callback of open the shop. */
+    kPayRechareSuccess:50018/**< enum value is callback of  succeeding in recharging. */
 };
 
 //for toolBar place
