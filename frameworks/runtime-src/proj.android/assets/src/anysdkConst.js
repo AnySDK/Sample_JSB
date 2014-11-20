@@ -11,14 +11,14 @@ var Plugin_type = {
 
 //for ads
 var AdsResultCode = {
-    kAdsReceived:10000,           	/**< enum the callback: the ad is received is at center. */
-    kAdsShown:10001,                  /**< enum the callback: the advertisement dismissed. */
-    kAdsDismissed:10002,             /**< enum the callback: the advertisement dismissed. */
-    kPointsSpendSucceed:10003,       /**< enum the callback: the points spend succeed. */
-    kPointsSpendFailed:10004,        /**< enum the callback: the points spend failed. */
-    kNetworkError:10005,              /**< enum the callback of Network error at center. */
-    kUnknownError:10006,              /**< enum the callback of Unknown error. */
-    kOfferWallOnPointsChanged:10007   /**< enum the callback of Changing the point of offerwall. */
+    kAdsReceived:0,           	/**< enum the callback: the ad is received is at center. */
+    kAdsShown:1,                  /**< enum the callback: the advertisement dismissed. */
+    kAdsDismissed:2,             /**< enum the callback: the advertisement dismissed. */
+    kPointsSpendSucceed:3,       /**< enum the callback: the points spend succeed. */
+    kPointsSpendFailed:4,        /**< enum the callback: the points spend failed. */
+    kNetworkError:5,              /**< enum the callback of Network error at center. */
+    kUnknownError:6,              /**< enum the callback of Unknown error. */
+    kOfferWallOnPointsChanged:7   /**< enum the callback of Changing the point of offerwall. */
 };	//ads result code
 
 var AdsPos = {
@@ -40,64 +40,65 @@ var AdsType = {
 
 //for pay result code
 var PayResultCode = {
-    kPaySuccess:30000,		/**< enum value is callback of succeeding in paying . */
-    kPayFail:30001,			/**< enum value is callback of failing to pay . */
-    kPayCancel:30002,		/**< enum value is callback of canceling to pay . */
-    kPayNetworkError:30003,	/**< enum value is callback of network error . */
-    kPayProductionInforIncomplete:30004,	/**< enum value is callback of incompleting info . */
-	kPayInitSuccess:30005,	/**< enum value is callback of succeeding in initing sdk . */
-	kPayInitFail:30006,		/**< enum value is callback of failing to init sdk . */
-	kPayNowPaying:30007 	/**< enum value is callback of paying now . */
+    kPaySuccess:0,		/**< enum value is callback of succeeding in paying . */
+    kPayFail:1,			/**< enum value is callback of failing to pay . */
+    kPayCancel:2,		/**< enum value is callback of canceling to pay . */
+    kPayNetworkError:3,	/**< enum value is callback of network error . */
+    kPayProductionInforIncomplete:4,	/**< enum value is callback of incompleting info . */
+	kPayInitSuccess:5,	/**< enum value is callback of succeeding in initing sdk . */
+	kPayInitFail:6,		/**< enum value is callback of failing to init sdk . */
+	kPayNowPaying:7, 	/**< enum value is callback of paying now . */
+	kPayRechareSuccess:8/**< enum value is callback of  succeeding in recharging. */
 };
 
 // for push action result code
 var PushActionResultCode = {
-	kPushReceiveMessage:70000	/**value is callback of Receiving Message . */
+	kPushReceiveMessage:0	/**value is callback of Receiving Message . */
 };
 
 // for share result code
 var ShareResultCode = {
-    kShareSuccess:40000,	/**< enum value is callback of failing to sharing . */
-    kShareFail:40001,		/**< enum value is callback of failing to share . */
-    kShareCancel:40002,		/**< enum value is callback of canceling to share . */
-    kShareNetworkError:40003	/**< enum value is callback of network error . */
+    kShareSuccess:0,	/**< enum value is callback of failing to sharing . */
+    kShareFail:1,		/**< enum value is callback of failing to share . */
+    kShareCancel:2,		/**< enum value is callback of canceling to share . */
+    kShareNetworkError:3	/**< enum value is callback of network error . */
 };
 
 //for social ret code
 var SocialRetCode = {
 	// code for leaderboard feature
-	kScoreSubmitSucceed:60001,		/**< enum value is callback of succeeding in submiting. */
-    kScoreSubmitfail:60002,			/**< enum value is callback of failing to submit . */
+	kScoreSubmitSucceed:1,		/**< enum value is callback of succeeding in submiting. */
+    kScoreSubmitfail:2,			/**< enum value is callback of failing to submit . */
     // code for achievement feature
-    kAchUnlockSucceed:60003,		/**< enum value is callback of succeeding in unlocking. */
-    kAchUnlockFail:60004,			/**< enum value is callback of failing to  unlock. */
-    kSocialSignInSucceed:60005,		/**< enum value is callback of succeeding to login. */
-    kSocialSignInFail:60006,		/**< enum value is callback of failing to  login. */
-    kSocialSignOutSucceed:60007,	/**< enum value is callback of succeeding to login. */
-    kSocialSignOutFail:60008		/**< enum value is callback of failing to  login. */
+    kAchUnlockSucceed:3,		/**< enum value is callback of succeeding in unlocking. */
+    kAchUnlockFail:4,			/**< enum value is callback of failing to  unlock. */
+    kSocialSignInSucceed:5,		/**< enum value is callback of succeeding to login. */
+    kSocialSignInFail:6,		/**< enum value is callback of failing to  login. */
+    kSocialSignOutSucceed:7,	/**< enum value is callback of succeeding to login. */
+    kSocialSignOutFail:8		/**< enum value is callback of failing to  login. */
 };
 
 // for user action result code
 var UserActionResultCode = {
-	kInitSuccess:50000,		/**< enum value is callback of succeeding in initing sdk. */
-	kInitFail:50001,		/**< enum  value is callback of failing to init sdk. */
-    kLoginSuccess:50002,	/**< enum value is callback of succeeding in login.*/
-    kLoginNetworkError:50003,	/**< enum value is callback of network error*/
-    kLoginNoNeed:50004,		/**< enum value is callback of no need login.*/
-    kLoginFail:50005,		/**< enum value is callback of failing to login. */
-    kLoginCancel:50006,		/**< enum value is callback of canceling to login. */
-    kLogoutSuccess:50007,	/**< enum value is callback of succeeding in logout. */
-    kLogoutFail:50008,		/**< enum value is callback of failing to logout. */
-    kPlatformEnter:50009,	/**< enum value is callback after enter platform. */
-    kPlatformBack:50010,	/**< enum value is callback after exit antiAddiction. */
-    kPausePage:50011,		/**< enum value is callback after exit pause page. */
-    kExitPage:50012,		/**< enum value is callback after exit exit page. */
-    kAntiAddictionQuery:50013,	/**< enum value is callback after querying antiAddiction. */
-    kRealNameRegister:50014,	/**< enum value is callback after registering realname. */
-    kAccountSwitchSuccess:50015,	/**< enum alue is callback of succeeding in switching account. */
-    kAccountSwitchFail:50016,	/**< enum value is callback of failing to switch account. */
-    kOpenShop:50017  ,           /**< enum value is callback of open the shop. */
-    kPayRechareSuccess:50018/**< enum value is callback of  succeeding in recharging. */
+	kInitSuccess:0,		/**< enum value is callback of succeeding in initing sdk. */
+	kInitFail:1,		/**< enum  value is callback of failing to init sdk. */
+    kLoginSuccess:2,	/**< enum value is callback of succeeding in login.*/
+    kLoginNetworkError:3,	/**< enum value is callback of network error*/
+    kLoginNoNeed:4,		/**< enum value is callback of no need login.*/
+    kLoginFail:5,		/**< enum value is callback of failing to login. */
+    kLoginCancel:6,		/**< enum value is callback of canceling to login. */
+    kLogoutSuccess:7,	/**< enum value is callback of succeeding in logout. */
+    kLogoutFail:8,		/**< enum value is callback of failing to logout. */
+    kPlatformEnter:9,	/**< enum value is callback after enter platform. */
+    kPlatformBack:10,	/**< enum value is callback after exit antiAddiction. */
+    kPausePage:11,		/**< enum value is callback after exit pause page. */
+    kExitPage:12,		/**< enum value is callback after exit exit page. */
+    kAntiAddictionQuery:13,	/**< enum value is callback after querying antiAddiction. */
+    kRealNameRegister:14,	/**< enum value is callback after registering realname. */
+    kAccountSwitchSuccess:15,	/**< enum alue is callback of succeeding in switching account. */
+    kAccountSwitchFail:16,	/**< enum value is callback of failing to switch account. */
+    kOpenShop:17  ,           /**< enum value is callback of open the shop. */
+
 };
 
 //for toolBar place
