@@ -49,7 +49,7 @@
          * @example
          *
          * 1.Create a sprite with image path and rect
-         * var physicsSprite1 = cc.PhysicsSprite.create("res/HelloHTML5World.png");
+         * var physicsSprite1 = new cc.PhysicsSprite("res/HelloHTML5World.png");
          * var physicsSprite2 = new cc.PhysicsSprite("res/HelloHTML5World.png",cc.rect(0,0,480,320));
          *
          * 2.Create a sprite with a sprite frame name. Must add "#" before fame name.
@@ -71,7 +71,7 @@
 
             if (fileName === undefined) {
                 cc.PhysicsSprite.prototype.init.call(this);
-            }else if (typeof(fileName) === "string") {
+            }else if (cc.isString(fileName)) {
                 if (fileName[0] === "#") {
                     //init with a sprite frame name
                     var frameName = fileName.substr(1, fileName.length - 1);
@@ -81,7 +81,7 @@
                     //init  with filename and rect
                     this.init(fileName, rect);
                 }
-            }else if (typeof(fileName) === "object") {
+            }else if (cc.isObject(fileName)) {
                 if (fileName instanceof cc.Texture2D) {
                     //init  with texture and rect
                     this.initWithTexture(fileName, rect);
@@ -90,33 +90,80 @@
                     this.initWithSpriteFrame(fileName);
                 }
             }
+            //this._transformCmd = new cc.PhysicsSpriteTransformCmdCanvas(this);
+            //cc.rendererCanvas.pushRenderCommand(this._transformCmd);
         },
+
+        //visit: function(){
+        //    cc.Sprite.prototype.visit.call(this);
+        //    cc.rendererCanvas.pushRenderCommand(this._transformCmd);
+        //},
+
+        /**
+         * set body
+         * @param {Box2D.Dynamics.b2Body} body
+         */
         setBody:function (body) {
             this._body = body;
         },
+
+        /**
+         * get body
+         * @return {Box2D.Dynamics.b2Body}
+         */
         getBody:function () {
             return this._body;
         },
+
+        /**
+         * set PTM ratio
+         * @param {Number} r
+         */
         setPTMRatio:function (r) {
             this._PTMRatio = r;
         },
+
+        /**
+         * get PTM ration
+         * @return {Number}
+         */
         getPTMRatio:function () {
             return this._PTMRatio;
         },
+
+        /**
+         * get position
+         * @return {cc.Point}
+         */
         getPosition:function () {
             var pos = this._body.GetPosition();
             var locPTMRatio =this._PTMRatio;
             return cc.p(pos.x * locPTMRatio, pos.y * locPTMRatio);
         },
+
+        /**
+         * set position
+         * @param {cc.Point} p
+         */
         setPosition:function (p) {
             var angle = this._body.GetAngle();
             var locPTMRatio =this._PTMRatio;
             this._body.setTransform(Box2D.b2Vec2(p.x / locPTMRatio, p.y / locPTMRatio), angle);
             this.setNodeDirty();
         },
+
+        /**
+         * get rotation
+         * @return {Number}
+         */
         getRotation:function () {
             return (this._ignoreBodyRotation ? cc.radiansToDegrees(this._rotationRadians) : cc.radiansToDegrees(this._body.GetAngle()));
         },
+
+        /**
+         * set rotation
+         * @param {Number} r
+         */
         setRotation:function (r) {
             if (this._ignoreBodyRotation) {
                 this._rotation = r;
@@ -136,6 +183,9 @@
         _syncRotation:function () {
             this._rotationRadians = this._body.GetAngle();
         },
+        /**
+         * visit
+         */
         visit:function () {
             if (this._body && this._PTMRatio) {
                 this._syncPosition();
@@ -147,10 +197,16 @@
             }
             this._super();
         },
+
+        /**
+         * set whether to ingore body's rotation
+         * @param {Boolean} b
+         */
         setIgnoreBodyRotation: function(b) {
             this._ignoreBodyRotation = b;
         }
     };
+
     var chipmunkAPI = {
         _ignoreBodyRotation:false,
         _body:null, //physics body
@@ -164,10 +220,10 @@
          * @example
          *
          * 1.Create a sprite with image path and rect
-         * var physicsSprite1 = cc.PhysicsSprite.create("res/HelloHTML5World.png");
+         * var physicsSprite1 = new cc.PhysicsSprite("res/HelloHTML5World.png");
          * var physicsSprite2 = new cc.PhysicsSprite("res/HelloHTML5World.png",cc.rect(0,0,480,320));
          *
-         * 2.Create a sprite with a sprite frame name. Must add "#" before fame name.
+         * 2.Create a sprite with a sprite frame name. Must add "#" before frame name.
          * var physicsSprite = new cc.PhysicsSprite('#grossini_dance_01.png');
          *
          * 3.Create a sprite with a sprite frame
@@ -186,7 +242,7 @@
 
             if (fileName === undefined) {
                 cc.PhysicsSprite.prototype.init.call(this);
-            }else if (typeof(fileName) === "string") {
+            }else if (cc.isString(fileName)) {
                 if (fileName[0] === "#") {
                     //init with a sprite frame name
                     var frameName = fileName.substr(1, fileName.length - 1);
@@ -196,7 +252,7 @@
                     //init  with filename and rect
                     this.init(fileName, rect);
                 }
-            }else if (typeof(fileName) === "object") {
+            }else if (cc.isObject(fileName)) {
                 if (fileName instanceof cc.Texture2D) {
                     //init  with texture and rect
                     this.initWithTexture(fileName, rect);
@@ -205,26 +261,73 @@
                     this.initWithSpriteFrame(fileName);
                 }
             }
+
+            if(cc._renderType === cc._RENDER_TYPE_CANVAS)
+                this._transformCmd = new cc.CustomRenderCmdCanvas(this, function(){
+                    if (this.transform) {
+                        this.transform();
+                    }
+                });
+            else
+                this._transformCmd = new cc.CustomRenderCmdWebGL(this, function(){
+                    if(this._transformForRenderer){
+                        this._transformForRenderer();
+                    }
+                });
+            cc.renderer.pushRenderCommand(this._transformCmd);
         },
+
+        visit: function(){
+            cc.renderer.pushRenderCommand(this._transformCmd);
+            cc.Sprite.prototype.visit.call(this);
+        },
+
+        /**
+         * set body
+         * @param {cp.Body} body
+         */
         setBody:function (body) {
             this._body = body;
         },
+
+        /**
+         * get body
+         * @returns {cp.Body}
+         */
         getBody:function () {
             return this._body;
         },
+
+        /**
+         * get position
+         * @return {cc.Point}
+         */
         getPosition:function () {
             var locBody = this._body;
             return {x:locBody.p.x, y:locBody.p.y};
         },
 
+        /**
+         * get position x
+         * @return {Number}
+         */
         getPositionX:function () {
             return this._body.p.x;
         },
 
+        /**
+         * get position y
+         * @return {Number}
+         */
         getPositionY:function () {
             return this._body.p.y;
         },
 
+        /**
+         * set position
+         * @param {cc.Point|Number}newPosOrxValue
+         * @param {Number}yValue
+         */
         setPosition:function (newPosOrxValue, yValue) {
             if (yValue === undefined) {
                 this._body.p.x = newPosOrxValue.x;
@@ -235,10 +338,20 @@
             }
             //this._syncPosition();
         },
+
+        /**
+         * set position x
+         * @param {Number} xValue
+         */
         setPositionX:function (xValue) {
             this._body.p.x = xValue;
             //this._syncPosition();
         },
+
+        /**
+         * set position y
+         * @param {Number} yValue
+         */
         setPositionY:function (yValue) {
             this._body.p.y = yValue;
             //this._syncPosition();
@@ -250,9 +363,19 @@
                 cc.Sprite.prototype.setPosition.call(this, locBody.p.x, locBody.p.y);
             }
         },
+
+        /**
+         * get rotation
+         * @return {Number}
+         */
         getRotation:function () {
             return this._ignoreBodyRotation ? cc.radiansToDegrees(this._rotationRadiansX) : -cc.radiansToDegrees(this._body.a);
         },
+
+        /**
+         * set rotation
+         * @param {Number} r
+         */
         setRotation:function (r) {
             if (this._ignoreBodyRotation) {
                 cc.Sprite.prototype.setRotation.call(this, r);
@@ -266,7 +389,26 @@
                 cc.Sprite.prototype.setRotation.call(this, -cc.radiansToDegrees(this._body.a));
             }
         },
-        nodeToParentTransform:function () {
+        /**
+         * @deprecated since v3.0, please use getNodeToParentTransform instead
+         */
+        nodeToParentTransform: function(){
+            return this.getNodeToParentTransform();
+        },
+
+        /**
+         * get the affine transform matrix of node to parent coordinate frame
+         * @return {cc.AffineTransform}
+         */
+        getNodeToParentTransform:function () {
+            var _t = this;
+            if(_t._usingNormalizedPosition && _t._parent){        //TODO need refactor
+                var conSize = _t._parent._contentSize;
+                _t._position.x = _t._normalizedPosition.x * conSize.width;
+                _t._position.y = _t._normalizedPosition.y * conSize.height;
+                _t._normalizedPositionDirty = false;
+            }
+
             if(cc._renderType === cc._RENDER_TYPE_CANVAS)
                 return this._nodeToParentTransformForCanvas();
 
@@ -293,7 +435,7 @@
             }
 
             // Rot, Translate Matrix
-            this._transform = cc.AffineTransformMake(c * locScaleX, s * locScaleX,
+            this._transform = cc.affineTransformMake(c * locScaleX, s * locScaleX,
                 -s * locScaleY, c * locScaleY,
                 x, y);
 
@@ -343,11 +485,19 @@
             return this._transform;
         },
 
+        /**
+         * whether dirty
+         * @return {Boolean}
+         */
         isDirty:function(){
            return !this._body.isSleeping();
         },
         setDirty: function(){ },
 
+        /**
+         * set whether to ignore rotation of body
+         * @param {Boolean} b
+         */
         setIgnoreBodyRotation: function(b) {
             this._ignoreBodyRotation = b;
         }
@@ -366,30 +516,24 @@
 
     /**
      * Create a PhysicsSprite with filename and rect
+     * @deprecated since v3.0, please use new cc.PhysicsSprite(fileName, rect) instead
      * @param {String|cc.Texture2D|cc.SpriteFrame} fileName
      * @param {cc.Rect} rect
      * @return {cc.PhysicsSprite}
-     * @example
-     *
-     * 1.Create a sprite with image path and rect
-     * var physicsSprite1 = cc.PhysicsSprite.create("res/HelloHTML5World.png");
-     * var physicsSprite2 = cc.PhysicsSprite.create("res/HelloHTML5World.png",cc.rect(0,0,480,320));
-     *
-     * 2.Create a sprite with a sprite frame name. Must add "#" before fame name.
-     * var physicsSprite = cc.PhysicsSprite.create('#grossini_dance_01.png');
-     *
-     * 3.Create a sprite with a sprite frame
-     * var spriteFrame = cc.spriteFrameCache.getSpriteFrame("grossini_dance_01.png");
-     * var physicsSprite = cc.PhysicsSprite.create(spriteFrame);
-     *
-     * 4.Creates a sprite with an exsiting texture contained in a CCTexture2D object
-     *      After creation, the rect will be the size of the texture, and the offset will be (0,0).
-     * var texture = cc.textureCache.addImage("HelloHTML5World.png");
-     * var physicsSprite1 = cc.PhysicsSprite.create(texture);
-     * var physicsSprite2 = cc.PhysicsSprite.create(texture, cc.rect(0,0,480,320));
-     *
      */
     cc.PhysicsSprite.create = function (fileName, rect) {
         return new cc.PhysicsSprite(fileName, rect);
     };
+
+    /**
+     * @deprecated since v3.0, please use new cc.PhysicsSprite(spriteFrameName) instead
+     * @type {Function}
+     */
+    cc.PhysicsSprite.createWithSpriteFrameName = cc.PhysicsSprite.create;
+
+    /**
+     * @deprecated since v3.0, please use new cc.PhysicsSprite(spriteFrame) instead
+     * @type {Function}
+     */
+    cc.PhysicsSprite.createWithSpriteFrame = cc.PhysicsSprite.create;
 })();

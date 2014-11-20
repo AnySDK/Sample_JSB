@@ -1,5 +1,5 @@
 //
-// Prefix header for all source files of the 'anysdkjsb' target in the 'anysdkjsb' project
+// Prefix header for all source files of the 'sampleJS' target in the 'sampleJS' project
 //
 
 #ifdef __OBJC__

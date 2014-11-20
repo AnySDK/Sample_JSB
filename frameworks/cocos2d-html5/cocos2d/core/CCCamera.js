@@ -42,10 +42,8 @@
  *                                                                                                                                     <br/>
  *     - It is recommended to use it ONLY if you are going to create 3D effects. For 2D effecs, use the action CCFollow or position/scale/rotate. *
  * </p>
- * @class
- * @extends cc.Class
  */
-cc.Camera = cc.Class.extend(/** @lends cc.Action# */{
+cc.Camera = cc.Class.extend({
     _eyeX:null,
     _eyeY:null,
     _eyeZ:null,
@@ -60,7 +58,9 @@ cc.Camera = cc.Class.extend(/** @lends cc.Action# */{
 
     _dirty:null,
     _lookupMatrix:null,
-
+    /**
+     * constructor of cc.Camera
+     */
     ctor:function () {
         this._lookupMatrix = new cc.kmMat4();
         this.restore();
@@ -126,12 +126,27 @@ cc.Camera = cc.Class.extend(/** @lends cc.Action# */{
         cc.kmGLMultMatrix( this._lookupMatrix);
     },
 
+    _locateForRenderer: function(matrix){
+        if (this._dirty) {
+            var eye = new cc.kmVec3(), center = new cc.kmVec3(), up = new cc.kmVec3();
+
+            cc.kmVec3Fill( eye, this._eyeX, this._eyeY , this._eyeZ );
+            cc.kmVec3Fill( center, this._centerX, this._centerY, this._centerZ);
+
+            cc.kmVec3Fill( up, this._upX, this._upY, this._upZ);
+            cc.kmMat4LookAt( this._lookupMatrix, eye, center, up);
+
+            this._dirty = false;
+        }
+        cc.kmMat4Multiply(matrix, matrix, this._lookupMatrix);
+    },
+
     /**
      * sets the eye values in points
      * @param {Number} eyeX
      * @param {Number} eyeY
      * @param {Number} eyeZ
-     * @deprecated This function will be deprecated sooner or later.
+     * @deprecated This function will be deprecated sooner or later please use setEye instead.
      */
     setEyeXYZ:function (eyeX, eyeY, eyeZ) {
         this.setEye(eyeX,eyeY,eyeZ);
@@ -156,7 +171,7 @@ cc.Camera = cc.Class.extend(/** @lends cc.Action# */{
      * @param {Number} centerX
      * @param {Number} centerY
      * @param {Number} centerZ
-     * @deprecated  This function will be deprecated sooner or later.
+     * @deprecated  This function will be deprecated sooner or later please use setCenter instead.
      */
     setCenterXYZ:function (centerX, centerY, centerZ) {
         this.setCenter(centerX,centerY,centerZ);
@@ -207,7 +222,7 @@ cc.Camera = cc.Class.extend(/** @lends cc.Action# */{
      * @param {Number} eyeY
      * @param {Number} eyeZ
      * @return {Object}
-     * @deprecated This function will be deprecated sooner or later.
+     * @deprecated This function will be deprecated sooner or later, please use getEye instead.
      */
     getEyeXYZ:function (eyeX, eyeY, eyeZ) {
         return {x:this._eyeX , y:this._eyeY , z: this._eyeZ };
@@ -227,7 +242,7 @@ cc.Camera = cc.Class.extend(/** @lends cc.Action# */{
      * @param {Number} centerY
      * @param {Number} centerZ
      * @return {Object}
-     * @deprecated This function will be deprecated sooner or later.
+     * @deprecated This function will be deprecated sooner or later,please use getCenter instead.
      */
     getCenterXYZ:function (centerX, centerY, centerZ) {
         return {x:this._centerX ,y:this._centerY ,z:this._centerZ };
@@ -247,7 +262,7 @@ cc.Camera = cc.Class.extend(/** @lends cc.Action# */{
      * @param {Number} upY
      * @param {Number} upZ
      * @return {Object}
-     * @deprecated This function will be deprecated sooner or later.
+     * @deprecated This function will be deprecated sooner or later,please use getUp instead.
      */
     getUpXYZ:function (upX, upY, upZ) {
         return {x:this._upX,y:this._upY,z:this._upZ};

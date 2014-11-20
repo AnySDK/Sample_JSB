@@ -24,17 +24,8 @@
  ****************************************************************************/
 
 /**
- * copy an array's item to a new array (its performance is better than Array.slice)
- * @param {Array} arr
- * @returns {Array}
+ * @ignore
  */
-cc.copyArray = function(arr){
-    var i, len = arr.length, arr_clone = new Array(len);
-    for (i = 0; i < len; i += 1)
-        arr_clone[i] = arr[i];
-    return arr_clone;
-};
-
 cc._EventListenerVector = cc.Class.extend({
     _fixedListeners: null,
     _sceneGraphListeners: null,
@@ -101,12 +92,14 @@ cc.__getListenerID = function (event) {
 };
 
 /**
- * @namespace<p>
- *  This class manages event listener subscriptions and event dispatching.                                      <br/>
+ * <p>
+ *  cc.eventManager is a singleton object which manages event listener subscriptions and event dispatching. <br/>
  *                                                                                                              <br/>
- *  The EventListener list is managed in such a way that event listeners can be added and removed even          <br/>
- *  from within an EventListener, while events are being dispatched.
+ *  The EventListener list is managed in such way so that event listeners can be added and removed          <br/>
+ *  while events are being dispatched.
  * </p>
+ * @class
+ * @name cc.eventManager
  */
 cc.eventManager = /** @lends cc.eventManager# */{
     //Priority dirty flag
@@ -317,6 +310,8 @@ cc.eventManager = /** @lends cc.eventManager# */{
 
     _sortEventListenersOfSceneGraphPriorityDes : function(l1, l2){
         var locNodePriorityMap = cc.eventManager._nodePriorityMap;
+        if(!l1 || !l2 || !l1._getSceneGraphPriority() || !l2._getSceneGraphPriority())
+            return -1;
         return locNodePriorityMap[l2._getSceneGraphPriority().__instanceId] - locNodePriorityMap[l1._getSceneGraphPriority().__instanceId];
     },
 
@@ -651,11 +646,12 @@ cc.eventManager = /** @lends cc.eventManager# */{
      *         A lower priority will be called before the ones that have a higher value. 0 priority is forbidden for fixed priority since it's used for scene graph based priority.
      *         The listener must be a cc.EventListener object when adding a fixed priority listener, because we can't remove a fixed priority listener without the listener handler,
      *         except calls removeAllListeners().
+     * @return {cc.EventListener} Return the listener. Needed in order to remove the event from the dispatcher.
      */
     addListener: function (listener, nodeOrPriority) {
         cc.assert(listener && nodeOrPriority, cc._LogInfos.eventManager_addListener_2);
         if(!(listener instanceof cc.EventListener)){
-            cc.assert(typeof nodeOrPriority !== "number", cc._LogInfos.eventManager_addListener_3);
+            cc.assert(!cc.isNumber(nodeOrPriority), cc._LogInfos.eventManager_addListener_3);
             listener = cc.EventListener.create(listener);
         } else {
             if(listener._isRegistered()){
@@ -667,7 +663,7 @@ cc.eventManager = /** @lends cc.eventManager# */{
         if (!listener.checkAvailable())
             return;
 
-        if (typeof nodeOrPriority == "number") {
+        if (cc.isNumber(nodeOrPriority)) {
             if (nodeOrPriority == 0) {
                 cc.log(cc._LogInfos.eventManager_addListener);
                 return;
@@ -684,6 +680,8 @@ cc.eventManager = /** @lends cc.eventManager# */{
             listener._setRegistered(true);
             this._addListener(listener);
         }
+
+        return listener;
     },
 
     /**
@@ -693,7 +691,7 @@ cc.eventManager = /** @lends cc.eventManager# */{
      * @return {cc.EventListener} the generated event. Needed in order to remove the event from the dispatcher
      */
     addCustomListener: function (eventName, callback) {
-        var listener = cc._EventListenerCustom.create(eventName, callback);
+        var listener = new cc._EventListenerCustom(eventName, callback);
         this.addListener(listener, 1);
         return listener;
     },
@@ -775,14 +773,13 @@ cc.eventManager = /** @lends cc.eventManager# */{
             // Don't want any dangling pointers or the possibility of dealing with deleted objects..
             delete _t._nodePriorityMap[listenerType.__instanceId];
             cc.arrayRemoveObject(_t._dirtyNodes, listenerType);
-            var listeners = _t._nodeListenersMap[listenerType.__instanceId];
-            if (!listeners)
-                return;
-
-            var listenersCopy = cc.copyArray(listeners), i;
-            for (i = 0; i < listenersCopy.length; i++)
-                _t.removeListener(listenersCopy[i]);
-            listenersCopy.length = 0;
+            var listeners = _t._nodeListenersMap[listenerType.__instanceId], i;
+            if (listeners) {
+                var listenersCopy = cc.copyArray(listeners);
+                for (i = 0; i < listenersCopy.length; i++)
+                    _t.removeListener(listenersCopy[i]);
+                listenersCopy.length = 0;
+            }
 
             // Bug fix: ensure there are no references to the node in the list of listeners to be added.
             // If we find any listeners associated with the destroyed node in this list then remove them.
@@ -929,3 +926,89 @@ cc.eventManager = /** @lends cc.eventManager# */{
         this.dispatchEvent(ev);
     }
 };
+
+// The event helper
+cc.EventHelper = function(){};
+
+cc.EventHelper.prototype = {
+    constructor: cc.EventHelper,
+
+    apply: function ( object ) {
+        object.addEventListener = cc.EventHelper.prototype.addEventListener;
+        object.hasEventListener = cc.EventHelper.prototype.hasEventListener;
+        object.removeEventListener = cc.EventHelper.prototype.removeEventListener;
+        object.dispatchEvent = cc.EventHelper.prototype.dispatchEvent;
+    },
+
+    addEventListener: function ( type, listener, target ) {
+        if ( this._listeners === undefined )
+            this._listeners = {};
+
+        var listeners = this._listeners;
+        if ( listeners[ type ] === undefined )
+            listeners[ type ] = [];
+
+        if ( !this.hasEventListener(type, listener, target))
+            listeners[ type ].push( {callback:listener, eventTarget: target} );
+    },
+
+    hasEventListener: function ( type, listener, target ) {
+        if ( this._listeners === undefined )
+            return false;
+
+        var listeners = this._listeners;
+        if ( listeners[ type ] !== undefined ) {
+            for(var i = 0, len = listeners.length; i < len ; i++){
+                var selListener = listeners[i];
+                if(selListener.callback == listener && selListener.eventTarget == target)
+                    return true;
+            }
+        }
+        return false;
+    },
+
+    removeEventListener: function( type, target){
+        if ( this._listeners === undefined )
+            return;
+
+        var listeners = this._listeners;
+        var listenerArray = listeners[ type ];
+
+        if ( listenerArray !== undefined ) {
+            for(var i = 0; i < listenerArray.length ; ){
+                var selListener = listenerArray[i];
+                if(selListener.eventTarget == target)
+                    listenerArray.splice( i, 1 );
+                else
+                    i++
+            }
+        }
+    },
+
+    dispatchEvent: function ( event, clearAfterDispatch ) {
+        if ( this._listeners === undefined )
+            return;
+
+        if(clearAfterDispatch == null)
+            clearAfterDispatch = true;
+        var listeners = this._listeners;
+        var listenerArray = listeners[ event];
+
+        if ( listenerArray !== undefined ) {
+            var array = [];
+            var length = listenerArray.length;
+
+            for ( var i = 0; i < length; i ++ ) {
+                array[ i ] = listenerArray[ i ];
+            }
+
+            for ( i = 0; i < length; i ++ ) {
+                array[ i ].callback.call( array[i].eventTarget, this );
+            }
+
+            if(clearAfterDispatch)
+                listenerArray.length = 0;
+        }
+    }
+};
+

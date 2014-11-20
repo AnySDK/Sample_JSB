@@ -23,8 +23,7 @@
  ****************************************************************************/
 
 #include "Downloader.h"
-#include "AssetsManager.h"
-
+#include "cocos2d.h"
 #include <curl/curl.h>
 #include <curl/easy.h>
 #include <cstdio>
@@ -36,17 +35,33 @@ NS_CC_EXT_BEGIN
 #define LOW_SPEED_TIME      5L
 #define MAX_REDIRS          2
 #define DEFAULT_TIMEOUT     5
+#define HTTP_CODE_SUPPORT_RESUME    206
 
 #define TEMP_EXT            ".temp"
 
-size_t curlWriteFunc(void *ptr, size_t size, size_t nmemb, void *userdata)
+size_t fileWriteFunc(void *ptr, size_t size, size_t nmemb, void *userdata)
 {
     FILE *fp = (FILE*)userdata;
     size_t written = fwrite(ptr, size, nmemb, fp);
     return written;
 }
 
-int downloadProgressFunc(Downloader::ProgressData *ptr, double totalToDownload, double nowDownloaded, double totalToUpLoad, double nowUpLoaded)
+size_t bufferWriteFunc(void *ptr, size_t size, size_t nmemb, void *userdata)
+{
+    Downloader::StreamData *streamBuffer = (Downloader::StreamData *)userdata;
+    size_t written = size * nmemb;
+    // Avoid pointer overflow
+    if (streamBuffer->offset + written <= streamBuffer->total)
+    {
+        memcpy(streamBuffer->buffer + streamBuffer->offset, ptr, written);
+        streamBuffer->offset += written;
+        return written;
+    }
+    else return 0;
+}
+
+// This is only for batchDownload process, will notify file succeed event in progress function
+int batchDownloadProgressFunc(Downloader::ProgressData *ptr, double totalToDownload, double nowDownloaded, double totalToUpLoad, double nowUpLoaded)
 {
     if (ptr->totalToDownload == 0)
     {
@@ -61,8 +76,6 @@ int downloadProgressFunc(Downloader::ProgressData *ptr, double totalToDownload, 
         
         if (nowDownloaded == totalToDownload)
         {
-            AssetsManager::renameFile(data.path, data.name + TEMP_EXT, data.name);
-            
             Director::getInstance()->getScheduler()->performFunctionInCocosThread([=]{
                 if (!data.downloader.expired())
                 {
@@ -101,12 +114,42 @@ int downloadProgressFunc(Downloader::ProgressData *ptr, double totalToDownload, 
     return 0;
 }
 
+// Compare to batchDownloadProgressFunc, this only handles progress information notification
+int downloadProgressFunc(Downloader::ProgressData *ptr, double totalToDownload, double nowDownloaded, double totalToUpLoad, double nowUpLoaded)
+{
+    if (ptr->totalToDownload == 0)
+    {
+        ptr->totalToDownload = totalToDownload;
+    }
+    
+    if (ptr->downloaded != nowDownloaded)
+    {
+        ptr->downloaded = nowDownloaded;
+        Downloader::ProgressData data = *ptr;
+        
+        Director::getInstance()->getScheduler()->performFunctionInCocosThread([=]{
+            if (!data.downloader.expired())
+            {
+                std::shared_ptr<Downloader> downloader = data.downloader.lock();
+                
+                auto callback = downloader->getProgressCallback();
+                if (callback != nullptr)
+                {
+                    callback(totalToDownload, nowDownloaded, data.url, data.customId);
+                }
+            }
+        });
+    }
+    
+    return 0;
+}
 
 Downloader::Downloader()
 : _onError(nullptr)
 , _onProgress(nullptr)
 , _onSuccess(nullptr)
 , _connectionTimeout(DEFAULT_TIMEOUT)
+, _supportResuming(false)
 {
     _fileUtils = FileUtils::getInstance();
 }
@@ -213,7 +256,7 @@ void Downloader::prepareDownload(const std::string &srcUrl, const std::string &s
     
     // Create a file to save file.
     const std::string outFileName = storagePath + TEMP_EXT;
-    if (resumeDownload && _fileUtils->isExist(outFileName))
+    if (_supportResuming && resumeDownload && _fileUtils->isFileExist(outFileName))
     {
         fDesc->fp = fopen(outFileName.c_str(), "ab");
     }
@@ -227,6 +270,120 @@ void Downloader::prepareDownload(const std::string &srcUrl, const std::string &s
         err.message = StringUtils::format("Can not create file %s: errno %d", outFileName.c_str(), errno);
         if (this->_onError) this->_onError(err);
     }
+}
+
+bool Downloader::prepareHeader(void *curl, const std::string &srcUrl) const
+{
+    curl_easy_setopt(curl, CURLOPT_URL, srcUrl.c_str());
+    curl_easy_setopt(curl, CURLOPT_HEADER, 1);
+    curl_easy_setopt(curl, CURLOPT_NOBODY, 1);
+    if (curl_easy_perform(curl) == CURLE_OK)
+        return true;
+    else
+        return false;
+}
+
+long Downloader::getContentSize(const std::string &srcUrl) const
+{
+    double contentLength = -1;
+    CURL *header = curl_easy_init();
+    if (prepareHeader(header, srcUrl))
+    {
+        curl_easy_getinfo(header, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &contentLength);
+    }
+    curl_easy_cleanup(header);
+    
+    return contentLength;
+}
+
+void Downloader::downloadToBufferAsync(const std::string &srcUrl, unsigned char *buffer, const long &size, const std::string &customId/* = ""*/)
+{
+    if (buffer != nullptr)
+    {
+        std::shared_ptr<Downloader> downloader = shared_from_this();
+        ProgressData pData;
+        pData.customId = customId;
+        pData.url = srcUrl;
+        pData.downloader = downloader;
+        pData.downloaded = 0;
+        pData.totalToDownload = 0;
+        
+        StreamData streamBuffer;
+        streamBuffer.buffer = buffer;
+        streamBuffer.total = size;
+        streamBuffer.offset = 0;
+        
+        auto t = std::thread(&Downloader::downloadToBuffer, this, srcUrl, customId, streamBuffer, pData);
+        t.detach();
+    }
+}
+
+void Downloader::downloadToBufferSync(const std::string &srcUrl, unsigned char *buffer, const long &size, const std::string &customId/* = ""*/)
+{
+    if (buffer != nullptr)
+    {
+        std::shared_ptr<Downloader> downloader = shared_from_this();
+        ProgressData pData;
+        pData.customId = customId;
+        pData.url = srcUrl;
+        pData.downloader = downloader;
+        pData.downloaded = 0;
+        pData.totalToDownload = 0;
+        
+        StreamData streamBuffer;
+        streamBuffer.buffer = buffer;
+        streamBuffer.total = size;
+        streamBuffer.offset = 0;
+        
+        downloadToBuffer(srcUrl, customId, streamBuffer, pData);
+    }
+}
+
+void Downloader::downloadToBuffer(const std::string &srcUrl, const std::string &customId, const StreamData &buffer, const ProgressData &data)
+{
+    std::weak_ptr<Downloader> ptr = shared_from_this();
+    CURL *curl = curl_easy_init();
+    if (!curl)
+    {
+        this->notifyError(ErrorCode::CURL_EASY_ERROR, "Can not init curl with curl_easy_init", customId);
+        return;
+    }
+    
+    // Download pacakge
+    curl_easy_setopt(curl, CURLOPT_URL, srcUrl.c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, bufferWriteFunc);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
+    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
+    curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, downloadProgressFunc);
+    curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &data);
+    curl_easy_setopt(curl, CURLOPT_FAILONERROR, true);
+    if (_connectionTimeout) curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, _connectionTimeout);
+    curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
+    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, LOW_SPEED_LIMIT);
+    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, LOW_SPEED_TIME);
+    
+    CURLcode res = curl_easy_perform(curl);
+    if (res != CURLE_OK)
+    {
+        _fileUtils->removeFile(data.path + data.name + TEMP_EXT);
+        std::string msg = StringUtils::format("Unable to download file: [curl error]%s", curl_easy_strerror(res));
+        this->notifyError(msg, customId, res);
+    }
+    
+    curl_easy_cleanup(curl);
+    
+    Director::getInstance()->getScheduler()->performFunctionInCocosThread([=]{
+        if (!ptr.expired())
+        {
+            std::shared_ptr<Downloader> downloader = ptr.lock();
+            
+            auto successCB = downloader->getSuccessCallback();
+            if (successCB != nullptr)
+            {
+                successCB(data.url, "", data.customId);
+            }
+        }
+    });
 }
 
 void Downloader::downloadAsync(const std::string &srcUrl, const std::string &storagePath, const std::string &customId/* = ""*/)
@@ -264,7 +421,7 @@ void Downloader::download(const std::string &srcUrl, const std::string &customId
     
     // Download pacakge
     curl_easy_setopt(curl, CURLOPT_URL, srcUrl.c_str());
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteFunc);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, fileWriteFunc);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, fDesc.fp);
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
     curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, downloadProgressFunc);
@@ -278,7 +435,7 @@ void Downloader::download(const std::string &srcUrl, const std::string &customId
     CURLcode res = curl_easy_perform(curl);
     if (res != CURLE_OK)
     {
-        AssetsManager::removeFile(data.path + data.name + TEMP_EXT);
+        _fileUtils->removeFile(data.path + data.name + TEMP_EXT);
         std::string msg = StringUtils::format("Unable to download file: [curl error]%s", curl_easy_strerror(res));
         this->notifyError(msg, customId, res);
     }
@@ -286,6 +443,24 @@ void Downloader::download(const std::string &srcUrl, const std::string &customId
     fclose(fDesc.fp);
     curl_easy_cleanup(curl);
     
+    // This can only be done after fclose
+    if (res == CURLE_OK)
+    {
+        _fileUtils->renameFile(data.path, data.name + TEMP_EXT, data.name);
+        
+        Director::getInstance()->getScheduler()->performFunctionInCocosThread([=]{
+            if (!ptr.expired())
+            {
+                std::shared_ptr<Downloader> downloader = ptr.lock();
+                
+                auto successCB = downloader->getSuccessCallback();
+                if (successCB != nullptr)
+                {
+                    successCB(data.url, data.path + data.name, data.customId);
+                }
+            }
+        });
+    }
 }
 
 void Downloader::batchDownloadAsync(const DownloadUnits &units, const std::string &batchId/* = ""*/)
@@ -296,7 +471,29 @@ void Downloader::batchDownloadAsync(const DownloadUnits &units, const std::strin
 
 void Downloader::batchDownloadSync(const DownloadUnits &units, const std::string &batchId/* = ""*/)
 {
+    if (units.size() == 0)
+    {
+        return;
+    }
+    // Make sure downloader won't be released
     std::weak_ptr<Downloader> ptr = shared_from_this();
+    
+    // Test server download resuming support with the first unit
+    _supportResuming = false;
+    CURL *header = curl_easy_init();
+    // Make a resume request
+    curl_easy_setopt(header, CURLOPT_RESUME_FROM_LARGE, 0);
+    if (prepareHeader(header, units.begin()->second.srcUrl))
+    {
+        long responseCode;
+        curl_easy_getinfo(header, CURLINFO_RESPONSE_CODE, &responseCode);
+        if (responseCode == HTTP_CODE_SUPPORT_RESUME)
+        {
+            _supportResuming = true;
+        }
+    }
+    curl_easy_cleanup(header);
+    
     int count = 0;
     DownloadUnits group;
     for (auto it = units.cbegin(); it != units.cend(); ++it, ++count)
@@ -326,6 +523,7 @@ void Downloader::batchDownloadSync(const DownloadUnits &units, const std::string
             }
         }
     });
+    _supportResuming = false;
 }
 
 void Downloader::groupBatchDownload(const DownloadUnits &units)
@@ -348,10 +546,10 @@ void Downloader::groupBatchDownload(const DownloadUnits &units)
         {
             CURL* curl = curl_easy_init();
             curl_easy_setopt(curl, CURLOPT_URL, srcUrl.c_str());
-            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteFunc);
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, fileWriteFunc);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, fDesc->fp);
             curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
-            curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, downloadProgressFunc);
+            curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, batchDownloadProgressFunc);
             curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, data);
             curl_easy_setopt(curl, CURLOPT_FAILONERROR, true);
             if (_connectionTimeout) curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, _connectionTimeout);
@@ -362,10 +560,10 @@ void Downloader::groupBatchDownload(const DownloadUnits &units)
             curl_easy_setopt(curl, CURLOPT_MAXREDIRS, MAX_REDIRS);
             
             // Resuming download support
-            if (unit.resumeDownload)
+            if (_supportResuming && unit.resumeDownload)
             {
                 // Check already downloaded size for current download unit
-                long size = AssetsManager::getFileSize(storagePath + TEMP_EXT);
+                long size = _fileUtils->getFileSize(storagePath + TEMP_EXT);
                 if (size != -1)
                 {
                     curl_easy_setopt(curl, CURLOPT_RESUME_FROM_LARGE, size);
@@ -457,19 +655,22 @@ void Downloader::groupBatchDownload(const DownloadUnits &units)
     for (auto it = _files.begin(); it != _files.end(); ++it)
     {
         FILE *f = (*it)->fp;
-        fflush(f);
         fclose(f);
         auto single = (*it)->curl;
         curl_multi_remove_handle(multi_handle, single);
         curl_easy_cleanup(single);
     }
     
-    // Check unfinished files and notify errors
+    // Check unfinished files and notify errors, succeed files will be renamed from temporary file name to real name
     for (auto it = _progDatas.begin(); it != _progDatas.end(); ++it) {
         ProgressData *data = *it;
-        if (data->downloaded < data->totalToDownload)
+        if (data->downloaded < data->totalToDownload || data->totalToDownload == 0)
         {
             this->notifyError(ErrorCode::NETWORK, "Unable to download file", data->customId);
+        }
+        else
+        {
+            _fileUtils->renameFile(data->path, data->name + TEMP_EXT, data->name);
         }
     }
     

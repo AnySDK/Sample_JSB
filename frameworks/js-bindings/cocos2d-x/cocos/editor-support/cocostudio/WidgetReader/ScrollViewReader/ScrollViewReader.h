@@ -26,10 +26,11 @@
 #define __TestCpp__ScrollViewReader__
 
 #include "../LayoutReader/LayoutReader.h"
+#include "cocostudio/CocosStudioExport.h"
 
 namespace cocostudio
 {
-    class ScrollViewReader : public LayoutReader
+    class CC_STUDIO_DLL ScrollViewReader : public LayoutReader
     {
     public:
         DECLARE_CLASS_WIDGET_READER_INFO
@@ -41,6 +42,10 @@ namespace cocostudio
         static void purge();
         
         virtual void setPropsFromJsonDictionary(cocos2d::ui::Widget* widget, const rapidjson::Value& options);
+        virtual void setPropsFromBinary(cocos2d::ui::Widget* widget, CocoLoader* cocoLoader,  stExpCocoNode*	pCocoNode) ;
+        virtual void setPropsFromProtocolBuffers(cocos2d::ui::Widget* widget, const protocolbuffers::NodeTree& nodeTree);
+        virtual void setPropsFromXML(cocos2d::ui::Widget* widget, const tinyxml2::XMLElement* objectData);
+
     };
 }
 

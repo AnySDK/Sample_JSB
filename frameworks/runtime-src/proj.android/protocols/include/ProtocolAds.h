@@ -77,14 +77,23 @@ public:
     /**
     @brief show adview
     @param the type of ads
+    @param the idx of ads
     */
-    virtual void showAds(AdsType adsType) = 0;
+    virtual void showAds(AdsType adsType, int idx = 1) = 0;
 
     /**
     @brief Hide the adview
     @param the type of ads
+    @param the idx of ads
     */
-    virtual void hideAds(AdsType adsType) = 0;
+    virtual void hideAds(AdsType adsType, int idx = 1) = 0;
+
+    /**
+    @brief preload the adview
+    @param the type of ads
+    @param the idx of ads
+    */
+    virtual void preloadAds(AdsType adsType, int idx = 1)= 0;
 
     /**
      *@brief Query the points of player
@@ -112,12 +121,12 @@ public:
     virtual AdsListener* getAdsListener() = 0;
 
     /**
-     @brief Check function the plugin support or not
-     @param the name of plugin
-     @return if the function support ,return true
+     @brief Is it supportive of this type of ads
+     @param the type of ads
+     @return if it is supportive ,return true
      	 	 else retur false
      */
-    virtual bool isSupportFunction(std::string functionName) = 0;
+    virtual bool isAdTypeSupported(AdsType adType) = 0;
 
 };
 

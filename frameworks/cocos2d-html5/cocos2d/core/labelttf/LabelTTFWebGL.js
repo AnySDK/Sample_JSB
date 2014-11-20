@@ -30,6 +30,14 @@ cc._tmp.WebGLLabelTTF = function () {
 
     _p.setColor = cc.Sprite.prototype.setColor;
 
+    _p._transformForRenderer = function(){
+        if (this._needUpdateTexture) {
+            this._needUpdateTexture = false;
+            this._updateTexture();
+        }
+        cc.Node.prototype._transformForRenderer.call(this);
+    };
+
     _p._setColorsString = function () {
         this._needUpdateTexture = true;
         var locStrokeColor = this._strokeColor, locFontFillColor = this._textFillColor;
@@ -109,7 +117,7 @@ cc._tmp.WebGLLabelTTF = function () {
             cc._drawingUtil.drawPoly(verticesG1, 4, true);
         } else if (cc.SPRITE_DEBUG_DRAW === 2) {
             // draw texture box
-            var drawSizeG2 = this.getTextureRect()._size;
+            var drawSizeG2 = this.getTextureRect();
             var offsetPixG2X = this.offsetX, offsetPixG2Y = this.offsetY;
             var verticesG2 = [cc.p(offsetPixG2X, offsetPixG2Y), cc.p(offsetPixG2X + drawSizeG2.width, offsetPixG2Y),
                 cc.p(offsetPixG2X + drawSizeG2.width, offsetPixG2Y + drawSizeG2.height), cc.p(offsetPixG2X, offsetPixG2Y + drawSizeG2.height)];
@@ -120,4 +128,4 @@ cc._tmp.WebGLLabelTTF = function () {
 
     //TODO: cc.Sprite.prototype._setTextureRectForWebGL
     _p.setTextureRect = cc.Sprite.prototype.setTextureRect;
-}
+};

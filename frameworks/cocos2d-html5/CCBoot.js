@@ -23,6 +23,11 @@
  THE SOFTWARE.
  ****************************************************************************/
 
+/**
+ * The main namespace of Cocos2d-JS, all engine core classes, functions, properties and constants are defined in this namespace
+ * @namespace
+ * @name cc
+ */
 var cc = cc || {};
 cc._tmp = cc._tmp || {};
 cc._LogInfos = {};
@@ -66,7 +71,7 @@ cc._isNodeJs = typeof require !== 'undefined' && require("fs");
  * Iterate over an object or an array, executing a function for each matched element.
  * @param {object|array} obj
  * @param {function} iterator
- * @param {object} context
+ * @param {object} [context]
  */
 cc.each = function (obj, iterator, context) {
     if (!obj)
@@ -82,6 +87,81 @@ cc.each = function (obj, iterator, context) {
                 return;
         }
     }
+};
+
+/**
+ * Copy all of the properties in source objects to target object and return the target object.
+ * @param {object} target
+ * @param {object} *sources
+ * @returns {object}
+ */
+cc.extend = function(target) {
+    var sources = arguments.length >= 2 ? Array.prototype.slice.call(arguments, 1) : [];
+
+    cc.each(sources, function(src) {
+        for(var key in src) {
+            if (src.hasOwnProperty(key)) {
+                target[key] = src[key];
+            }
+        }
+    });
+    return target;
+};
+
+/**
+ * Check the obj whether is function or not
+ * @param {*} obj
+ * @returns {boolean}
+ */
+cc.isFunction = function(obj) {
+    return typeof obj == 'function';
+};
+
+/**
+ * Check the obj whether is number or not
+ * @param {*} obj
+ * @returns {boolean}
+ */
+cc.isNumber = function(obj) {
+    return typeof obj == 'number' || Object.prototype.toString.call(obj) == '[object Number]';
+};
+
+/**
+ * Check the obj whether is string or not
+ * @param {*} obj
+ * @returns {boolean}
+ */
+cc.isString = function(obj) {
+    return typeof obj == 'string' || Object.prototype.toString.call(obj) == '[object String]';
+};
+
+/**
+ * Check the obj whether is array or not
+ * @param {*} obj
+ * @returns {boolean}
+ */
+cc.isArray = function(obj) {
+    return Object.prototype.toString.call(obj) == '[object Array]';
+};
+
+/**
+ * Check the obj whether is undefined or not
+ * @param {*} obj
+ * @returns {boolean}
+ */
+cc.isUndefined = function(obj) {
+    return typeof obj == 'undefined';
+};
+
+/**
+ * Check the obj whether is object or not
+ * @param {*} obj
+ * @returns {boolean}
+ */
+cc.isObject = function(obj) {
+    var type = typeof obj;
+
+    return type == 'function' || (obj && type == 'object');
 };
 
 /**
@@ -104,126 +184,196 @@ cc.isCrossOrigin = function (url) {
 };
 
 //+++++++++++++++++++++++++something about async begin+++++++++++++++++++++++++++++++
-cc.async = {
-    // Counter for cc.async
-    _counterFunc: function (err) {
-        var counter = this.counter;
-        if (counter.err)
-            return;
-        var length = counter.length;
-        var results = counter.results;
-        var option = counter.option;
-        var cb = option.cb, cbTarget = option.cbTarget, trigger = option.trigger, triggerTarget = option.triggerTarget;
-        if (err) {
-            counter.err = err;
-            if (cb)
-                return cb.call(cbTarget, err);
-            return;
-        }
-        var result = Array.apply(null, arguments).slice(1);
-        var l = result.length;
-        if (l == 0)
-            result = null;
-        else if (l == 1)
-            result = result[0];
-        results[this.index] = result;
-        counter.count--;
-        if (trigger)
-            trigger.call(triggerTarget, result, length - counter.count, length);
-        if (counter.count == 0 && cb)
-            cb.apply(cbTarget, [null, results]);
-    },
+/**
+ * Async Pool class, a helper of cc.async
+ * @param {Object|Array} srcObj
+ * @param {Number} limit the limit of parallel number
+ * @param {function} iterator
+ * @param {function} onEnd
+ * @param {object} target
+ * @constructor
+ */
+cc.AsyncPool = function(srcObj, limit, iterator, onEnd, target){
+    var self = this;
+    self._srcObj = srcObj;
+    self._limit = limit;
+    self._pool = [];
+    self._iterator = iterator;
+    self._iteratorTarget = target;
+    self._onEnd = onEnd;
+    self._onEndTarget = target;
+    self._results = srcObj instanceof Array ? [] : {};
+    self._isErr = false;
 
-    // Empty function for async.
-    _emptyFunc: function () {
+    cc.each(srcObj, function(value, index){
+        self._pool.push({index : index, value : value});
+    });
+
+    self.size = self._pool.length;
+    self.finishedSize = 0;
+    self._workingSize = 0;
+
+    self._limit = self._limit || self.size;
+
+    self.onIterator = function(iterator, target){
+        self._iterator = iterator;
+        self._iteratorTarget = target;
+    };
+
+    self.onEnd = function(endCb, endCbTarget){
+        self._onEnd = endCb;
+        self._onEndTarget = endCbTarget;
+    };
+
+    self._handleItem = function(){
+        var self = this;
+        if(self._pool.length == 0)
+            return;                                                         //return directly if the array's length = 0
+        if(self._workingSize >= self._limit)
+            return;                                                         //return directly if the working size great equal limit number
+        var item = self._pool.shift();
+        var value = item.value, index = item.index;
+        self._workingSize++;
+        self._iterator.call(self._iteratorTarget, value, index, function(err){
+            if(self._isErr)
+                return;
+
+            self.finishedSize++;
+            self._workingSize--;
+            if(err) {
+                self._isErr = true;
+                if(self._onEnd)
+                    self._onEnd.call(self._onEndTarget, err);
+                return;
+            }
+
+            var arr = Array.prototype.slice.call(arguments, 1);
+            self._results[this.index] = arr[0];
+            if(self.finishedSize == self.size) {
+                if(self._onEnd)
+                    self._onEnd.call(self._onEndTarget, null, self._results);
+                return;
+            }
+            self._handleItem();
+        }.bind(item), self);
+    };
+
+    self.flow = function(){
+        var self = this;
+        if(self._pool.length == 0) {
+            if(self._onEnd)
+                self._onEnd.call(self._onEndTarget, null, []);
+                return;
+        }
+        for(var i = 0; i < self._limit; i++)
+            self._handleItem();
+    }
+};
+
+/**
+ * @class
+ */
+cc.async = /** @lends cc.async# */{
+    /**
+     * Do tasks series.
+     * @param {Array|Object} tasks
+     * @param {function} [cb] callback
+     * @param {Object} [target]
+     * @return {cc.AsyncPool}
+     */
+    series : function(tasks, cb, target){
+        var asyncPool = new cc.AsyncPool(tasks, 1, function(func, index, cb1){
+            func.call(target, cb1);
+        }, cb, target);
+        asyncPool.flow();
+        return asyncPool;
     },
 
     /**
      * Do tasks parallel.
-     * @param {array} tasks
-     * @param {object|function} [option]
-     * @param {function} [cb]
+     * @param {Array|Object} tasks
+     * @param {function} cb callback
+     * @param {Object} [target]
+     * @return {cc.AsyncPool}
      */
-    parallel: function (tasks, option, cb) {
-        var async = cc.async;
-        if (cb !== undefined) {
-            if (typeof option == "function")
-                option = {trigger: option};
-            option.cb = cb || option.cb;
-        } else if (option !== undefined) {
-            if (typeof option == "function")
-                option = {cb: option};
-        } else if (tasks !== undefined)
-            option = {};
-        else
-            throw "arguments error!";
-        var isArr = tasks instanceof Array;
-        var li = isArr ? tasks.length : Object.keys(tasks).length;
-        if (li == 0) {
-            if (option.cb)
-                option.cb.call(option.cbTarget, null);
-            return;
-        }
-        var results = isArr ? [] : {};
-        var counter = { length: li, count: li, option: option, results: results};
+    parallel : function(tasks, cb, target){
+        var asyncPool = new cc.AsyncPool(tasks, 0, function(func, index, cb1){
+            func.call(target, cb1);
+        }, cb, target);
+        asyncPool.flow();
+        return asyncPool;
+    },
 
-        cc.each(tasks, function (task, index) {
-            if (counter.err)
-                return false;
-            var counterFunc = !option.cb && !option.trigger ? async._emptyFunc : async._counterFunc.bind({counter: counter, index: index});//bind counter and index
-            task(counterFunc, index);
-        });
+    /**
+     * Do tasks waterfall.
+     * @param {Array|Object} tasks
+     * @param {function} cb callback
+     * @param {Object} [target]
+     * @return {cc.AsyncPool}
+     */
+    waterfall : function(tasks, cb, target){
+        var args = [];
+        var lastResults = [null];//the array to store the last results
+        var asyncPool = new cc.AsyncPool(tasks, 1,
+            function (func, index, cb1) {
+                args.push(function (err) {
+                    args = Array.prototype.slice.call(arguments, 1);
+                    if(tasks.length - 1 == index) lastResults = lastResults.concat(args);//while the last task
+                    cb1.apply(null, arguments);
+                });
+                func.apply(target, args);
+            }, function (err) {
+                if (!cb)
+                    return;
+                if (err)
+                    return cb.call(target, err);
+                cb.apply(target, lastResults);
+            });
+        asyncPool.flow();
+        return asyncPool;
     },
 
     /**
      * Do tasks by iterator.
-     * The format of the option should be:
-     *  {
-     *      cb: function,
-     *      target: object,
-     *      iterator: function,
-     *      iteratorTarget: function
-     *  }
-     * @param {array} tasks
-     * @param {object|function} [option]
-     * @param {function} [cb]
+     * @param {Array|Object} tasks
+     * @param {function|Object} iterator
+     * @param {function} cb callback
+     * @param {Object} [target]
+     * @return {cc.AsyncPool}
      */
-    map: function (tasks, option, cb) {
-        var self = this;
-        var len = arguments.length;
-        if (typeof option == "function")
-            option = {iterator: option};
-        if (len === 3)
-            option.cb = cb || option.cb;
-        else if(len < 2)
-            throw "arguments error!";
-        if (typeof option == "function")
-            option = {iterator: option};
-        if (cb !== undefined)
-            option.cb = cb || option.cb;
-        else if (tasks === undefined )
-            throw "arguments error!";
-        var isArr = tasks instanceof Array;
-        var li = isArr ? tasks.length : Object.keys(tasks).length;
-        if (li === 0) {
-            if (option.cb)
-                option.cb.call(option.cbTarget, null);
-            return;
+    map : function(tasks, iterator, cb, target){
+        var locIterator = iterator;
+        if(typeof(iterator) == "object"){
+            cb = iterator.cb;
+            target = iterator.iteratorTarget;
+            locIterator = iterator.iterator;
         }
-        var results = isArr ? [] : {};
-        var counter = { length: li, count: li, option: option, results: results};
-        cc.each(tasks, function (task, index) {
-            if (counter.err)
-                return false;
-            var counterFunc = !option.cb ? self._emptyFunc : self._counterFunc.bind({counter: counter, index: index});//bind counter and index
-            option.iterator.call(option.iteratorTarget, task, index, counterFunc);
-        });
+        var asyncPool = new cc.AsyncPool(tasks, 0, locIterator, cb, target);
+        asyncPool.flow();
+        return asyncPool;
+    },
+
+    /**
+     * Do tasks by iterator limit.
+     * @param {Array|Object} tasks
+     * @param {Number} limit
+     * @param {function} iterator
+     * @param {function} cb callback
+     * @param {Object} [target]
+     */
+    mapLimit : function(tasks, limit, iterator, cb, target){
+        var asyncPool = new cc.AsyncPool(tasks, limit, iterator, cb, target);
+        asyncPool.flow();
+        return asyncPool;
     }
 };
 //+++++++++++++++++++++++++something about async end+++++++++++++++++++++++++++++++++
 
 //+++++++++++++++++++++++++something about path begin++++++++++++++++++++++++++++++++
-cc.path = {
+/**
+ * @class
+ */
+cc.path = /** @lends cc.path# */{
     /**
      * Join strings to be a path.
      * @example
@@ -269,7 +419,7 @@ cc.path = {
             if(idx !== -1)
                return fileName.substring(0,idx);
         }
-        return fileName
+        return fileName;
     },
 
     /**
@@ -365,7 +515,11 @@ cc.path = {
 //+++++++++++++++++++++++++something about path end++++++++++++++++++++++++++++++++
 
 //+++++++++++++++++++++++++something about loader start+++++++++++++++++++++++++++
-cc.loader = {
+/**
+ * Loader for resource loading process. It's a singleton object.
+ * @class
+ */
+cc.loader = /** @lends cc.loader# */{
     _jsCache: {},//cache for js
     _register: {},//register of loaders
     _langPathCache: {},//cache for lang path
@@ -410,23 +564,24 @@ cc.loader = {
      * Load js files.
      * If the third parameter doesn't exist, then the baseDir turns to be "".
      *
-     * @param {string} [baseDir]   The pre path for jsList.
+     * @param {string} [baseDir]   The pre path for jsList or the list of js path.
      * @param {array} jsList    List of js path.
-     * @param {function} [cb]        Callback function
+     * @param {function} [cb]  Callback function
      * @returns {*}
      */
     loadJs: function (baseDir, jsList, cb) {
         var self = this, localJsCache = self._jsCache,
             args = self._getArgs4Js(arguments);
 
+        var preDir = args[0], list = args[1], callback = args[2];
         if (navigator.userAgent.indexOf("Trident/5") > -1) {
-            self._loadJs4Dependency(args[0], args[1], 0, args[2]);
+            self._loadJs4Dependency(preDir, list, 0, callback);
         } else {
-            cc.async.map(args[1], function (item, index, cb1) {
-                var jsPath = cc.path.join(args[0], item);
+            cc.async.map(list, function (item, index, cb1) {
+                var jsPath = cc.path.join(preDir, item);
                 if (localJsCache[jsPath]) return cb1(null);
                 self._createScript(jsPath, false, cb1);
-            }, args[2]);
+            }, callback);
         }
     },
     /**
@@ -451,10 +606,12 @@ cc.loader = {
         s.src = jsPath;
         self._jsCache[jsPath] = true;
         cc._addEventListener(s, 'load', function () {
+            s.parentNode.removeChild(s);
             this.removeEventListener('load', arguments.callee, false);
             cb();
         }, false);
         cc._addEventListener(s, 'error', function () {
+            s.parentNode.removeChild(s);
             cb("Load " + jsPath + " failed!");
         }, false);
         d.body.appendChild(s);
@@ -507,12 +664,14 @@ cc.loader = {
                 // IE-specific logic here
                 xhr.setRequestHeader("Accept-Charset", "utf-8");
                 xhr.onreadystatechange = function () {
-                    xhr.readyState == 4 && xhr.status == 200 ? cb(null, xhr.responseText) : cb(errInfo);
+                    if(xhr.readyState == 4)
+                        xhr.status == 200 ? cb(null, xhr.responseText) : cb(errInfo);
                 };
             } else {
                 if (xhr.overrideMimeType) xhr.overrideMimeType("text\/plain; charset=utf-8");
                 xhr.onload = function () {
-                    xhr.readyState == 4 && xhr.status == 200 ? cb(null, xhr.responseText) : cb(errInfo);
+                    if(xhr.readyState == 4)
+                        xhr.status == 200 ? cb(null, xhr.responseText) : cb(errInfo);
                 };
             }
             xhr.send(null);
@@ -542,6 +701,23 @@ cc.loader = {
             var fs = require("fs");
             return fs.readFileSync(url).toString();
         }
+    },
+
+    loadCsb: function(url, cb){
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
+        xhr.responseType = "arraybuffer";
+
+        xhr.onload = function () {
+            var arrayBuffer = xhr.response; // Note: not oReq.responseText
+            if (arrayBuffer) {
+                window.msg = arrayBuffer;
+            }
+            if(xhr.readyState == 4)
+                xhr.status == 200 ? cb(null, xhr.response) : cb("load " + url + " failed!");
+        };
+
+        xhr.send(null);
     },
 
     /**
@@ -574,9 +750,8 @@ cc.loader = {
         var opt = {
             isCrossOrigin: true
         };
-        if (cb !== undefined) {
+        if (cb !== undefined)
             opt.isCrossOrigin = option.isCrossOrigin == null ? opt.isCrossOrigin : option.isCrossOrigin;
-        }
         else if (option !== undefined)
             cb = option;
 
@@ -584,17 +759,26 @@ cc.loader = {
         if (opt.isCrossOrigin && location.origin != "file://")
             img.crossOrigin = "Anonymous";
 
-        cc._addEventListener(img, "load", function () {
-            this.removeEventListener('load', arguments.callee, false);
-            this.removeEventListener('error', arguments.callee, false);
+        var lcb = function () {
+            this.removeEventListener('load', lcb, false);
+            this.removeEventListener('error', ecb, false);
             if (cb)
                 cb(null, img);
-        });
-        cc._addEventListener(img, "error", function () {
-            this.removeEventListener('error', arguments.callee, false);
-            if (cb)
-                cb("load image failed");
-        });
+        };
+
+        var ecb = function () {
+            this.removeEventListener('error', ecb, false);
+
+            if(img.crossOrigin && img.crossOrigin.toLowerCase() == "anonymous"){
+                opt.isCrossOrigin = false;
+                cc.loader.loadImg(url, opt, cb);
+            }else{
+                typeof cb == "function" && cb("load image failed");
+            }
+        };
+
+        cc._addEventListener(img, "load", lcb);
+        cc._addEventListener(img, "error", ecb);
         img.src = url;
         return img;
     },
@@ -621,9 +805,14 @@ cc.loader = {
         var obj = self.cache[url];
         if (obj)
             return cb(null, obj);
-        var loader = self._register[type.toLowerCase()];
-        if (!loader)
-            return cb("loader for [" + type + "] not exists!");
+        var loader = null;
+        if (type) {
+            loader = self._register[type.toLowerCase()];
+        }
+        if (!loader) {
+            cc.error("loader for [" + type + "] not exists!");
+            return cb();
+        }
         var basePath = loader.getBasePath ? loader.getBasePath() : self.resPath;
         var realUrl = self.getUrl(basePath, url);
         loader.load(realUrl, url, item, function (err, data) {
@@ -652,12 +841,15 @@ cc.loader = {
             var type = path.extname(url);
             type = type ? type.toLowerCase() : "";
             var loader = self._register[type];
-            if (!loader) basePath = self.resPath;
-            else basePath = loader.getBasePath ? loader.getBasePath() : self.resPath;
+            if (!loader)
+                basePath = self.resPath;
+            else
+                basePath = loader.getBasePath ? loader.getBasePath() : self.resPath;
         }
-        url = cc.path.join(basePath || "", url)
+        url = cc.path.join(basePath || "", url);
         if (url.match(/[\/(\\\\)]lang[\/(\\\\)]/i)) {
-            if (langPathCache[url]) return langPathCache[url];
+            if (langPathCache[url])
+                return langPathCache[url];
             var extname = path.extname(url) || "";
             url = langPathCache[url] = url.substring(0, url.length - extname.length) + "_" + cc.sys.language + extname;
         }
@@ -666,34 +858,45 @@ cc.loader = {
 
     /**
      * Load resources then call the callback.
-     * @param {string} res
-     * @param {function|Object} [option] option or cb
-     * @param {function} [cb]
+     * @param {string} resources
+     * @param {function} [option] callback or trigger
+     * @param {function|Object} [cb]
+     * @return {cc.AsyncPool}
      */
-    load: function (res, option, cb) {
-        if (cb !== undefined) {
-            if (typeof option == "function")
-                option = {trigger: option};
-        } else if (option !== undefined) {
-            if (typeof option == "function") {
-                cb = option;
-                option = {};
-            }
-        } else if (res !== undefined)
-            option = {};
-        else
+    load : function(resources, option, cb){
+        var self = this;
+        var len = arguments.length;
+        if(len == 0)
             throw "arguments error!";
-        option.cb = function (err, results) {
-            if (err)
-                cc.log(err);
-            if (cb)
-                cb(results);
-        };
-        if (!(res instanceof Array))
-            res = [res];
-        option.iterator = this._loadResIterator;
-        option.iteratorTarget = this;
-        cc.async.map(res, option);
+
+        if(len == 3){
+            if(typeof option == "function"){
+                if(typeof cb == "function")
+                    option = {trigger : option, cb : cb };
+                else
+                    option = { cb : option, cbTarget : cb};
+            }
+        }else if(len == 2){
+            if(typeof option == "function")
+                option = {cb : option};
+        }else if(len == 1){
+            option = {};
+        }
+
+        if(!(resources instanceof Array))
+            resources = [resources];
+        var asyncPool = new cc.AsyncPool(resources, 0, function(value, index, cb1, aPool){
+            self._loadResIterator(value, index, function(err){
+                if(err)
+                    return cb1(err);
+                var arr = Array.prototype.slice.call(arguments, 1);
+                if(option.trigger)
+                    option.trigger.call(option.triggerTarget, arr[0], aPool.size, aPool.finishedSize); //call trigger
+                cb1(null, arr[0]);
+            });
+        }, option.cb, option.cbTarget);
+        asyncPool.flow();
+        return asyncPool;
     },
 
     _handleAliases: function (fileNames, cb) {
@@ -739,10 +942,11 @@ cc.loader = {
     loadAliases: function (url, cb) {
         var self = this, dict = self.getRes(url);
         if (!dict) {
-            self.load(url, function (results) {
+            self.load(url, function (err, results) {
                 self._handleAliases(results[0]["filenames"], cb);
             });
-        } else self._handleAliases(dict["filenames"], cb);
+        } else
+            self._handleAliases(dict["filenames"], cb);
     },
 
     /**
@@ -753,7 +957,8 @@ cc.loader = {
     register: function (extNames, loader) {
         if (!extNames || !loader) return;
         var self = this;
-        if (typeof extNames == "string") return this._register[extNames.trim().toLowerCase()] = loader;
+        if (typeof extNames == "string")
+            return this._register[extNames.trim().toLowerCase()] = loader;
         for (var i = 0, li = extNames.length; i < li; i++) {
             self._register["." + extNames[i].trim().toLowerCase()] = loader;
         }
@@ -784,31 +989,71 @@ cc.loader = {
      */
     releaseAll: function () {
         var locCache = this.cache, aliases = this._aliases;
-        for (var key in locCache) {
+        for (var key in locCache)
             delete locCache[key];
-        }
-        for (var key in aliases) {
+        for (var key in aliases)
             delete aliases[key];
-        }
     }
-
 };
 //+++++++++++++++++++++++++something about loader end+++++++++++++++++++++++++++++
+
+/**
+ * A string tool to construct a string with format string.
+ * for example:
+ *      cc.formatStr("a: %d, b: %b", a, b);
+ *      cc.formatStr(a, b, c);
+ * @returns {String}
+ */
+cc.formatStr = function(){
+    var args = arguments;
+    var l = args.length;
+    if(l < 1)
+        return "";
+
+    var str = args[0];
+    var needToFormat = true;
+    if(typeof str == "object"){
+        needToFormat = false;
+    }
+    for(var i = 1; i < l; ++i){
+        var arg = args[i];
+        if(needToFormat){
+            while(true){
+                var result = null;
+                if(typeof arg == "number"){
+                    result = str.match(/(%d)|(%s)/);
+                    if(result){
+                        str = str.replace(/(%d)|(%s)/, arg);
+                        break;
+                    }
+                }
+                result = str.match(/%s/);
+                if(result)
+                    str = str.replace(/%s/, arg);
+                else
+                    str += "    " + arg;
+                break;
+            }
+        }else
+            str += "    " + arg;
+    }
+    return str;
+};
 
 
 //+++++++++++++++++++++++++something about window events begin+++++++++++++++++++++++++++
 (function () {
     var win = window, hidden, visibilityChange, _undef = "undefined";
-    if (typeof document.hidden !== _undef) {
+    if (!cc.isUndefined(document.hidden)) {
         hidden = "hidden";
         visibilityChange = "visibilitychange";
-    } else if (typeof document.mozHidden !== _undef) {
+    } else if (!cc.isUndefined(document.mozHidden)) {
         hidden = "mozHidden";
         visibilityChange = "mozvisibilitychange";
-    } else if (typeof document.msHidden !== _undef) {
+    } else if (!cc.isUndefined(document.msHidden)) {
         hidden = "msHidden";
         visibilityChange = "msvisibilitychange";
-    } else if (typeof document.webkitHidden !== _undef) {
+    } else if (!cc.isUndefined(document.webkitHidden)) {
         hidden = "webkitHidden";
         visibilityChange = "webkitvisibilitychange";
     }
@@ -820,6 +1065,12 @@ cc.loader = {
     var onShow = function () {
         if (cc.eventManager && cc.game._eventShow)
             cc.eventManager.dispatchEvent(cc.game._eventShow);
+
+        if(cc.game._intervalId){
+            window.cancelAnimationFrame(cc.game._intervalId);
+
+            cc.game._runMainLoop();
+        }
     };
 
     if (hidden) {
@@ -830,6 +1081,10 @@ cc.loader = {
     } else {
         cc._addEventListener(win, "blur", onHidden, false);
         cc._addEventListener(win, "focus", onShow, false);
+    }
+
+    if(navigator.userAgent.indexOf("MicroMessenger") > -1){
+        win.onfocus = function(){ onShow() };
     }
 
     if ("onpageshow" in window && "onpagehide" in window) {
@@ -875,148 +1130,322 @@ cc._initSys = function (config, CONFIG_KEY) {
     /**
      * Canvas of render type
      * @constant
-     * @type Number
+     * @type {Number}
      */
     cc._RENDER_TYPE_CANVAS = 0;
 
     /**
      * WebGL of render type
      * @constant
-     * @type Number
+     * @type {Number}
      */
     cc._RENDER_TYPE_WEBGL = 1;
 
-    var sys = cc.sys = {};
+    /**
+     * System variables
+     * @namespace
+     * @name cc.sys
+     */
+    cc.sys = {};
+    var sys = cc.sys;
 
     /**
      * English language code
+     * @memberof cc.sys
+     * @name LANGUAGE_ENGLISH
      * @constant
-     * @type Number
+     * @type {Number}
      */
     sys.LANGUAGE_ENGLISH = "en";
 
     /**
      * Chinese language code
+     * @memberof cc.sys
+     * @name LANGUAGE_CHINESE
      * @constant
-     * @type Number
+     * @type {Number}
      */
     sys.LANGUAGE_CHINESE = "zh";
 
     /**
      * French language code
+     * @memberof cc.sys
+     * @name LANGUAGE_FRENCH
      * @constant
-     * @type Number
+     * @type {Number}
      */
     sys.LANGUAGE_FRENCH = "fr";
 
     /**
      * Italian language code
+     * @memberof cc.sys
+     * @name LANGUAGE_ITALIAN
      * @constant
-     * @type Number
+     * @type {Number}
      */
     sys.LANGUAGE_ITALIAN = "it";
 
     /**
      * German language code
+     * @memberof cc.sys
+     * @name LANGUAGE_GERMAN
      * @constant
-     * @type Number
+     * @type {Number}
      */
     sys.LANGUAGE_GERMAN = "de";
 
     /**
      * Spanish language code
+     * @memberof cc.sys
+     * @name LANGUAGE_SPANISH
      * @constant
-     * @type Number
+     * @type {Number}
      */
     sys.LANGUAGE_SPANISH = "es";
 
     /**
-     * Russian language code
+     * Spanish language code
+     * @memberof cc.sys
+     * @name LANGUAGE_DUTCH
      * @constant
-     * @type Number
+     * @type {Number}
+     */
+    sys.LANGUAGE_DUTCH = "du";
+
+    /**
+     * Russian language code
+     * @memberof cc.sys
+     * @name LANGUAGE_RUSSIAN
+     * @constant
+     * @type {Number}
      */
     sys.LANGUAGE_RUSSIAN = "ru";
 
     /**
      * Korean language code
+     * @memberof cc.sys
+     * @name LANGUAGE_KOREAN
      * @constant
-     * @type Number
+     * @type {Number}
      */
     sys.LANGUAGE_KOREAN = "ko";
 
     /**
      * Japanese language code
+     * @memberof cc.sys
+     * @name LANGUAGE_JAPANESE
      * @constant
-     * @type Number
+     * @type {Number}
      */
     sys.LANGUAGE_JAPANESE = "ja";
 
     /**
      * Hungarian language code
+     * @memberof cc.sys
+     * @name LANGUAGE_HUNGARIAN
      * @constant
-     * @type Number
+     * @type {Number}
      */
     sys.LANGUAGE_HUNGARIAN = "hu";
 
     /**
      * Portuguese language code
+     * @memberof cc.sys
+     * @name LANGUAGE_PORTUGUESE
      * @constant
-     * @type Number
+     * @type {Number}
      */
     sys.LANGUAGE_PORTUGUESE = "pt";
 
     /**
      * Arabic language code
+     * @memberof cc.sys
+     * @name LANGUAGE_ARABIC
      * @constant
-     * @type Number
+     * @type {Number}
      */
     sys.LANGUAGE_ARABIC = "ar";
 
     /**
      * Norwegian language code
+     * @memberof cc.sys
+     * @name LANGUAGE_NORWEGIAN
      * @constant
-     * @type Number
+     * @type {Number}
      */
     sys.LANGUAGE_NORWEGIAN = "no";
 
     /**
      * Polish language code
+     * @memberof cc.sys
+     * @name LANGUAGE_POLISH
      * @constant
-     * @type Number
+     * @type {Number}
      */
     sys.LANGUAGE_POLISH = "pl";
 
     /**
+     * @memberof cc.sys
+     * @name OS_WINDOWS
      * @constant
      * @type {string}
      */
     sys.OS_WINDOWS = "Windows";
     /**
+     * @memberof cc.sys
+     * @name OS_IOS
      * @constant
      * @type {string}
      */
     sys.OS_IOS = "iOS";
     /**
+     * @memberof cc.sys
+     * @name OS_OSX
      * @constant
      * @type {string}
      */
     sys.OS_OSX = "OS X";
     /**
+     * @memberof cc.sys
+     * @name OS_UNIX
      * @constant
      * @type {string}
      */
     sys.OS_UNIX = "UNIX";
     /**
+     * @memberof cc.sys
+     * @name OS_LINUX
      * @constant
      * @type {string}
      */
     sys.OS_LINUX = "Linux";
     /**
+     * @memberof cc.sys
+     * @name OS_ANDROID
      * @constant
      * @type {string}
      */
     sys.OS_ANDROID = "Android";
+    /**
+     * @memberof cc.sys
+     * @name OS_UNKNOWN
+     * @constant
+     * @type {string}
+     */
     sys.OS_UNKNOWN = "Unknown";
+
+    /**
+     * @memberof cc.sys
+     * @name WINDOWS
+     * @constant
+     * @default
+     * @type {Number}
+     */
+    sys.WINDOWS = 0;
+    /**
+     * @memberof cc.sys
+     * @name LINUX
+     * @constant
+     * @default
+     * @type {Number}
+     */
+    sys.LINUX = 1;
+    /**
+     * @memberof cc.sys
+     * @name MACOS
+     * @constant
+     * @default
+     * @type {Number}
+     */
+    sys.MACOS = 2;
+    /**
+     * @memberof cc.sys
+     * @name ANDROID
+     * @constant
+     * @default
+     * @type {Number}
+     */
+    sys.ANDROID = 3;
+    /**
+     * @memberof cc.sys
+     * @name IPHONE
+     * @constant
+     * @default
+     * @type {Number}
+     */
+    sys.IPHONE = 4;
+    /**
+     * @memberof cc.sys
+     * @name IPAD
+     * @constant
+     * @default
+     * @type {Number}
+     */
+    sys.IPAD = 5;
+    /**
+     * @memberof cc.sys
+     * @name BLACKBERRY
+     * @constant
+     * @default
+     * @type {Number}
+     */
+    sys.BLACKBERRY = 6;
+    /**
+     * @memberof cc.sys
+     * @name NACL
+     * @constant
+     * @default
+     * @type {Number}
+     */
+    sys.NACL = 7;
+    /**
+     * @memberof cc.sys
+     * @name EMSCRIPTEN
+     * @constant
+     * @default
+     * @type {Number}
+     */
+    sys.EMSCRIPTEN = 8;
+    /**
+     * @memberof cc.sys
+     * @name TIZEN
+     * @constant
+     * @default
+     * @type {Number}
+     */
+    sys.TIZEN = 9;
+    /**
+     * @memberof cc.sys
+     * @name WINRT
+     * @constant
+     * @default
+     * @type {Number}
+     */
+    sys.WINRT = 10;
+    /**
+     * @memberof cc.sys
+     * @name WP8
+     * @constant
+     * @default
+     * @type {Number}
+     */
+    sys.WP8 = 11;
+    /**
+     * @memberof cc.sys
+     * @name MOBILE_BROWSER
+     * @constant
+     * @default
+     * @type {Number}
+     */
+    sys.MOBILE_BROWSER = 100;
+    /**
+     * @memberof cc.sys
+     * @name DESKTOP_BROWSER
+     * @constant
+     * @default
+     * @type {Number}
+     */
+    sys.DESKTOP_BROWSER = 101;
 
     sys.BROWSER_TYPE_WECHAT = "wechat";
     sys.BROWSER_TYPE_ANDROID = "androidbrowser";
@@ -1029,6 +1458,7 @@ cc._initSys = function (config, CONFIG_KEY) {
     sys.BROWSER_TYPE_BAIDU = "baidubrowser";
     sys.BROWSER_TYPE_MAXTHON = "maxthon";
     sys.BROWSER_TYPE_OPERA = "opera";
+    sys.BROWSER_TYPE_OUPENG = "oupeng";
     sys.BROWSER_TYPE_MIUI = "miuibrowser";
     sys.BROWSER_TYPE_FIREFOX = "firefox";
     sys.BROWSER_TYPE_SAFARI = "safari";
@@ -1037,36 +1467,52 @@ cc._initSys = function (config, CONFIG_KEY) {
 
     /**
      * Is native ? This is set to be true in jsb auto.
-     * @constant
-     * @type Boolean
+     * @memberof cc.sys
+     * @name isNative
+     * @type {Boolean}
      */
     sys.isNative = false;
 
-    /**
-     * WhiteList of browser for WebGL.
-     * @constant
-     * @type Array
-     */
-    var webglWhiteList = [sys.BROWSER_TYPE_BAIDU, sys.BROWSER_TYPE_OPERA, sys.BROWSER_TYPE_FIREFOX, sys.BROWSER_TYPE_CHROME, sys.BROWSER_TYPE_SAFARI];
+    var browserSupportWebGL = [sys.BROWSER_TYPE_BAIDU, sys.BROWSER_TYPE_OPERA, sys.BROWSER_TYPE_FIREFOX, sys.BROWSER_TYPE_CHROME, sys.BROWSER_TYPE_SAFARI];
+    var osSupportWebGL = [sys.OS_IOS, sys.OS_WINDOWS, sys.OS_OSX, sys.OS_LINUX];
     var multipleAudioWhiteList = [
-        sys.BROWSER_TYPE_BAIDU, sys.BROWSER_TYPE_OPERA, sys.BROWSER_TYPE_FIREFOX, sys.BROWSER_TYPE_CHROME,
+        sys.BROWSER_TYPE_BAIDU, sys.BROWSER_TYPE_OPERA, sys.BROWSER_TYPE_FIREFOX, sys.BROWSER_TYPE_CHROME, sys.BROWSER_TYPE_BAIDU_APP,
         sys.BROWSER_TYPE_SAFARI, sys.BROWSER_TYPE_UC, sys.BROWSER_TYPE_QQ, sys.BROWSER_TYPE_MOBILE_QQ, sys.BROWSER_TYPE_IE
     ];
 
     var win = window, nav = win.navigator, doc = document, docEle = doc.documentElement;
     var ua = nav.userAgent.toLowerCase();
 
+    /**
+     * Indicate whether system is mobile system
+     * @memberof cc.sys
+     * @name isMobile
+     * @type {Boolean}
+     */
     sys.isMobile = ua.indexOf('mobile') != -1 || ua.indexOf('android') != -1;
+
+    /**
+     * Indicate the running platform
+     * @memberof cc.sys
+     * @name platform
+     * @type {Number}
+     */
+    sys.platform = sys.isMobile ? sys.MOBILE_BROWSER : sys.DESKTOP_BROWSER;
 
     var currLanguage = nav.language;
     currLanguage = currLanguage ? currLanguage : nav.browserLanguage;
     currLanguage = currLanguage ? currLanguage.split("-")[0] : sys.LANGUAGE_ENGLISH;
+
+    /**
+     * Indicate the current language of the running system
+     * @memberof cc.sys
+     * @name language
+     * @type {String}
+     */
     sys.language = currLanguage;
 
-    /** The type of browser */
-
     var browserType = sys.BROWSER_TYPE_UNKNOWN;
-    var browserTypes = ua.match(/micromessenger|qqbrowser|mqqbrowser|ucbrowser|360browser|baiduboxapp|baidubrowser|maxthon|trident|opera|miuibrowser|firefox/i)
+    var browserTypes = ua.match(/micromessenger|qqbrowser|mqqbrowser|ucbrowser|360browser|baiduboxapp|baidubrowser|maxthon|trident|oupeng|opera|miuibrowser|firefox/i)
         || ua.match(/chrome|safari/i);
     if (browserTypes && browserTypes.length > 0) {
         browserType = browserTypes[0].toLowerCase();
@@ -1076,20 +1522,69 @@ cc._initSys = function (config, CONFIG_KEY) {
             browserType = sys.BROWSER_TYPE_ANDROID;
         else if (browserType == "trident") browserType = sys.BROWSER_TYPE_IE;
     }
+    /**
+     * Indicate the running browser type
+     * @memberof cc.sys
+     * @name browserType
+     * @type {String}
+     */
     sys.browserType = browserType;
 
+    // Get the os of system
+    var iOS = ( ua.match(/(iPad|iPhone|iPod)/i) ? true : false );
+    var isAndroid = ua.match(/android/i) || nav.platform.match(/android/i) ? true : false;
+    var osName = sys.OS_UNKNOWN;
+    if (nav.appVersion.indexOf("Win") != -1) osName = sys.OS_WINDOWS;
+    else if (iOS) osName = sys.OS_IOS;
+    else if (nav.appVersion.indexOf("Mac") != -1) osName = sys.OS_OSX;
+    else if (nav.appVersion.indexOf("X11") != -1) osName = sys.OS_UNIX;
+    else if (isAndroid) osName = sys.OS_ANDROID;
+    else if (nav.appVersion.indexOf("Linux") != -1) osName = sys.OS_LINUX;
+
+    /**
+     * Indicate the running os name
+     * @memberof cc.sys
+     * @name os
+     * @type {String}
+     */
+    sys.os = osName;
+
     sys._supportMultipleAudio = multipleAudioWhiteList.indexOf(sys.browserType) > -1;
+
 
     //++++++++++++++++++something about cc._renderTYpe and cc._supportRender begin++++++++++++++++++++++++++++
     var userRenderMode = parseInt(config[CONFIG_KEY.renderMode]);
     var renderType = cc._RENDER_TYPE_WEBGL;
     var tempCanvas = cc.newElement("Canvas");
     cc._supportRender = true;
-    var notInWhiteList = webglWhiteList.indexOf(sys.browserType) == -1;
-    if (userRenderMode === 1 || (userRenderMode === 0 && (sys.isMobile || notInWhiteList))) {
+    var notSupportGL = !window.WebGLRenderingContext || browserSupportWebGL.indexOf(sys.browserType) == -1 || osSupportWebGL.indexOf(sys.os) == -1;
+    if (userRenderMode === 1 || (userRenderMode === 0 && notSupportGL) || (location.origin == "file://")) {
         renderType = cc._RENDER_TYPE_CANVAS;
     }
 
+    sys._canUseCanvasNewBlendModes = function(){
+        var canvas = document.createElement('canvas');
+        canvas.width = 1;
+        canvas.height = 1;
+        var context = canvas.getContext('2d');
+        context.fillStyle = '#000';
+        context.fillRect(0,0,1,1);
+        context.globalCompositeOperation = 'multiply';
+
+        var canvas2 = document.createElement('canvas');
+        canvas2.width = 1;
+        canvas2.height = 1;
+        var context2 = canvas2.getContext('2d');
+        context2.fillStyle = '#fff';
+        context2.fillRect(0,0,1,1);
+
+        context.drawImage(canvas2, 0, 0, 1, 1);
+
+        return context.getImageData(0,0,1,1).data[0] === 0;
+    };
+
+    //Whether or not the Canvas BlendModes are supported.
+    sys._supportCanvasNewBlendModes = sys._canUseCanvasNewBlendModes();
 
     if (renderType == cc._RENDER_TYPE_WEBGL) {
         if (!win.WebGLRenderingContext
@@ -1107,8 +1602,7 @@ cc._initSys = function (config, CONFIG_KEY) {
         }
     }
     cc._renderType = renderType;
-    //++++++++++++++++++something about cc._renderTYpe and cc._supportRender end++++++++++++++++++++++++++++++
-
+    //++++++++++++++++++something about cc._renderType and cc._supportRender end++++++++++++++++++++++++++++++
 
     // check if browser supports Web Audio
     // check Web Audio's context
@@ -1118,7 +1612,11 @@ cc._initSys = function (config, CONFIG_KEY) {
         sys._supportWebAudio = false;
     }
 
-    /** LocalStorage is a local storage component.
+    /**
+     * cc.sys.localStorage is a local storage component.
+     * @memberof cc.sys
+     * @name localStorage
+     * @type {Object}
      */
     try {
         var localStorage = sys.localStorage = win.localStorage;
@@ -1133,46 +1631,54 @@ cc._initSys = function (config, CONFIG_KEY) {
         };
     }
 
-
     var capabilities = sys.capabilities = {"canvas": true};
     if (cc._renderType == cc._RENDER_TYPE_WEBGL)
         capabilities["opengl"] = true;
     if (docEle['ontouchstart'] !== undefined || nav.msPointerEnabled)
         capabilities["touches"] = true;
-    else if (docEle['onmouseup'] !== undefined)
+    if (docEle['onmouseup'] !== undefined)
         capabilities["mouse"] = true;
     if (docEle['onkeyup'] !== undefined)
         capabilities["keyboard"] = true;
     if (win.DeviceMotionEvent || win.DeviceOrientationEvent)
         capabilities["accelerometer"] = true;
 
-    /** Get the os of system */
-    var iOS = ( ua.match(/(iPad|iPhone|iPod)/i) ? true : false );
-    var isAndroid = ua.match(/android/i) || nav.platform.match(/android/i) ? true : false;
-    var osName = sys.OS_UNKNOWN;
-    if (nav.appVersion.indexOf("Win") != -1) osName = sys.OS_WINDOWS;
-    else if (iOS) osName = sys.OS_IOS;
-    else if (nav.appVersion.indexOf("Mac") != -1) osName = sys.OS_OSX;
-    else if (nav.appVersion.indexOf("X11") != -1) osName = sys.OS_UNIX;
-    else if (nav.appVersion.indexOf("Linux") != -1) osName = sys.OS_LINUX;
-    else if (isAndroid) osName = sys.OS_ANDROID;
-    sys.os = osName;
-
-    // Forces the garbage collector
+    /**
+     * Forces the garbage collection
+     * @memberof cc.sys
+     * @name garbageCollect
+     * @function
+     */
     sys.garbageCollect = function () {
         // N/A in cocos2d-html5
     };
 
-    // Dumps rooted objects
+    /**
+     * Dumps rooted objects
+     * @memberof cc.sys
+     * @name dumpRoot
+     * @function
+     */
     sys.dumpRoot = function () {
         // N/A in cocos2d-html5
     };
 
-    // restarts the JS VM
+    /**
+     * Restart the JS VM
+     * @memberof cc.sys
+     * @name restartVM
+     * @function
+     */
     sys.restartVM = function () {
         // N/A in cocos2d-html5
     };
 
+    /**
+     * Dump system informations
+     * @memberof cc.sys
+     * @name dump
+     * @function
+     */
     sys.dump = function () {
         var self = this;
         var str = "";
@@ -1181,6 +1687,7 @@ cc._initSys = function (config, CONFIG_KEY) {
         str += "browserType : " + self.browserType + "\r\n";
         str += "capabilities : " + JSON.stringify(self.capabilities) + "\r\n";
         str += "os : " + self.os + "\r\n";
+        str += "platform : " + self.platform + "\r\n";
         cc.log(str);
     }
 };
@@ -1192,52 +1699,52 @@ cc._initSys = function (config, CONFIG_KEY) {
 /**
  * Device oriented vertically, home button on the bottom
  * @constant
- * @type Number
+ * @type {Number}
  */
 cc.ORIENTATION_PORTRAIT = 0;
 
 /**
  * Device oriented vertically, home button on the top
  * @constant
- * @type Number
+ * @type {Number}
  */
 cc.ORIENTATION_PORTRAIT_UPSIDE_DOWN = 1;
 
 /**
  * Device oriented horizontally, home button on the right
  * @constant
- * @type Number
+ * @type {Number}
  */
 cc.ORIENTATION_LANDSCAPE_LEFT = 2;
 
 /**
  * Device oriented horizontally, home button on the left
  * @constant
- * @type Number
+ * @type {Number}
  */
 cc.ORIENTATION_LANDSCAPE_RIGHT = 3;
 
 /**
  * drawing primitive of game engine
- * @type cc.DrawingPrimitive
+ * @type {cc.DrawingPrimitive}
  */
 cc._drawingUtil = null;
 
 /**
  * main Canvas 2D/3D Context of game engine
- * @type CanvasRenderingContext2D|WebGLRenderingContext
+ * @type {CanvasRenderingContext2D|WebGLRenderingContext}
  */
 cc._renderContext = null;
 
 /**
  * main Canvas of game engine
- * @type HTMLCanvasElement
+ * @type {HTMLCanvasElement}
  */
 cc._canvas = null;
 
 /**
  * This Div element contain all game canvas
- * @type HTMLDivElement
+ * @type {HTMLDivElement}
  */
 cc._gameDiv = null;
 
@@ -1271,11 +1778,47 @@ cc._setup = function (el, width, height) {
     if (cc._setupCalled) return;
     else cc._setupCalled = true;
     var win = window;
-    win.requestAnimFrame = win.requestAnimationFrame ||
-        win.webkitRequestAnimationFrame ||
-        win.mozRequestAnimationFrame ||
-        win.oRequestAnimationFrame ||
-        win.msRequestAnimationFrame;
+    var lastTime = new Date();
+    var frameTime = 1000 / cc.game.config[cc.game.CONFIG_KEY.frameRate];
+
+    var stTime = function(callback){
+        var currTime = new Date().getTime();
+        var timeToCall = Math.max(0, frameTime - (currTime - lastTime));
+        var id = window.setTimeout(function() { callback(); },
+            timeToCall);
+        lastTime = currTime + timeToCall;
+        return id;
+    };
+
+    var ctTime = function(id){
+        clearTimeout(id);
+    };
+
+    if(cc.sys.os === cc.sys.OS_IOS && cc.sys.browserType === cc.sys.BROWSER_TYPE_WECHAT){
+        win.requestAnimFrame = stTime;
+        win.cancelAnimationFrame = ctTime;
+    }else if(cc.game.config[cc.game.CONFIG_KEY.frameRate] != 60){
+        win.requestAnimFrame = stTime;
+        win.cancelAnimationFrame = ctTime;
+    }else{
+        win.requestAnimFrame = win.requestAnimationFrame ||
+            win.webkitRequestAnimationFrame ||
+            win.mozRequestAnimationFrame ||
+            win.oRequestAnimationFrame ||
+            win.msRequestAnimationFrame ||
+            stTime;
+        win.cancelAnimationFrame = window.cancelAnimationFrame ||
+            window.cancelRequestAnimationFrame ||
+            window.msCancelRequestAnimationFrame ||
+            window.mozCancelRequestAnimationFrame ||
+            window.oCancelRequestAnimationFrame ||
+            window.webkitCancelRequestAnimationFrame ||
+            window.msCancelAnimationFrame ||
+            window.mozCancelAnimationFrame ||
+            window.webkitCancelAnimationFrame ||
+            window.oCancelAnimationFrame ||
+            ctTime;
+    }
 
     var element = cc.$(el) || cc.$('#' + el);
     var localCanvas, localContainer, localConStyle;
@@ -1348,18 +1891,36 @@ cc._setup = function (el, width, height) {
 
     // Init singletons
 
-    // View
+    /**
+     * @type {cc.EGLView}
+     * @name cc.view
+     * cc.view is the shared view object.
+     */
     cc.view = cc.EGLView._getInstance();
     // register system events
     cc.inputManager.registerSystemEvent(cc._canvas);
 
-    // Director
+    /**
+     * @type {cc.Director}
+     * @name cc.director
+     */
     cc.director = cc.Director._getInstance();
-    if (cc.director.setOpenGLView)cc.director.setOpenGLView(cc.view);
+    if (cc.director.setOpenGLView)
+        cc.director.setOpenGLView(cc.view);
+    /**
+     * @type {cc.Size}
+     * @name cc.winSize
+     * cc.winSize is the alias object for the size of the current game window.
+     */
     cc.winSize = cc.director.getWinSize();
 
     // Parsers
     cc.saxParser = new cc.SAXParser();
+    /**
+     * @type {cc.PlistParser}
+     * @name cc.plistParser
+     * A Plist Parser
+     */
     cc.plistParser = new cc.PlistParser();
 };
 
@@ -1382,8 +1943,10 @@ cc._setContextMenuEnable = function (enabled) {
 
 /**
  * An object to boot the game.
+ * @class
+ * @name cc.game
  */
-cc.game = {
+cc.game = /** @lends cc.game# */{
     DEBUG_MODE_NONE: 0,
     DEBUG_MODE_INFO: 1,
     DEBUG_MODE_WARN: 2,
@@ -1401,7 +1964,7 @@ cc.game = {
     /**
      * Key of config
      * @constant
-     * @type Object
+     * @type {Object}
      */
     CONFIG_KEY: {
         engineDir: "engineDir",
@@ -1423,19 +1986,19 @@ cc.game = {
 
     /**
      * Config of game
-     * @type Object
+     * @type {Object}
      */
     config: null,
 
     /**
      * Callback when the scripts of engine have been load.
-     * @type Function
+     * @type {Function}
      */
     onStart: null,
 
     /**
      * Callback when game exits.
-     * @type Function
+     * @type {Function}
      */
     onStop: null,
 
@@ -1446,33 +2009,28 @@ cc.game = {
     setFrameRate: function (frameRate) {
         var self = this, config = self.config, CONFIG_KEY = self.CONFIG_KEY;
         config[CONFIG_KEY.frameRate] = frameRate;
-        if (self._intervalId) clearInterval(self._intervalId);
+        if (self._intervalId)
+            window.cancelAnimationFrame(self._intervalId);
         self._paused = true;
         self._runMainLoop();
     },
-    /**
-     * Run game.
-     * @private
-     */
+    //Run game.
     _runMainLoop: function () {
         var self = this, callback, config = self.config, CONFIG_KEY = self.CONFIG_KEY,
-            win = window, frameRate = config[CONFIG_KEY.frameRate],
             director = cc.director;
+
         director.setDisplayStats(config[CONFIG_KEY.showFPS]);
-        if (win.requestAnimFrame && frameRate == 60) {
-            callback = function () {
-                if (!self._paused) {
-                    director.mainLoop();
-                    win.requestAnimFrame(callback);
-                }
-            };
-            win.requestAnimFrame(callback);
-        } else {
-            callback = function () {
+
+        callback = function () {
+            if (!self._paused) {
                 director.mainLoop();
-            };
-            self._intervalId = setInterval(callback, 1000.0 / frameRate);
-        }
+                if(self._intervalId)
+                    window.cancelAnimationFrame(self._intervalId);
+                self._intervalId = window.requestAnimFrame(callback);
+            }
+        };
+
+        window.requestAnimFrame(callback);
         self._paused = false;
     },
 
@@ -1487,7 +2045,12 @@ cc.game = {
             }
             if (!self._prepareCalled) {
                 self.prepare(function () {
-                    if (cc._supportRender) {
+                    self._prepared = true;
+                });
+            }
+            if (cc._supportRender) {
+                self._checkPrepare = setInterval(function () {
+                    if (self._prepared) {
                         cc._setup(self.config[self.CONFIG_KEY.id]);
                         self._runMainLoop();
                         self._eventHide = self._eventHide || new cc.EventCustom(self.EVENT_HIDE);
@@ -1495,23 +2058,9 @@ cc.game = {
                         self._eventShow = self._eventShow || new cc.EventCustom(self.EVENT_SHOW);
                         self._eventShow.setUserData(self);
                         self.onStart();
+                        clearInterval(self._checkPrepare);
                     }
-                });
-            } else {
-                if (cc._supportRender) {
-                    self._checkPrepare = setInterval(function () {
-                        if (self._prepared) {
-                            cc._setup(self.config[self.CONFIG_KEY.id]);
-                            self._runMainLoop();
-                            self._eventHide = self._eventHide || new cc.EventCustom(self.EVENT_HIDE);
-                            self._eventHide.setUserData(self);
-                            self._eventShow = self._eventShow || new cc.EventCustom(self.EVENT_SHOW);
-                            self._eventShow.setUserData(self);
-                            self.onStart();
-                            clearInterval(self._checkPrepare);
-                        }
-                    }, 10);
-                }
+                }, 10);
             }
         };
         document.body ?
@@ -1522,12 +2071,6 @@ cc.game = {
             }, false);
     },
 
-    /**
-     * Init config.
-     * @param cb
-     * @returns {*}
-     * @private
-     */
     _initConfig: function () {
         var self = this, CONFIG_KEY = self.CONFIG_KEY;
         var _init = function (cfg) {
@@ -1542,9 +2085,7 @@ cc.game = {
         if (document["ccConfig"]) {
             self.config = _init(document["ccConfig"]);
         } else {
-
             try {
-
                 var cocos_script = document.getElementsByTagName('script');
                 for(var i=0;i<cocos_script.length;i++){
                     var _t = cocos_script[i].getAttribute('cocos');
@@ -1569,7 +2110,6 @@ cc.game = {
                 cc.log("Failed to read or parse project.json");
                 self.config = _init({});
             }
-
         }
         //init debug move to CCDebugger
         cc._initSys(self.config, CONFIG_KEY);
@@ -1605,8 +2145,7 @@ cc.game = {
         var self = this;
         var config = self.config, CONFIG_KEY = self.CONFIG_KEY, engineDir = config[CONFIG_KEY.engineDir], loader = cc.loader;
         if (!cc._supportRender) {
-            cc.error("Can not support render!")
-            return;
+            throw "The renderer doesn't support the renderMode " + config[CONFIG_KEY.renderMode];
         }
         self._prepareCalled = true;
 
@@ -1644,3 +2183,26 @@ cc.game = {
 };
 cc.game._initConfig();
 //+++++++++++++++++++++++++something about CCGame end+++++++++++++++++++++++++++++
+
+Function.prototype.bind = Function.prototype.bind || function (oThis) {
+    if (!cc.isFunction(this)) {
+        // closest thing possible to the ECMAScript 5
+        // internal IsCallable function
+        throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
+    }
+
+    var aArgs = Array.prototype.slice.call(arguments, 1),
+        fToBind = this,
+        fNOP = function () {},
+        fBound = function () {
+            return fToBind.apply(this instanceof fNOP && oThis
+                ? this
+                : oThis,
+                aArgs.concat(Array.prototype.slice.call(arguments)));
+        };
+
+    fNOP.prototype = this.prototype;
+    fBound.prototype = new fNOP();
+
+    return fBound;
+};

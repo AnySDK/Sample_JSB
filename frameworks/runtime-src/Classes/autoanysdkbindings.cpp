@@ -684,6 +684,28 @@ bool js_autoanysdkbindings_ProtocolAnalytics_stopSession(JSContext *cx, uint32_t
 	JS_ReportError(cx, "js_autoanysdkbindings_ProtocolAnalytics_stopSession : wrong number of arguments: %d, was expecting %d", argc, 0);
 	return false;
 }
+bool js_autoanysdkbindings_ProtocolAnalytics_isFunctionSupported(JSContext *cx, uint32_t argc, jsval *vp)
+{
+	jsval *argv = JS_ARGV(cx, vp);
+	bool ok = true;
+	JSObject *obj = JS_THIS_OBJECT(cx, vp);
+	js_proxy_t *proxy = jsb_get_js_proxy(obj);
+	anysdk::framework::ProtocolAnalytics* cobj = (anysdk::framework::ProtocolAnalytics *)(proxy ? proxy->ptr : NULL);
+	JSB_PRECONDITION2( cobj, cx, false, "js_autoanysdkbindings_ProtocolAnalytics_isFunctionSupported : Invalid Native Object");
+	if (argc == 1) {
+		std::string arg0;
+		ok &= jsval_to_std_string(cx, argv[0], &arg0);
+		JSB_PRECONDITION2(ok, cx, false, "js_autoanysdkbindings_ProtocolAnalytics_isFunctionSupported : Error processing arguments");
+		bool ret = cobj->isFunctionSupported(arg0);
+		jsval jsret = JSVAL_NULL;
+		jsret = BOOLEAN_TO_JSVAL(ret);
+		JS_SET_RVAL(cx, vp, jsret);
+		return true;
+	}
+
+	JS_ReportError(cx, "js_autoanysdkbindings_ProtocolAnalytics_isFunctionSupported : wrong number of arguments: %d, was expecting %d", argc, 1);
+	return false;
+}
 bool js_autoanysdkbindings_ProtocolAnalytics_logTimedEventEnd(JSContext *cx, uint32_t argc, jsval *vp)
 {
 	jsval *argv = JS_ARGV(cx, vp);
@@ -736,6 +758,7 @@ void js_register_autoanysdkbindings_ProtocolAnalytics(JSContext *cx, JSObject *g
 		JS_FN("setSessionContinueMillis", js_autoanysdkbindings_ProtocolAnalytics_setSessionContinueMillis, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("startSession", js_autoanysdkbindings_ProtocolAnalytics_startSession, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("stopSession", js_autoanysdkbindings_ProtocolAnalytics_stopSession, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("isFunctionSupported", js_autoanysdkbindings_ProtocolAnalytics_isFunctionSupported, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("logTimedEventEnd", js_autoanysdkbindings_ProtocolAnalytics_logTimedEventEnd, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FS_END
 	};
@@ -789,6 +812,17 @@ bool js_autoanysdkbindings_ProtocolAds_showAds(JSContext *cx, uint32_t argc, jsv
 		JS_SET_RVAL(cx, vp, JSVAL_VOID);
 		return true;
 	}
+	else if (argc == 2) {
+		anysdk::framework::AdsType arg0;
+		ok &= jsval_to_int32(cx, argv[0], (int32_t *)&arg0);
+		JSB_PRECONDITION2(ok, cx, false, "js_autoanysdkbindings_ProtocolAds_showAds : Error processing arguments");
+		int arg1;
+		ok &= jsval_to_int32(cx, argv[1], (int32_t *)&arg1);
+		JSB_PRECONDITION2(ok, cx, false, "js_autoanysdkbindings_ProtocolAds_showAds : Error processing arguments");
+		cobj->showAds(arg0, arg1);
+		JS_SET_RVAL(cx, vp, JSVAL_VOID);
+		return true;
+	}
 
 	JS_ReportError(cx, "js_autoanysdkbindings_ProtocolAds_showAds : wrong number of arguments: %d, was expecting %d", argc, 1);
 	return false;
@@ -809,8 +843,50 @@ bool js_autoanysdkbindings_ProtocolAds_hideAds(JSContext *cx, uint32_t argc, jsv
 		JS_SET_RVAL(cx, vp, JSVAL_VOID);
 		return true;
 	}
+	else if (argc == 2) {
+		anysdk::framework::AdsType arg0;
+		ok &= jsval_to_int32(cx, argv[0], (int32_t *)&arg0);
+		JSB_PRECONDITION2(ok, cx, false, "js_autoanysdkbindings_ProtocolAds_hideAds : Error processing arguments");
+		int arg1;
+		ok &= jsval_to_int32(cx, argv[1], (int32_t *)&arg1);
+		JSB_PRECONDITION2(ok, cx, false, "js_autoanysdkbindings_ProtocolAds_hideAds : Error processing arguments");
+		cobj->hideAds(arg0, arg1);
+		JS_SET_RVAL(cx, vp, JSVAL_VOID);
+		return true;
+	}
 
 	JS_ReportError(cx, "js_autoanysdkbindings_ProtocolAds_hideAds : wrong number of arguments: %d, was expecting %d", argc, 1);
+	return false;
+}
+bool js_autoanysdkbindings_ProtocolAds_preloadAds(JSContext *cx, uint32_t argc, jsval *vp)
+{
+	jsval *argv = JS_ARGV(cx, vp);
+	bool ok = true;
+	JSObject *obj = JS_THIS_OBJECT(cx, vp);
+	js_proxy_t *proxy = jsb_get_js_proxy(obj);
+	anysdk::framework::ProtocolAds* cobj = (anysdk::framework::ProtocolAds *)(proxy ? proxy->ptr : NULL);
+	JSB_PRECONDITION2( cobj, cx, false, "js_autoanysdkbindings_ProtocolAds_preloadAds : Invalid Native Object");
+	if (argc == 1) {
+		anysdk::framework::AdsType arg0;
+		ok &= jsval_to_int32(cx, argv[0], (int32_t *)&arg0);
+		JSB_PRECONDITION2(ok, cx, false, "js_autoanysdkbindings_ProtocolAds_preloadAds : Error processing arguments");
+		cobj->preloadAds(arg0);
+		JS_SET_RVAL(cx, vp, JSVAL_VOID);
+		return true;
+	}
+	else if (argc == 2) {
+		anysdk::framework::AdsType arg0;
+		ok &= jsval_to_int32(cx, argv[0], (int32_t *)&arg0);
+		JSB_PRECONDITION2(ok, cx, false, "js_autoanysdkbindings_ProtocolAds_preloadAds : Error processing arguments");
+		int arg1;
+		ok &= jsval_to_int32(cx, argv[1], (int32_t *)&arg1);
+		JSB_PRECONDITION2(ok, cx, false, "js_autoanysdkbindings_ProtocolAds_preloadAds : Error processing arguments");
+		cobj->preloadAds(arg0, arg1);
+		JS_SET_RVAL(cx, vp, JSVAL_VOID);
+		return true;
+	}
+
+	JS_ReportError(cx, "js_autoanysdkbindings_ProtocolAds_preloadAds : wrong number of arguments: %d, was expecting %d", argc, 1);
 	return false;
 }
 bool js_autoanysdkbindings_ProtocolAds_queryPoints(JSContext *cx, uint32_t argc, jsval *vp)
@@ -850,26 +926,26 @@ bool js_autoanysdkbindings_ProtocolAds_spendPoints(JSContext *cx, uint32_t argc,
 	JS_ReportError(cx, "js_autoanysdkbindings_ProtocolAds_spendPoints : wrong number of arguments: %d, was expecting %d", argc, 1);
 	return false;
 }
-bool js_autoanysdkbindings_ProtocolAds_isSupportFunction(JSContext *cx, uint32_t argc, jsval *vp)
+bool js_autoanysdkbindings_ProtocolAds_isAdTypeSupported(JSContext *cx, uint32_t argc, jsval *vp)
 {
 	jsval *argv = JS_ARGV(cx, vp);
 	bool ok = true;
 	JSObject *obj = JS_THIS_OBJECT(cx, vp);
 	js_proxy_t *proxy = jsb_get_js_proxy(obj);
 	anysdk::framework::ProtocolAds* cobj = (anysdk::framework::ProtocolAds *)(proxy ? proxy->ptr : NULL);
-	JSB_PRECONDITION2( cobj, cx, false, "js_autoanysdkbindings_ProtocolAds_isSupportFunction : Invalid Native Object");
+	JSB_PRECONDITION2( cobj, cx, false, "js_autoanysdkbindings_ProtocolAds_isAdTypeSupported : Invalid Native Object");
 	if (argc == 1) {
-		std::string arg0;
-		ok &= jsval_to_std_string(cx, argv[0], &arg0);
-		JSB_PRECONDITION2(ok, cx, false, "js_autoanysdkbindings_ProtocolAds_isSupportFunction : Error processing arguments");
-		bool ret = cobj->isSupportFunction(arg0);
+		anysdk::framework::AdsType arg0;
+		ok &= jsval_to_int32(cx, argv[0], (int32_t *)&arg0);
+		JSB_PRECONDITION2(ok, cx, false, "js_autoanysdkbindings_ProtocolAds_isAdTypeSupported : Error processing arguments");
+		bool ret = cobj->isAdTypeSupported(arg0);
 		jsval jsret = JSVAL_NULL;
 		jsret = BOOLEAN_TO_JSVAL(ret);
 		JS_SET_RVAL(cx, vp, jsret);
 		return true;
 	}
 
-	JS_ReportError(cx, "js_autoanysdkbindings_ProtocolAds_isSupportFunction : wrong number of arguments: %d, was expecting %d", argc, 1);
+	JS_ReportError(cx, "js_autoanysdkbindings_ProtocolAds_isAdTypeSupported : wrong number of arguments: %d, was expecting %d", argc, 1);
 	return false;
 }
 
@@ -900,9 +976,10 @@ void js_register_autoanysdkbindings_ProtocolAds(JSContext *cx, JSObject *global)
 	static JSFunctionSpec funcs[] = {
 		JS_FN("showAds", js_autoanysdkbindings_ProtocolAds_showAds, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("hideAds", js_autoanysdkbindings_ProtocolAds_hideAds, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("preloadAds", js_autoanysdkbindings_ProtocolAds_preloadAds, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("queryPoints", js_autoanysdkbindings_ProtocolAds_queryPoints, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("spendPoints", js_autoanysdkbindings_ProtocolAds_spendPoints, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-		JS_FN("isSupportFunction", js_autoanysdkbindings_ProtocolAds_isSupportFunction, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("isAdTypeSupported", js_autoanysdkbindings_ProtocolAds_isAdTypeSupported, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FS_END
 	};
 
@@ -1127,26 +1204,26 @@ bool js_autoanysdkbindings_ProtocolUser_getUserID(JSContext *cx, uint32_t argc, 
 	JS_ReportError(cx, "js_autoanysdkbindings_ProtocolUser_getUserID : wrong number of arguments: %d, was expecting %d", argc, 0);
 	return false;
 }
-bool js_autoanysdkbindings_ProtocolUser_isSupportFunction(JSContext *cx, uint32_t argc, jsval *vp)
+bool js_autoanysdkbindings_ProtocolUser_isFunctionSupported(JSContext *cx, uint32_t argc, jsval *vp)
 {
 	jsval *argv = JS_ARGV(cx, vp);
 	bool ok = true;
 	JSObject *obj = JS_THIS_OBJECT(cx, vp);
 	js_proxy_t *proxy = jsb_get_js_proxy(obj);
 	anysdk::framework::ProtocolUser* cobj = (anysdk::framework::ProtocolUser *)(proxy ? proxy->ptr : NULL);
-	JSB_PRECONDITION2( cobj, cx, false, "js_autoanysdkbindings_ProtocolUser_isSupportFunction : Invalid Native Object");
+	JSB_PRECONDITION2( cobj, cx, false, "js_autoanysdkbindings_ProtocolUser_isFunctionSupported : Invalid Native Object");
 	if (argc == 1) {
 		std::string arg0;
 		ok &= jsval_to_std_string(cx, argv[0], &arg0);
-		JSB_PRECONDITION2(ok, cx, false, "js_autoanysdkbindings_ProtocolUser_isSupportFunction : Error processing arguments");
-		bool ret = cobj->isSupportFunction(arg0);
+		JSB_PRECONDITION2(ok, cx, false, "js_autoanysdkbindings_ProtocolUser_isFunctionSupported : Error processing arguments");
+		bool ret = cobj->isFunctionSupported(arg0);
 		jsval jsret = JSVAL_NULL;
 		jsret = BOOLEAN_TO_JSVAL(ret);
 		JS_SET_RVAL(cx, vp, jsret);
 		return true;
 	}
 
-	JS_ReportError(cx, "js_autoanysdkbindings_ProtocolUser_isSupportFunction : wrong number of arguments: %d, was expecting %d", argc, 1);
+	JS_ReportError(cx, "js_autoanysdkbindings_ProtocolUser_isFunctionSupported : wrong number of arguments: %d, was expecting %d", argc, 1);
 	return false;
 }
 bool js_autoanysdkbindings_ProtocolUser_login(JSContext *cx, uint32_t argc, jsval *vp)
@@ -1166,6 +1243,16 @@ bool js_autoanysdkbindings_ProtocolUser_login(JSContext *cx, uint32_t argc, jsva
 			ok &= jsval_to_std_string(cx, argv[0], &arg0);
 			if (!ok) { ok = true; break; }
 			cobj->login(arg0);
+			JS_SET_RVAL(cx, vp, JSVAL_VOID);
+			return true;
+		}
+		else if(argc == 2){
+			std::string arg0;
+			ok &= jsval_to_std_string(cx, argv[0], &arg0);
+			std::string arg1;
+			ok &= jsval_to_std_string(cx, argv[1], &arg1);
+			if (!ok) { ok = true; break; }
+			cobj->login(arg0, arg1);
 			JS_SET_RVAL(cx, vp, JSVAL_VOID);
 			return true;
 		}
@@ -1227,7 +1314,7 @@ void js_register_autoanysdkbindings_ProtocolUser(JSContext *cx, JSObject *global
 	static JSFunctionSpec funcs[] = {
 		JS_FN("isLogined", js_autoanysdkbindings_ProtocolUser_isLogined, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("getUserID", js_autoanysdkbindings_ProtocolUser_getUserID, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-		JS_FN("isSupportFunction", js_autoanysdkbindings_ProtocolUser_isSupportFunction, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("isFunctionSupported", js_autoanysdkbindings_ProtocolUser_isFunctionSupported, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("login", js_autoanysdkbindings_ProtocolUser_login, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("getPluginId", js_autoanysdkbindings_ProtocolUser_getPluginId, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FS_END

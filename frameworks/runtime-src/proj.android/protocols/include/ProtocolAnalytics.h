@@ -14,7 +14,34 @@ typedef std::pair< std::string, std::string >   LogEventParamPair;
 /// \typedef std::map<std::string, std::string> LogEventParamMap
 /// typedef LogEventParamMap.
 typedef std::map< std::string, std::string >    LogEventParamMap;
+typedef enum {
+	ANONYMOUS,
+	REGISTED,
+	SINA_WEIBO,
+	TENCENT_WEIBO,
+	QQ,
+	QQ_WEIBO,
+	ND91,
+} AccountType;
+typedef enum {
+	LOGIN,
+	LOGOUT,
+	REGISTER,
+} AccountOperate;
+typedef enum {
+	MALE,
+	FEMALE,
+	UNKNOWN,
 
+} AccountGender;
+typedef enum {
+	GUIDE_LINE,
+	MAIN_LINE,
+	BRANCH_LINE,
+	DAILY,
+	ACTIVITY,
+	OTHER,
+} TaskType;
 /**   
  *@class  ProtocolAnalytics
  *@brief the interface of Analytics
@@ -73,6 +100,11 @@ public:
      @warning This interface only worked on android.
      */
 	virtual void setCaptureUncaughtException(bool enabled) = 0;
+
+    /**
+     @brief Check function the plugin support or not
+     */
+    virtual bool isFunctionSupported(std::string functionName) = 0;
 };
 
 }} // namespace anysdk { namespace framework {

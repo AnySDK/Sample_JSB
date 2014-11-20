@@ -59,10 +59,13 @@ cc._tmp.WebGLLayerColor = function () {
         _t._verticesFloat32Buffer = cc._renderContext.createBuffer();
         _t._colorsUint8Buffer = cc._renderContext.createBuffer();
 
-        cc.LayerRGBA.prototype.ctor.call(_t);
+        cc.Layer.prototype.ctor.call(_t);
         _t._blendFunc = new cc.BlendFunc(cc.BLEND_SRC, cc.BLEND_DST);
 
         cc.LayerColor.prototype.init.call(_t, color, width, height);
+    };
+    _p._initRendererCmd = function(){
+        this._rendererCmd = new cc.RectRenderCmdWebGL(this);
     };
     _p.setContentSize = function (size, height) {
         var locSquareVertices = this._squareVertices;
@@ -135,11 +138,14 @@ cc._tmp.WebGLLayerColor = function () {
         glContext.bufferData(glContext.ARRAY_BUFFER, this._squareColorsAB, glContext.STATIC_DRAW);
     };
     //cc.LayerColor define end
-}
+};
 
 cc._tmp.WebGLLayerGradient = function () {
     //cc.LayerGradient define start
     var _p = cc.LayerGradient.prototype;
+    _p._initRendererCmd = function(){
+        this._rendererCmd = new cc.RectRenderCmdWebGL(this);
+    };
     _p.draw = cc.LayerColor.prototype.draw;
     _p._updateColor = function () {
         var _t = this;
@@ -185,6 +191,6 @@ cc._tmp.WebGLLayerGradient = function () {
         locSquareColor3.a = ((E.a + (S.a - E.a) * ((c - u.x - u.y) / (2.0 * c))));
 
         _t._bindLayerColorsBufferData();
-    }
+    };
     //cc.LayerGradient define end
-}
+};

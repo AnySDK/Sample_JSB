@@ -27,10 +27,8 @@ THE SOFTWARE.
 #ifndef __CCTMX_LAYER_H__
 #define __CCTMX_LAYER_H__
 
-#include "CCTMXObjectGroup.h"
-#include "CCAtlasNode.h"
 #include "2d/CCSpriteBatchNode.h"
-#include "CCTMXXMLParser.h"
+#include "2d/CCTMXXMLParser.h"
 #include "base/ccCArray.h"
 NS_CC_BEGIN
 
@@ -196,7 +194,7 @@ private:
     Vec2 getPositionForIsoAt(const Vec2& pos);
     Vec2 getPositionForOrthoAt(const Vec2& pos);
     Vec2 getPositionForHexAt(const Vec2& pos);
-
+    Vec2 getPositionForStaggeredAt(const Vec2& pos);
     Vec2 calculateLayerOffset(const Vec2& offset);
 
     /* optimization methods */

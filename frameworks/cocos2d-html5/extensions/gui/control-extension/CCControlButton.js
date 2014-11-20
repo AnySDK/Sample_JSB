@@ -62,7 +62,7 @@ cc.ControlButton = cc.Control.extend(/** @lends cc.ControlButton# */{
     _marginH: 0,
     _className: "ControlButton",
 
-    ctor: function () {
+    ctor: function (label, backgroundSprite, fontSize) {
         cc.Control.prototype.ctor.call(this);
         this._preferredSize = cc.size(0, 0);
         this._labelAnchorPoint = cc.p(0, 0);
@@ -72,10 +72,19 @@ cc.ControlButton = cc.Control.extend(/** @lends cc.ControlButton# */{
         this._titleColorDispatchTable = {};
         this._titleLabelDispatchTable = {};
         this._backgroundSpriteDispatchTable = {};
+
+        if(fontSize != undefined)
+            this.initWithTitleAndFontNameAndFontSize(label, backgroundSprite, fontSize);
+        else if(backgroundSprite != undefined)
+            this.initWithLabelAndBackgroundSprite(label, backgroundSprite);
+        else if(label != undefined)
+            this.initWithBackgroundSprite(label);
+        else
+            this.init();
     },
 
     init: function () {
-        return this.initWithLabelAndBackgroundSprite(cc.LabelTTF.create("", "Arial", 12), cc.Scale9Sprite.create());
+        return this.initWithLabelAndBackgroundSprite(new cc.LabelTTF("", "Arial", 12), new cc.Scale9Sprite());
     },
 
     needsLayout: function () {
@@ -102,7 +111,7 @@ cc.ControlButton = cc.Control.extend(/** @lends cc.ControlButton# */{
         var label = this._titleLabel;
         if (label && label.setString)
             label.setString(this._currentTitle);
-        if (label && label.RGBAProtocol)
+        if (label)
             label.setColor(this._currentTitleColor);
 
         var locContentSize = this.getContentSize();
@@ -158,7 +167,7 @@ cc.ControlButton = cc.Control.extend(/** @lends cc.ControlButton# */{
     },
 
     initWithLabelAndBackgroundSprite: function (label, backgroundSprite) {
-        if (!label || !label.RGBAProtocol)
+        if (!label)
             throw "cc.ControlButton.initWithLabelAndBackgroundSprite(): label should be non-null";
         if (!backgroundSprite)
             throw "cc.ControlButton.initWithLabelAndBackgroundSprite(): backgroundSprite should be non-null";
@@ -222,12 +231,12 @@ cc.ControlButton = cc.Control.extend(/** @lends cc.ControlButton# */{
     },
 
     initWithTitleAndFontNameAndFontSize: function (title, fontName, fontSize) {
-        var label = cc.LabelTTF.create(title, fontName, fontSize);
-        return this.initWithLabelAndBackgroundSprite(label, cc.Scale9Sprite.create());
+        var label = new cc.LabelTTF(title, fontName, fontSize);
+        return this.initWithLabelAndBackgroundSprite(label, new cc.Scale9Sprite());
     },
 
     initWithBackgroundSprite: function (sprite) {
-        var label = cc.LabelTTF.create("", "Arial", 30);//
+        var label = new cc.LabelTTF("", "Arial", 30);//
         return this.initWithLabelAndBackgroundSprite(label, sprite);
     },
 
@@ -305,7 +314,7 @@ cc.ControlButton = cc.Control.extend(/** @lends cc.ControlButton# */{
          var controlChildren = this.getChildren();
          for (var i = 0; i < controlChildren.length; i++) {
          var selChild = controlChildren[i];
-         if (selChild && selChild.RGBAProtocol)
+         if (selChild)
          selChild.setOpacity(opacity);
          }*/
         var locTable = this._backgroundSpriteDispatchTable;
@@ -371,7 +380,7 @@ cc.ControlButton = cc.Control.extend(/** @lends cc.ControlButton# */{
         this.needsLayout();
         if (this.zoomOnTouchDown) {
             var scaleValue = (this.isHighlighted() && this.isEnabled() && !this.isSelected()) ? 1.1 : 1.0;
-            var zoomAction = cc.ScaleTo.create(0.05, scaleValue);
+            var zoomAction = cc.scaleTo(0.05, scaleValue);
             zoomAction.setTag(cc.CONTROL_ZOOM_ACTION_TAG);
             this.runAction(zoomAction);
         }
@@ -535,7 +544,7 @@ cc.ControlButton = cc.Control.extend(/** @lends cc.ControlButton# */{
         var title = this.getTitleForState(state);
         if (!title)
             title = "";
-        this.setTitleLabelForState(cc.LabelTTF.create(title, fntFile, 12), state);
+        this.setTitleLabelForState(new cc.LabelTTF(title, fntFile, 12), state);
     },
 
     /**
@@ -585,7 +594,7 @@ cc.ControlButton = cc.Control.extend(/** @lends cc.ControlButton# */{
         var title = this.getTitleForState(state);
         if (!title)
             title = "";
-        this.setTitleLabelForState(cc.LabelBMFont.create(title, fntFile), state);
+        this.setTitleLabelForState(new cc.LabelBMFont(title, fntFile), state);
     },
 
     getTitleBMFontForState: function (state) {
@@ -665,25 +674,15 @@ cc.defineGetterSetter(_p, "labelAnchor", _p.getLabelAnchorPoint, _p.setLabelAnch
 
 _p = null;
 
-cc.ControlButton.create = function (label, backgroundSprite) {
-    var controlButton;
-    if (arguments.length == 0) {
-        controlButton = new cc.ControlButton();
-        if (controlButton && controlButton.init()) {
-            return controlButton;
-        }
-        return null;
-    } else if (arguments.length == 1) {
-        controlButton = new cc.ControlButton();
-        controlButton.initWithBackgroundSprite(arguments[0]);
-    } else if (arguments.length == 2) {
-        controlButton = new cc.ControlButton();
-        controlButton.initWithLabelAndBackgroundSprite(label, backgroundSprite);
-    } else if (arguments.length == 3) {
-        controlButton = new cc.ControlButton();
-        controlButton.initWithTitleAndFontNameAndFontSize(arguments[0], arguments[1], arguments[2]);
-    }
-    return controlButton;
+/**
+ * @deprecated
+ * @param label
+ * @param backgroundSprite
+ * @param fontSize
+ * @returns {ControlButton}
+ */
+cc.ControlButton.create = function (label, backgroundSprite, fontSize) {
+    return new cc.ControlButton(label, backgroundSprite, fontSize);
 };
 
 

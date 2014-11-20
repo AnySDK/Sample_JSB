@@ -1,6 +1,4 @@
 /****************************************************************************
- Copyright (c) 2008-2010 Ricardo Quesada
- Copyright (c) 2011-2012 cocos2d-x.org
  Copyright (c) 2013-2014 Chukong Technologies Inc.
 
  http://www.cocos2d-x.org
@@ -24,7 +22,12 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-cc.BakeSprite = cc.Sprite.extend({
+/**
+ * cc.BakeSprite is a type of sprite that will be cached.
+ * @class
+ * @extend cc.Sprite
+ */
+cc.BakeSprite = cc.Sprite.extend(/** @lends cc.BakeSprite# */{
     _cacheCanvas: null,
     _cacheContext: null,
 

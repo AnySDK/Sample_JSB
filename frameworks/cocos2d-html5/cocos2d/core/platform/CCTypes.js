@@ -25,18 +25,19 @@
  ****************************************************************************/
 
 /**
- * The color class
- * @param {Number} r 0 to 255
- * @param {Number} g 0 to 255
- * @param {Number} b 0 to 255
- * @param {Number} a 0 to 255
- * @constructor
+ * Color class, please use cc.color() to construct a color
+ * @class cc.Color
+ * @param {Number} r
+ * @param {Number} g
+ * @param {Number} b
+ * @param {Number} a
+ * @see cc.color
  */
 cc.Color = function (r, g, b, a) {
     this.r = r || 0;
     this.g = g || 0;
     this.b = b || 0;
-    this.a = a || 255;
+    this.a = (a == null) ? 255 : a;
 };
 
 /**
@@ -58,20 +59,21 @@ cc.Color = function (r, g, b, a) {
  * @param {Number} g
  * @param {Number} b
  * @param {Number} [a=255]
- * @returns {cc.Color}
+ * @return {cc.Color}
  */
 cc.color = function (r, g, b, a) {
     if (r === undefined)
         return {r: 0, g: 0, b: 0, a: 255};
-    if (typeof r === "string")
+    if (cc.isString(r))
         return cc.hexToColor(r);
-    if (typeof r === "object")
-        return {r: r.r, g: r.g, b: r.b, a: r.a || 255};
-    return  {r: r, g: g, b: b, a: a || 255 };
+    if (cc.isObject(r))
+        return {r: r.r, g: r.g, b: r.b, a: (r.a == null) ? 255 : r.a};
+    return  {r: r, g: g, b: b, a: (a == null ? 255 : a)};
 };
 
 /**
  * returns true if both ccColor3B are equal. Otherwise it returns false.
+ * @function
  * @param {cc.Color} color1
  * @param {cc.Color} color2
  * @return {Boolean}  true if both ccColor3B are equal. Otherwise it returns false.
@@ -82,6 +84,12 @@ cc.colorEqual = function (color1, color2) {
 
 /**
  * the device accelerometer reports values for each axis in units of g-force
+ * @class cc.Acceleration
+ * @constructor
+ * @param {Number} x
+ * @param {Number} y
+ * @param {Number} z
+ * @param {Number} timestamp
  */
 cc.Acceleration = function (x, y, z, timestamp) {
     this.x = x || 0;
@@ -91,9 +99,8 @@ cc.Acceleration = function (x, y, z, timestamp) {
 };
 
 /**
- * A vertex composed of 2 floats: x, y
- * @Class
- * @Construct
+ * @class cc.Vertex2F
+ * @constructor
  * @param {Number} x1
  * @param {Number} y1
  */
@@ -103,7 +110,7 @@ cc.Vertex2F = function (x1, y1) {
 };
 
 /**
- * helper macro that creates an Vertex2F type
+ * Helper macro that creates an Vertex2F type composed of 2 floats: x, y
  * @function
  * @param {Number} x
  * @param {Number} y
@@ -114,9 +121,8 @@ cc.vertex2 = function (x, y) {
 };
 
 /**
- * A vertex composed of 3 floats: x, y, z
- * @Class
- * @Construct
+ * @class cc.Vertex3F
+ * @constructor
  * @param {Number} x1
  * @param {Number} y1
  * @param {Number} z1
@@ -128,7 +134,7 @@ cc.Vertex3F = function (x1, y1, z1) {
 };
 
 /**
- * helper macro that creates an Vertex3F type
+ * Helper macro that creates an Vertex3F type composed of 3 floats: x, y, z
  * @function
  * @param {Number} x
  * @param {Number} y
@@ -140,9 +146,8 @@ cc.vertex3 = function (x, y, z) {
 };
 
 /**
- * A texcoord composed of 2 floats: u, y
- * @Class
- * @Construct
+ * @class cc.Tex2F
+ * @constructor
  * @param {Number} u1
  * @param {Number} v1
  */
@@ -152,7 +157,7 @@ cc.Tex2F = function (u1, v1) {
 };
 
 /**
- * helper macro that creates an Tex2F type
+ * Helper macro that creates an Tex2F type: A texcoord composed of 2 floats: u, y
  * @function
  * @param {Number} u
  * @param {Number} v
@@ -164,8 +169,8 @@ cc.tex2 = function (u, v) {
 
 /**
  * Blend Function used for textures
- * @Class
- * @Construct
+ * @Class cc.BlendFunc
+ * @Constructor
  * @param {Number} src1 source blend function
  * @param {Number} dst1 destination blend function
  */
@@ -174,6 +179,10 @@ cc.BlendFunc = function (src1, dst1) {
     this.dst = dst1;
 };
 
+/**
+ * @function
+ * @returns {cc.BlendFunc}
+ */
 cc.blendFuncDisable = function () {
     return new cc.BlendFunc(cc.ONE, cc.ZERO);
 };
@@ -181,6 +190,7 @@ cc.blendFuncDisable = function () {
 /**
  * convert a string of color for style to Color.
  * e.g. "#ff06ff"  to : cc.color(255,6,255)
+ * @function
  * @param {String} hex
  * @return {cc.Color}
  */
@@ -196,6 +206,7 @@ cc.hexToColor = function (hex) {
 /**
  * convert Color to a string of color for style.
  * e.g.  cc.color(255,6,255)  to : "#ff06ff"
+ * @function
  * @param {cc.Color} color
  * @return {String}
  */
@@ -326,6 +337,10 @@ cc._Dictionary = cc.Class.extend({
     }
 });
 
+/**
+ * @class cc.FontDefinition
+ * @constructor
+ */
 cc.FontDefinition = function () {
     var _t = this;
     _t.fontName = "Arial";
@@ -348,12 +363,12 @@ cc.FontDefinition = function () {
 };
 
 if (cc._renderType === cc._RENDER_TYPE_WEBGL) {
-    cc.assert(typeof cc._tmp.WebGLColor === "function", cc._LogInfos.MissingFile, "CCTypesWebGL.js");
+    cc.assert(cc.isFunction(cc._tmp.WebGLColor), cc._LogInfos.MissingFile, "CCTypesWebGL.js");
     cc._tmp.WebGLColor();
     delete cc._tmp.WebGLColor;
 }
 
-cc.assert(typeof cc._tmp.PrototypeColor === "function", cc._LogInfos.MissingFile, "CCTypesPropertyDefine.js");
+cc.assert(cc.isFunction(cc._tmp.PrototypeColor), cc._LogInfos.MissingFile, "CCTypesPropertyDefine.js");
 cc._tmp.PrototypeColor();
 delete cc._tmp.PrototypeColor;
 
