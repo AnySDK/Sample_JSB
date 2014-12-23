@@ -78,9 +78,9 @@ var HelloWorldLayer = cc.Layer.extend({
 //var appSecret = "e23ae7d6da34334d4cc11df0dc7f3de0";
 //var privateKey = "76E1D975EA4B9A4ECD0E85AF2D782E99";
 //ios
-var appKey = "96418BB3-2DD9-4ADC-3FF9-E0F18857FD3E";
-var appSecret = "5c11e736bb3bca886effb70886a85830";
-var privateKey = "ACB121D6FF9D7CEAAACE3960ADF4A9CE";
+var appKey = "CED525C0-8D41-F514-96D8-90092EB3899A";
+var appSecret = "a29b4f22aa63b8274f7f6e2dd5893d9b";
+var privateKey = "963C4B4DA71BC51C69EB11D24D0C7D49";
 var oauthLoginServer = "http://oauth.anysdk.com/api/OauthLoginDemo/Login.php";
 
 var agent = null;
