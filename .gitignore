@@ -60,7 +60,6 @@ build_*_xcode/
 *.xcworkspacedata
 *.xcuserstate
 xcschememanagement.plist
-build/
 .DS_Store
 xcuserdata/
 
