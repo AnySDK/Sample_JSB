@@ -72,10 +72,15 @@ var HelloWorldLayer = cc.Layer.extend({
     }
 });
 
-
-var appKey = "BA5B660B-6DD5-0F67-8CC7-8FE0BA7545D6";
-var appSecret = "e23ae7d6da34334d4cc11df0dc7f3de0";
-var privateKey = "76E1D975EA4B9A4ECD0E85AF2D782E99";
+//注意：这里appKey, appSecret, privateKey，要替换成自己打包工具里面的值(登录打包工具，游戏管理界面上显示的那三个参数)
+//android
+//var appKey = "BA5B660B-6DD5-0F67-8CC7-8FE0BA7545D6";
+//var appSecret = "e23ae7d6da34334d4cc11df0dc7f3de0";
+//var privateKey = "76E1D975EA4B9A4ECD0E85AF2D782E99";
+//ios
+var appKey = "CED525C0-8D41-F514-96D8-90092EB3899A";
+var appSecret = "a29b4f22aa63b8274f7f6e2dd5893d9b";
+var privateKey = "963C4B4DA71BC51C69EB11D24D0C7D49";
 var oauthLoginServer = "http://oauth.anysdk.com/api/OauthLoginDemo/Login.php";
 
 var agent = null;
@@ -200,17 +205,13 @@ var AgentLayer = cc.Layer.extend({
     funcOfAgent:function(){
         var customParam = agent.getCustomParam();
         cc.log("customParam:"+customParam);
-        var channelId = agent.getChannelId();
-        cc.log("channelId:"+channelId);
+//        var channelId = agent.getChannelId();
+//        cc.log("channelId:"+channelId);
     },
     create_btn:function(str, tag){
         var lb = cc.LabelTTF.create(str, "Arial", 38);
         var menuItem = cc.MenuItemLabel.create(lb, this.onClick.bind(this));
-        // var menuItem = cc.MenuItemImage.create(res.sp1_png, res.sp2_png, this.onClick.bind(this), this);
         menuItem.setTag(tag);
-        // menuItem.addChild(lb);
-        // var size = menuItem.getContentSize();
-        // lb.setPosition(size.width/2, size.height/2);
         return menuItem;
     },
     onClick:function(item){
@@ -287,7 +288,9 @@ var AgentLayer = cc.Layer.extend({
         switch(idx){
             case user_operation.login:{
                     user_plugin.login();
-                    analytics_plugin.logEvent("login");
+                    if (analytics_plugin) {
+                        analytics_plugin.logEvent("login");
+                    }
                 }break;
             case user_operation.logout:
                     if ( user_plugin.isFunctionSupported("logout") )
@@ -343,8 +346,10 @@ var AgentLayer = cc.Layer.extend({
                         Role_Id:"1001",  
                         Role_Name:"asd"
                     };
-                    cc.log("will log pay event:");
-                    analytics_plugin.logEvent("pay", info);
+                    if (analytics_plugin) {
+                        cc.log("will log pay event:");
+                        analytics_plugin.logEvent("pay", info);
+                    }
                     var obj = iap_plugin
                     for(var p in obj){
                         var iap_plusgin = obj[p];
@@ -371,8 +376,10 @@ var AgentLayer = cc.Layer.extend({
                     }
                     cc.log("share info:"+info+", "+info["site"]);
                     share_plugin.share(info)
-                    cc.log("will log event");
-                    analytics_plugin.logEvent("share")
+                    if (analytics_plugin) {
+                        cc.log("will log share event");
+                        analytics_plugin.logEvent("share");
+                    }
                 }break;
         }
     },
@@ -414,7 +421,8 @@ var AgentLayer = cc.Layer.extend({
                 break;
             case social_operation.showAchievement:
                     social_plugin.showAchievements();
-                    analytics_plugin.logEvent("showAchievements");
+                    if (analytics_plugin)
+                        analytics_plugin.logEvent("showAchievements");
                 break;
         }
     },
