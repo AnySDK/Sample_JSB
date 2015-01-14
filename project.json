@@ -13,6 +13,12 @@
     "jsList" : [
         "src/resource.js",
         "src/anysdkConst.js",
-        "src/app.js"
+        "src/app.js",
+        "src/Analytics.js",
+        "src/Share.js",
+        "src/Push.js",
+        "src/Social.js",
+        "src/Ads.js",
+        "src/PluginChannel.js"
     ]
 }

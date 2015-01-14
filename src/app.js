@@ -72,25 +72,12 @@ var HelloWorldLayer = cc.Layer.extend({
     }
 });
 
-//注意：这里appKey, appSecret, privateKey，要替换成自己打包工具里面的值(登录打包工具，游戏管理界面上显示的那三个参数)
-//android
-//var appKey = "BA5B660B-6DD5-0F67-8CC7-8FE0BA7545D6";
-//var appSecret = "e23ae7d6da34334d4cc11df0dc7f3de0";
-//var privateKey = "76E1D975EA4B9A4ECD0E85AF2D782E99";
-//ios
-var appKey = "CED525C0-8D41-F514-96D8-90092EB3899A";
-var appSecret = "a29b4f22aa63b8274f7f6e2dd5893d9b";
-var privateKey = "963C4B4DA71BC51C69EB11D24D0C7D49";
-var oauthLoginServer = "http://oauth.anysdk.com/api/OauthLoginDemo/Login.php";
-
-var agent = null;
-var user_plugin = null;
-var iap_plugin = null;
-var share_plugin = null;
-var ads_plugin = null;
-var social_plugin = null;
-var push_plugin = null;
-var analytics_plugin = null;
+var plugin_channel = null;
+var _ads = null;
+var _share = null;
+var _push = null;
+var _social = null;
+var _analytics = null;
 
 var menu_lv = {
     base:100,
@@ -145,34 +132,15 @@ var AgentLayer = cc.Layer.extend({
     ctor:function () {
         this._super();
 
-        agent = anysdk.AgentManager.getInstance();
-        // init
-        agent.init(appKey,appSecret,privateKey,oauthLoginServer);
-        // load
-        agent.loadALLPlugin();
-        // get plugins
-        user_plugin  = agent.getUserPlugin();
-        iap_plugin   = agent.getIAPPlugin();
-        share_plugin = agent.getSharePlugin();
-        ads_plugin   = agent.getAdsPlugin();
-        social_plugin = agent.getSocialPlugin();
-        push_plugin  = agent.getPushPlugin();
-        analytics_plugin = agent.getAnalyticsPlugin();
-        cc.log("agent:"+agent);
+        plugin_channel = new PluginChannel();
+        plugin_channel.loadPlugins();
 
-        user_plugin.setActionListener(this.onUserLogin, this);
-        cc.log("222---")
-        iap_plugins = iap_plugin;
-        for(var key in iap_plugins){
-            var iap_plusgin = iap_plugins[key];
-            iap_plusgin.setResultListener(this.onPayResult, this);
-        }
-        // set share result listener
-        if (share_plugin)
-            share_plugin.setResultListener(this.onShareResult, this);
-
-        // 
-        this.funcOfAgent();
+        _ads = new Ads();
+        _share = new Share();
+        _push = new Push();
+        _social = new Social();
+        _analytics = new Analytics();
+        _analytics.startSession();
 
         this.base_menu = ["User System", "IAP System", "Share System", "Ads System", "Social System", "Push System"];
 
@@ -201,12 +169,6 @@ var AgentLayer = cc.Layer.extend({
         menu.x = 0;
         menu.y = 0;
         this.addChild(menu, 1);
-    },
-    funcOfAgent:function(){
-        var customParam = agent.getCustomParam();
-        cc.log("customParam:"+customParam);
-//        var channelId = agent.getChannelId();
-//        cc.log("channelId:"+channelId);
     },
     create_btn:function(str, tag){
         var lb = cc.LabelTTF.create(str, "Arial", 38);
@@ -281,189 +243,96 @@ var AgentLayer = cc.Layer.extend({
         this.is_dis_sec = true;
     },
     onUserAction:function(idx){
-        if (user_plugin == null) {
-            cc.log("user plugin was not loaded.");
-            return;
-        }
         switch(idx){
             case user_operation.login:{
-                    user_plugin.login();
-                    if (analytics_plugin) {
-                        analytics_plugin.logEvent("login");
-                    }
+                    plugin_channel.login();
                 }break;
             case user_operation.logout:
-                    if ( user_plugin.isFunctionSupported("logout") )
-                        user_plugin.callFuncWithParam("logout");
+                    plugin_channel.logout();
                 break;
             case user_operation.enterPlatform:
-                    if ( user_plugin.isFunctionSupported("enterPlatform") )
-                        user_plugin.callFuncWithParam("enterPlatform");
+                    plugin_channel.enterPlatform();
                 break;
             case user_operation.showToolbar:
-                    if ( user_plugin.isFunctionSupported("showToolBar") ){
-                        var param1 = anysdk.PluginParam.create(ToolBarPlace.kToolBarTopLeft)
-                        user_plugin.callFuncWithParam("showToolBar", param1);
-                    }
+                    plugin_channel.showToolbar(ToolBarPlace.kToolBarTopLeft);
                 break;
             case user_operation.hideToolbar:
-                    if ( user_plugin.isFunctionSupported("hideToolBar") )
-                        user_plugin.callFuncWithParam("hideToolBar");
+                    plugin_channel.hideToolbar();
                 break;
             case user_operation.accountSwitch:
-                    if ( user_plugin.isFunctionSupported("accountSwitch") )
-                        user_plugin.callFuncWithParam("accountSwitch");
+                    plugin_channel.accountSwitch();
                 break;
             case user_operation.realNameRegister:
-                    if ( user_plugin.isFunctionSupported("realNameRegister") )
-                        user_plugin.callFuncWithParam("realNameRegister");
+                    plugin_channel.realNameRegister();
                 break;
             case user_operation.antiAddictionQuery:
-                    if ( user_plugin.isFunctionSupported("antiAddictionQuery") )
-                        user_plugin.callFuncWithParam("antiAddictionQuery");
+                    plugin_channel.antiAddictionQuery();
                 break;
             case user_operation.submitLoginGameRole:
-                    if( user_plugin.isFunctionSupported("submitLoginGameRole") ){
-                        var data = anysdk.PluginParam.create({roleId:"123456",roleName:"test",roleLevel:"10",zoneId:"123",zoneName:"test",dataType:"1",ext:"login"});
-                        user_plugin.callFuncWithParam("submitLoginGameRole", data);
-                    }
+                    plugin_channel.submitLoginGameRole();
                 break;
         }
     },
     onIAPAction:function(idx){
-        if (iap_plugin == null) {
-            cc.log("IAP plugin was not loaded.");
-            return;
-        }
         switch(idx){
             case iap_operation.pay:{
-                    var info = {
-                        Product_Price:"1", 
-                        Product_Id:"monthly",  
-                        Product_Name:"gold",  
-                        Server_Id:"13",  
-                        Product_Count:"1",  
-                        Role_Id:"1001",  
-                        Role_Name:"asd"
-                    };
-                    if (analytics_plugin) {
-                        cc.log("will log pay event:");
-                        analytics_plugin.logEvent("pay", info);
-                    }
-                    var obj = iap_plugin
-                    for(var p in obj){
-                        var iap_plusgin = obj[p];
-                        cc.log("will pay for product");
-                        iap_plusgin.payForProduct(info);
-                    }
+                plugin_channel.pay();
                 }break;
         }
     },
     onShareAction:function(idx){
-        if (share_plugin == null) {
-            cc.log("share plugin was not loaded.");
-            return;
-        }
         switch(idx){
             case share_operation.share:{
-                    var info = {
-                        title : "ShareSDK是一个神奇的SDK",
-                        titleUrl : "http://sharesdk.cn",
-                        site : "ShareSDK",
-                        siteUrl : "http://sharesdk.cn",
-                        text : "ShareSDK集成了简单、支持如微信、新浪微博、腾讯微博等社交平台",
-                        comment : "无",
-                    }
-                    cc.log("share info:"+info+", "+info["site"]);
-                    share_plugin.share(info)
-                    if (analytics_plugin) {
-                        cc.log("will log share event");
-                        analytics_plugin.logEvent("share");
-                    }
+                _share.share();
                 }break;
         }
     },
     onAdsAction:function(idx){
-        if (ads_plugin == null) {
-            cc.log("ads plugin was not loaded.");
-            return;
-        }
         switch(idx){
             case ads_operation.showAds:
-                if ( ads_plugin.isAdTypeSupported(AdsType.AD_TYPE_FULLSCREEN) )
-                    ads_plugin.showAds(AdsType.AD_TYPE_FULLSCREEN)
-                    // ads_plugin.showAds(AdsType.FULLSCREEN)
+                _ads.showAds(AdsType.AD_TYPE_FULLSCREEN);
                 break;
             case ads_operation.hideAds:
-                if ( ads_plugin.isAdTypeSupported(AdsType.AD_TYPE_FULLSCREEN) )
-                    ads_plugin.hideAds(AdsType.AD_TYPE_FULLSCREEN)
+                _ads.hideAds(AdsType.AD_TYPE_FULLSCREEN);
                 break;
         }
     },
     onSocialAction:function(idx){
-        if (social_plugin == null) {
-            cc.log("social plugin was not loaded.");
-            return;
-        }
         switch(idx){
             case social_operation.submitScore:{
-                var score = 131;
-                    social_plugin.submitScore("friend", score);
-                    social_plugin.signIn();
-                    social_plugin.signOut();
+                _social.submitScore();
                 }break;
             case social_operation.showLeaderboard:
-                    social_plugin.showLeaderboard("friend");
+                _social.showLeaderboard();
                 break;
             case social_operation.unlockAchievement:
-                    var achInfo = {"rank":"friends"}
-                    social_plugin.unlockAchievement(achInfo);
+                _social.unlockAchievement();
                 break;
             case social_operation.showAchievement:
-                    social_plugin.showAchievements();
-                    if (analytics_plugin)
-                        analytics_plugin.logEvent("showAchievements");
+                _social.showAchievement();
                 break;
         }
     },
     onPushAction:function(idx){
-        if (push_plugin == null) {
-            cc.log("push plugin was not loaded.");
-            return;
-        }
         switch(idx){
             case push_operation.closePush:
-                    push_plugin.closePush();
+                    _push.closePush();
                 break;
             case push_operation.setAlias:
-                    push_plugin.setAlias("ivenKill");
+                    _push.setAlias();
                 break;
             case push_operation.delAlias:
-                    push_plugin.delAlias("ivenKill");
+                    _push.delAlias();
                 break;
             case push_operation.setTags:
-                    push_plugin.setTags(["easy","fast","qwe"]);
+                    _push.setTags();
                 break;
             case push_operation.delTags:
-                    push_plugin.delTags(["easy","qwe"]);
+                    _push.delTags();
                 break;
         }
-    },
-    onPayResult:function(ret, msg, info){
-        cc.log("pay result, resultcode:"+ret+", msg: "+msg+", info:"+info);
-    },
-    onUserLogin:function(plugin, code, msg){
-        cc.log("on user result action.");
-        cc.log("msg:"+msg);
-        cc.log("code:"+code);
-        cc.log("plugin:"+plugin);
-        // cc.log(plugin+", "+code+", "+msg);
-    },
-    onShareResult:function(code, msg){
-        cc.log("share result, resultcode:"+code+", msg: "+msg);
     }
 });
-
 
 var HelloWorldScene = cc.Scene.extend({
     onEnter:function () {
