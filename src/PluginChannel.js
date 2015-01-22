@@ -22,6 +22,8 @@ var PluginChannel = cc.Class.extend({
         agent.init(appKey,appSecret,privateKey,oauthLoginServer);
         // load
         agent.loadALLPlugin();
+        //
+        cc.log("getFrameworkVersion-----:"+agent.getFrameworkVersion());
         // get plugins
         user_plugin   = agent.getUserPlugin();
         iap_pluginMap = agent.getIAPPlugin();
