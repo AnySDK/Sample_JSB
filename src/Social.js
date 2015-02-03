@@ -19,6 +19,6 @@ var Social = cc.Class.extend({
         social_plugin.unlockAchievement(achInfo);
 	},
 	showAchievement:function(){
-		social_plugin.showAchievement();
+		social_plugin.showAchievements();
 	}
 });
