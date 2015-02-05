@@ -25,5 +25,8 @@ var Share = cc.Class.extend({
 	},
     onShareResult:function(code, msg){
         cc.log("share result, resultcode:"+code+", msg: "+msg);
+    },
+    getSDKVersion:function(){
+        cc.log("share getSDKVersion:"+ share_plugin.getSDKVersion());
     }
 });
