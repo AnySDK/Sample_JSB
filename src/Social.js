@@ -4,6 +4,9 @@ var social_plugin = null;
 var Social = cc.Class.extend({
 	ctor:function(){
 		social_plugin = anysdk.AgentManager.getInstance().getSocialPlugin();
+		if (social_plugin) {
+			social_plugin.setListener(this.onSocialAction, this)
+		};
 	},
 	submitScore:function(){
         var score = 131;
@@ -20,5 +23,8 @@ var Social = cc.Class.extend({
 	},
 	showAchievement:function(){
 		social_plugin.showAchievements();
+	},
+	onSocialAction:function(code ,msg){
+		cc.log("code:"+code+", msg:"+msg)
 	}
 });
