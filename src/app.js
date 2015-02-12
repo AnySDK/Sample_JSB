@@ -103,7 +103,8 @@ var iap_operation = {
     pay:0
 };
 var share_operation = {
-    share:0
+    share:0,
+    sdkversion:1
 };
 var ads_operation = {
     showAds:0,
@@ -147,7 +148,7 @@ var AgentLayer = cc.Layer.extend({
         this.sec_menu = [
                     ["login", "logout", "enterPlatform", "showToolBar", "hideToolBar", "accountSwitch", "realNameRegister", "antiAddictionQuery", "submitLoginGameRole"],
                     ["pay"],
-                    ["share"],
+                    ["share", "sdkversion"],
                     ["show Ads", "hide Ads"],
                     ["submit score", "show Leaderboard", "unloack Achievement", "show Achievement"],
                     ["close Push", "set Alias", "del Alias", "set Tags", "del Tags"],
@@ -284,6 +285,9 @@ var AgentLayer = cc.Layer.extend({
         switch(idx){
             case share_operation.share:{
                 _share.share();
+                }break;
+            case share_operation.sdkversion:{
+                _share.getSDKVersion();
                 }break;
         }
     },

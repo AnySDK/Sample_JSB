@@ -4,9 +4,9 @@ var social_plugin = null;
 var Social = cc.Class.extend({
 	ctor:function(){
 		social_plugin = anysdk.AgentManager.getInstance().getSocialPlugin();
-        // set share result listener
-        if (social_plugin)
-            social_plugin.setListener(this.onActionResult, this);
+		if (social_plugin) {
+			social_plugin.setListener(this.onSocialAction, this)
+		};
 	},
 	submitScore:function(){
         var score = 131;
@@ -18,10 +18,13 @@ var Social = cc.Class.extend({
 		social_plugin.showLeaderboard("friend");
 	},
 	unlockAchievement:function(){
-        var achInfo = {"rank":"friends"}
+        var achInfo = {"rank":"friends"};
         social_plugin.unlockAchievement(achInfo);
 	},
 	showAchievement:function(){
-		social_plugin.showAchievement();
+		social_plugin.showAchievements();
+	},
+	onSocialAction:function(code ,msg){
+		cc.log("code:"+code+", msg:"+msg)
 	}
 });

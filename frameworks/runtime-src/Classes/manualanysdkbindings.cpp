@@ -13,6 +13,9 @@
 
 using namespace anysdk::framework;
 
+#define ASF_ANDROID_JS_VERSION  "<<<<<ANYSDK_FRAMEWORK_VERSION>>>>>@ANDROID_JS_1.5.0"
+#define ASF_IOS_JS_VERSION      "<<<<<ANYSDK_FRAMEWORK_VERSION>>>>>@IOS_JS_1.5.0"
+
 template<class T>
 static bool dummy_constructor(JSContext *cx, uint32_t argc, jsval *vp) {
     JS::RootedValue initializing(cx);
@@ -962,7 +965,7 @@ static bool jsb_anysdk_framework_AgentManager_getIAPPlugin(JSContext *cx, uint32
     	JS::RootedValue dictElement(cx);
 
         std::string key = std::string(iter->first);
-        CCLOG("iap key: %s.", key.c_str());
+        //CCLOG("iap key: %s.", key.c_str());
         ProtocolIAP* iap_plugin = (ProtocolIAP*)(iter->second);
 
         js_proxy_t *jsProxy = js_get_or_create_proxy<ProtocolIAP>(cx, (ProtocolIAP*)iap_plugin);
@@ -974,6 +977,33 @@ static bool jsb_anysdk_framework_AgentManager_getIAPPlugin(JSContext *cx, uint32
     JS_SET_RVAL(cx, vp, jsret);
 
 	return true;
+}
+
+static bool jsb_anysdk_framework_AgentManager_getFrameworkVersion(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    JSObject *obj = JS_THIS_OBJECT(cx, vp);
+    js_proxy_t *proxy = jsb_get_js_proxy(obj);
+    AgentManager* cobj = (AgentManager *)(proxy ? proxy->ptr : NULL);
+    
+    if (argc != 0)
+    {
+        CCLOG("AgentManager_getIAPPlugin param number is wrong.");
+        return false;
+    }
+    std::string temp1,temp2;
+    if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+        temp1 = ASF_IOS_JS_VERSION;
+    else
+        temp1 = ASF_ANDROID_JS_VERSION;
+    
+    int pos = int(temp1.find('@'));
+    temp2 = temp1.substr(pos + 1,temp1.length());
+    
+    jsval jsret = JSVAL_NULL;
+    jsret = c_string_to_jsval(cx, temp2.c_str());
+    JS_SET_RVAL(cx, vp, jsret);
+    
+    return true;
 }
 
 class ProtocolAdsResultListener : public AdsListener
@@ -1278,6 +1308,43 @@ public:
 	        JS_CallFunctionValue(cx, thisObj, _jsCallback, 3, valArr, &retval);
 	        JS_RemoveValueRoot(cx, valArr);
 	    }
+    }
+    virtual void onRequestResult(RequestResultCode ret, const char* msg, AllProductsInfo info)
+    {
+        CCLOG("on pay request result: %d, msg: %s.", ret, msg);
+        JSContext *cx = ScriptingCore::getInstance()->getGlobalContext();
+        JSObject *thisObj = JSVAL_IS_VOID(_jsThisObj) ? NULL : JSVAL_TO_OBJECT(_jsThisObj);
+        jsval retval;
+        if (_jsCallback != JSVAL_VOID)
+        {
+            std::string vec="{";
+            for (auto iter = info.begin(); iter != info.end(); ++iter)
+            {
+                std::string key = std::string(iter->first);
+                std::string value="{";
+                for (auto iter1 = iter->second.begin(); iter1 != iter->second.end(); iter1++) {
+                    std::string key1 = std::string(iter1->first);
+                    std::string value1 = (std::string)(iter1->second);
+                    value += key1 + ":" +value1+ ",";
+                }
+                value.replace(value.length() - 1, 1, "}");
+                // CCLOG("productInfo key: %s, value: %s.", key.c_str(), value.c_str());
+                vec += key + ":" +value+ ",";
+            }
+            vec.replace(vec.length() - 1, 1, "}");
+            jsval resultCode = INT_TO_JSVAL(ret);
+            jsval valArr[3];
+            valArr[0] = resultCode;
+            valArr[1] = std_string_to_jsval(cx, msg);
+            valArr[2] = std_string_to_jsval(cx, vec);
+            
+            JS_AddValueRoot(cx, valArr);
+            
+            JSB_AUTOCOMPARTMENT_WITH_GLOBAL_OBJCET
+            
+            JS_CallFunctionValue(cx, thisObj, _jsCallback, 3, valArr, &retval);
+            JS_RemoveValueRoot(cx, valArr);
+        }
     }
 
     void setJSCallbackThis(jsval jsThisObj)
@@ -2072,8 +2139,9 @@ void register_all_anysdk_manual(JSContext* cx, JSObject* obj) {
 	JS_DefineFunction(cx, jsb_anysdk_framework_PluginProtocol_prototype, "callBoolFuncWithParam", jsb_anysdk_framework_PluginProtocol_callBoolFuncWithParam, 6, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 	JS_DefineFunction(cx, jsb_anysdk_framework_PluginProtocol_prototype, "callFloatFuncWithParam", jsb_anysdk_framework_PluginProtocol_callFloatFuncWithParam, 6, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 
-	//AgentManager
-	JS_DefineFunction(cx, jsb_anysdk_framework_AgentManager_prototype, "getIAPPlugin", jsb_anysdk_framework_AgentManager_getIAPPlugin, 0, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+    //AgentManager
+    JS_DefineFunction(cx, jsb_anysdk_framework_AgentManager_prototype, "getIAPPlugin", jsb_anysdk_framework_AgentManager_getIAPPlugin, 0, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+    JS_DefineFunction(cx, jsb_anysdk_framework_AgentManager_prototype, "getFrameworkVersion", jsb_anysdk_framework_AgentManager_getFrameworkVersion, 0, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 
 	//ProtocolAds
 	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolAds_prototype, "setAdsListener", jsb_anysdk_framework_ProtocolAds_setAdsListener, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
