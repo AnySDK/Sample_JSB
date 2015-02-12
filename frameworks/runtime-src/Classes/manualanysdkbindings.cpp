@@ -1309,6 +1309,43 @@ public:
 	        JS_RemoveValueRoot(cx, valArr);
 	    }
     }
+    virtual void onRequestResult(RequestResultCode ret, const char* msg, AllProductsInfo info)
+    {
+        CCLOG("on pay request result: %d, msg: %s.", ret, msg);
+        JSContext *cx = ScriptingCore::getInstance()->getGlobalContext();
+        JSObject *thisObj = JSVAL_IS_VOID(_jsThisObj) ? NULL : JSVAL_TO_OBJECT(_jsThisObj);
+        jsval retval;
+        if (_jsCallback != JSVAL_VOID)
+        {
+            std::string vec="{";
+            for (auto iter = info.begin(); iter != info.end(); ++iter)
+            {
+                std::string key = std::string(iter->first);
+                std::string value="{";
+                for (auto iter1 = iter->second.begin(); iter1 != iter->second.end(); iter1++) {
+                    std::string key1 = std::string(iter1->first);
+                    std::string value1 = (std::string)(iter1->second);
+                    value += key1 + ":" +value1+ ",";
+                }
+                value.replace(value.length() - 1, 1, "}");
+                // CCLOG("productInfo key: %s, value: %s.", key.c_str(), value.c_str());
+                vec += key + ":" +value+ ",";
+            }
+            vec.replace(vec.length() - 1, 1, "}");
+            jsval resultCode = INT_TO_JSVAL(ret);
+            jsval valArr[3];
+            valArr[0] = resultCode;
+            valArr[1] = std_string_to_jsval(cx, msg);
+            valArr[2] = std_string_to_jsval(cx, vec);
+            
+            JS_AddValueRoot(cx, valArr);
+            
+            JSB_AUTOCOMPARTMENT_WITH_GLOBAL_OBJCET
+            
+            JS_CallFunctionValue(cx, thisObj, _jsCallback, 3, valArr, &retval);
+            JS_RemoveValueRoot(cx, valArr);
+        }
+    }
 
     void setJSCallbackThis(jsval jsThisObj)
     {
