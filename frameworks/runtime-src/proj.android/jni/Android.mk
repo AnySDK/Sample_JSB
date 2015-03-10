@@ -14,7 +14,7 @@ LOCAL_SRC_FILES := hellojavascript/main.cpp \
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../Classes
 
 LOCAL_STATIC_LIBRARIES := cocos_jsb_static
-LOCAL_STATIC_LIBRARIES += PluginProtocolStatic
+LOCAL_WHOLE_STATIC_LIBRARIES := PluginProtocolStatic
 
 LOCAL_EXPORT_CFLAGS := -DCOCOS2D_DEBUG=2 -DCOCOS2D_JAVASCRIPT
 
