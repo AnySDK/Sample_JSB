@@ -129,6 +129,8 @@ void register_all_autoanysdkbindings(JSContext* cx, JSObject* obj);
 bool js_autoanysdkbindings_AgentManager_getSocialPlugin(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_AgentManager_unloadALLPlugin(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_AgentManager_loadALLPlugin(JSContext *cx, uint32_t argc, jsval *vp);
+bool js_autoanysdkbindings_AgentManager_unloadAllPlugins(JSContext *cx, uint32_t argc, jsval *vp);
+bool js_autoanysdkbindings_AgentManager_loadAllPlugins(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_AgentManager_getCustomParam(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_AgentManager_getUserPlugin(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_AgentManager_init(JSContext *cx, uint32_t argc, jsval *vp);

@@ -1,12 +1,12 @@
 //for plugin type
 var Plugin_type = {
-    kPluginAds:1,
-    kPluginAnalytics:2,
-    kPluginIAP:3,
-    kPluginShare:4,
-    kPluginUser:5,
-    kPluginSocial:6,
-    kPluginPush:7
+    kPluginAds:16,
+    kPluginAnalytics:1,
+    kPluginIAP:8,
+    kPluginShare:2,
+    kPluginUser:32,
+    kPluginSocial:4,
+    kPluginPush:64
 };	//plugin type
 
 //for ads
@@ -18,7 +18,8 @@ var AdsResultCode = {
     kPointsSpendFailed:4,        /**< enum the callback: the points spend failed. */
     kNetworkError:5,              /**< enum the callback of Network error at center. */
     kUnknownError:6,              /**< enum the callback of Unknown error. */
-    kOfferWallOnPointsChanged:7   /**< enum the callback of Changing the point of offerwall. */
+    kOfferWallOnPointsChanged:7,   /**< enum the callback of Changing the point of offerwall. */
+    kAdsExtension :40000 /**< enum value is  extension code . */
 };	//ads result code
 
 var AdsPos = {
@@ -48,12 +49,14 @@ var PayResultCode = {
 	kPayInitSuccess:5,	/**< enum value is callback of succeeding in initing sdk . */
 	kPayInitFail:6,		/**< enum value is callback of failing to init sdk . */
 	kPayNowPaying:7, 	/**< enum value is callback of paying now . */
-	kPayRechareSuccess:8/**< enum value is callback of  succeeding in recharging. */
+	kPayRechargeSuccess:8,/**< enum value is callback of  succeeding in recharging. */
+	kPayExtension : 30000 /**< enum value is  extension code . */
 };
 
 // for push action result code
 var PushActionResultCode = {
-	kPushReceiveMessage:0	/**value is callback of Receiving Message . */
+	kPushReceiveMessage:0,	/**value is callback of Receiving Message . */
+	kPushExtensionCode : 60000 /**< enum value is  extension code . */
 };
 
 // for share result code
@@ -61,7 +64,8 @@ var ShareResultCode = {
     kShareSuccess:0,	/**< enum value is callback of failing to sharing . */
     kShareFail:1,		/**< enum value is callback of failing to share . */
     kShareCancel:2,		/**< enum value is callback of canceling to share . */
-    kShareNetworkError:3	/**< enum value is callback of network error . */
+    kShareNetworkError:3,	/**< enum value is callback of network error . */
+    kShareExtension :10000 /**< enum value is  extension code . */
 };
 
 //for social ret code
@@ -75,7 +79,9 @@ var SocialRetCode = {
     kSocialSignInSucceed:5,		/**< enum value is callback of succeeding to login. */
     kSocialSignInFail:6,		/**< enum value is callback of failing to  login. */
     kSocialSignOutSucceed:7,	/**< enum value is callback of succeeding to login. */
-    kSocialSignOutFail:8		/**< enum value is callback of failing to  login. */
+    kSocialSignOutFail:8,		/**< enum value is callback of failing to  login. */
+    kSocialGetGameFriends:9,		/**< enum value is callback of failing to  login. */
+    kSocialExtensionCode :20000 /**< enum value is  extension code . */
 };
 
 // for user action result code
@@ -98,7 +104,7 @@ var UserActionResultCode = {
     kAccountSwitchSuccess:15,	/**< enum alue is callback of succeeding in switching account. */
     kAccountSwitchFail:16,	/**< enum value is callback of failing to switch account. */
     kOpenShop:17  ,           /**< enum value is callback of open the shop. */
-
+	kUserExtension: 50000 /**< enum value is  extension code . */
 };
 
 //for toolBar place
@@ -118,8 +124,7 @@ var AccountType = {
     SINA_WEIBO:2,
     TENCENT_WEIBO:3,
     QQ:4,
-    QQ_WEIBO:5,
-    ND91:6
+    ND91:5
 };
 
 var AccountOperate = {

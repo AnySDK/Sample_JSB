@@ -121,6 +121,7 @@ bool js_autoanysdkbindings_PluginProtocol_getSDKVersion(JSContext *cx, uint32_t 
 }
 bool js_autoanysdkbindings_PluginProtocol_setDebugMode(JSContext *cx, uint32_t argc, jsval *vp)
 {
+    CCLOG("\n********** \n setDebugMode was deprecated.\n**********");
 	jsval *argv = JS_ARGV(cx, vp);
 	bool ok = true;
 	JSObject *obj = JS_THIS_OBJECT(cx, vp);
@@ -1515,6 +1516,7 @@ bool js_autoanysdkbindings_AgentManager_getSocialPlugin(JSContext *cx, uint32_t 
 }
 bool js_autoanysdkbindings_AgentManager_unloadALLPlugin(JSContext *cx, uint32_t argc, jsval *vp)
 {
+    CCLOG("\n********** \nunloadALLPlugin was deprecated, please use unloadAllPlugins instead.\n**********");
 	JSObject *obj = JS_THIS_OBJECT(cx, vp);
 	js_proxy_t *proxy = jsb_get_js_proxy(obj);
 	anysdk::framework::AgentManager* cobj = (anysdk::framework::AgentManager *)(proxy ? proxy->ptr : NULL);
@@ -1530,6 +1532,7 @@ bool js_autoanysdkbindings_AgentManager_unloadALLPlugin(JSContext *cx, uint32_t 
 }
 bool js_autoanysdkbindings_AgentManager_loadALLPlugin(JSContext *cx, uint32_t argc, jsval *vp)
 {
+    CCLOG("\n********** \nloadALLPlugin was deprecated, please use loadAllPlugins instead.\n**********");
 	JSObject *obj = JS_THIS_OBJECT(cx, vp);
 	js_proxy_t *proxy = jsb_get_js_proxy(obj);
 	anysdk::framework::AgentManager* cobj = (anysdk::framework::AgentManager *)(proxy ? proxy->ptr : NULL);
@@ -1543,6 +1546,38 @@ bool js_autoanysdkbindings_AgentManager_loadALLPlugin(JSContext *cx, uint32_t ar
 	JS_ReportError(cx, "js_autoanysdkbindings_AgentManager_loadALLPlugin : wrong number of arguments: %d, was expecting %d", argc, 0);
 	return false;
 }
+
+bool js_autoanysdkbindings_AgentManager_unloadAllPlugins(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    JSObject *obj = JS_THIS_OBJECT(cx, vp);
+    js_proxy_t *proxy = jsb_get_js_proxy(obj);
+    anysdk::framework::AgentManager* cobj = (anysdk::framework::AgentManager *)(proxy ? proxy->ptr : NULL);
+    JSB_PRECONDITION2( cobj, cx, false, "js_autoanysdkbindings_AgentManager_unloadAllPlugins : Invalid Native Object");
+    if (argc == 0) {
+        cobj->unloadAllPlugins();
+        JS_SET_RVAL(cx, vp, JSVAL_VOID);
+        return true;
+    }
+    
+    JS_ReportError(cx, "js_autoanysdkbindings_AgentManager_unloadAllPlugins : wrong number of arguments: %d, was expecting %d", argc, 0);
+    return false;
+}
+bool js_autoanysdkbindings_AgentManager_loadAllPlugins(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    JSObject *obj = JS_THIS_OBJECT(cx, vp);
+    js_proxy_t *proxy = jsb_get_js_proxy(obj);
+    anysdk::framework::AgentManager* cobj = (anysdk::framework::AgentManager *)(proxy ? proxy->ptr : NULL);
+    JSB_PRECONDITION2( cobj, cx, false, "js_autoanysdkbindings_AgentManager_loadAllPlugins : Invalid Native Object");
+    if (argc == 0) {
+        cobj->loadAllPlugins();
+        JS_SET_RVAL(cx, vp, JSVAL_VOID);
+        return true;
+    }
+    
+    JS_ReportError(cx, "js_autoanysdkbindings_AgentManager_loadAllPlugins : wrong number of arguments: %d, was expecting %d", argc, 0);
+    return false;
+}
+
 bool js_autoanysdkbindings_AgentManager_getCustomParam(JSContext *cx, uint32_t argc, jsval *vp)
 {
 	JSObject *obj = JS_THIS_OBJECT(cx, vp);
@@ -1815,6 +1850,8 @@ void js_register_autoanysdkbindings_AgentManager(JSContext *cx, JSObject *global
 		JS_FN("getSocialPlugin", js_autoanysdkbindings_AgentManager_getSocialPlugin, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("unloadALLPlugin", js_autoanysdkbindings_AgentManager_unloadALLPlugin, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("loadALLPlugin", js_autoanysdkbindings_AgentManager_loadALLPlugin, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("unloadAllPlugins", js_autoanysdkbindings_AgentManager_unloadAllPlugins, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("loadAllPlugins", js_autoanysdkbindings_AgentManager_loadAllPlugins, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("getCustomParam", js_autoanysdkbindings_AgentManager_getCustomParam, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("getUserPlugin", js_autoanysdkbindings_AgentManager_getUserPlugin, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("init", js_autoanysdkbindings_AgentManager_init, 4, JSPROP_PERMANENT | JSPROP_ENUMERATE),

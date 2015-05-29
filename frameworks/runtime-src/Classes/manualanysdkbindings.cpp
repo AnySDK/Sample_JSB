@@ -13,9 +13,6 @@
 
 using namespace anysdk::framework;
 
-#define ASF_ANDROID_LUA_VERSION "<<<<<ANYSDK_FRAMEWORK_VERSION>>>>>@ANDROID_LUA_1.5.0"
-#define ASF_IOS_LUA_VERSION "<<<<<ANYSDK_FRAMEWORK_VERSION>>>>>@IOS_LUA_1.5.0"
-
 template<class T>
 static bool dummy_constructor(JSContext *cx, uint32_t argc, jsval *vp) {
     JS::RootedValue initializing(cx);
@@ -448,8 +445,9 @@ bool jsb_anysdk_ProtocolShare_setResultListener(JSContext *cx, uint32_t argc, js
 	return true;
 }
 
-bool jsb_anysdk_ProtocolShare_setDebugMode(JSContext *cx, uint32_t argc, jsval *vp)
+ bool jsb_anysdk_ProtocolShare_setDebugMode(JSContext *cx, uint32_t argc, jsval *vp)
 {
+    CCLOG("\n********** setDebugMode was deprecated.\n**********");
 	jsval *argv = JS_ARGV(cx, vp);
 	bool ok = true;
 	JSObject *obj = JS_THIS_OBJECT(cx, vp);
@@ -986,9 +984,15 @@ static bool jsb_anysdk_framework_AgentManager_getFrameworkVersion(JSContext *cx,
 
     if (argc != 0)
     {
-		CCLOG("AgentManager_getIAPPlugin param number is wrong.");
+		CCLOG("AgentManager_getFrameworkVersion param number is wrong.");
 		return false;
     }
+    std::string version;
+    version = cobj->getFrameworkVersion();
+    
+    jsval jsret;
+    jsret = c_string_to_jsval(cx, version.c_str());
+    JS_SET_RVAL(cx, vp, jsret);
 	return true;
 }
 
@@ -1108,8 +1112,6 @@ static bool jsb_anysdk_framework_ProtocolAds_setAdsListener(JSContext *cx, uint3
 		JS_ReportError(cx, "jsb_anysdk_framework_ProtocolAds_setAdsListener : wrong number of arguments: %d, was expecting %d", argc, 0);
     	return false;
     }
-    if (ProtocolAdsResultListener::_instance != NULL)
-    	return true;
 
 	jsval *argv = JS_ARGV(cx, vp);
     ProtocolAdsResultListener* listener = ProtocolAdsResultListener::getInstance();
@@ -1137,6 +1139,7 @@ static bool jsb_anysdk_framework_ProtocolAds_removeListener(JSContext *cx, uint3
 
 static bool jsb_anysdk_framework_ProtocolAds_setDebugMode(JSContext *cx, uint32_t argc, jsval *vp)
 {
+    CCLOG("\n********** setDebugMode was deprecated.\n**********");
 	jsval *argv = JS_ARGV(cx, vp);
 	bool ok = true;
 	JSObject *obj = JS_THIS_OBJECT(cx, vp);
@@ -1158,6 +1161,7 @@ static bool jsb_anysdk_framework_ProtocolAds_setDebugMode(JSContext *cx, uint32_
 
 static bool jsb_anysdk_framework_ProtocolAnalytics_setDebugMode(JSContext *cx, uint32_t argc, jsval *vp)
 {
+    CCLOG("\n********** setDebugMode was deprecated.\n**********");
 	jsval *argv = JS_ARGV(cx, vp);
 	bool ok = true;
 	JSObject *obj = JS_THIS_OBJECT(cx, vp);
@@ -1295,6 +1299,54 @@ public:
 	        JS_RemoveValueRoot(cx, valArr);
 	    }
     }
+    
+    virtual void onRequestResult(RequestResultCode code, const char* msg, AllProductsInfo info)
+    {
+        CCLOG("on request result: %d, msg: %s.", code, msg);
+        JSContext *cx = ScriptingCore::getInstance()->getGlobalContext();
+        JSObject *thisObj = JSVAL_IS_VOID(_jsThisObj) ? NULL : JSVAL_TO_OBJECT(_jsThisObj);
+        jsval retval;
+        if (_jsCallback != JSVAL_VOID)
+        {
+            string value = "{";
+            map<string, TProductInfo >::iterator iterParent;
+            iterParent = info.begin();
+            while(iterParent != info.end())
+            {
+                value.append(iterParent->first);
+                value.append("={");
+                map<string, string> infoChild = iterParent->second;
+                map<string, string >::iterator iterChild;
+                iterChild = infoChild.begin();
+                while(iterChild != infoChild.end())
+                {
+                    value.append(iterChild->first);
+                    value.append("=");
+                    value.append(iterChild->second);
+                    iterChild++;
+                    if(iterChild != infoChild.end())
+                        value.append(", ");
+                }
+                iterParent++;
+                if(iterParent != info.end())
+                    value.append("}, ");
+            }
+            value.append("}");
+            jsval resultCode = INT_TO_JSVAL(code);
+            jsval valArr[3];
+            valArr[0] = resultCode;
+            valArr[1] = std_string_to_jsval(cx, msg);
+            valArr[2] = std_string_to_jsval(cx, value);
+            
+            JS_AddValueRoot(cx, valArr);
+            
+            JSB_AUTOCOMPARTMENT_WITH_GLOBAL_OBJCET
+            
+            JS_CallFunctionValue(cx, thisObj, _jsCallback, 3, valArr, &retval);
+            JS_RemoveValueRoot(cx, valArr);
+        }
+    }
+
 
     void setJSCallbackThis(jsval jsThisObj)
     {
@@ -1320,6 +1372,8 @@ public:
 	}
 
 	typedef std::map<std::string, ProtocolIAPResultListener*> STD_MAP;
+	typedef std::map<std::string, ProtocolIAPResultListener*>::iterator STD_MAP_ITERATOR;
+
     static STD_MAP std_map;
     static ProtocolIAPResultListener* getListenerByKey(std::string key)
     {
@@ -1336,6 +1390,15 @@ public:
         delete listener;
         listener = NULL;
         std_map.erase(key);
+    }
+    static void purge()
+    {
+        for (STD_MAP_ITERATOR it = std_map.begin(); it != std_map.end(); ++it)
+        {
+            ProtocolIAPResultListener* listener = it->second;
+            delete listener;
+        }
+        std_map.clear();
     }
 private:
 	JSObject* _jsObj;
@@ -1399,6 +1462,7 @@ static bool jsb_anysdk_framework_ProtocolIAP_removeListener(JSContext *cx, uint3
 
 static bool jsb_anysdk_framework_ProtocolIAP_setDebugMode(JSContext *cx, uint32_t argc, jsval *vp)
 {
+    CCLOG("\n********** setDebugMode was deprecated.\n**********");
 	jsval *argv = JS_ARGV(cx, vp);
 	bool ok = true;
 	JSObject *obj = JS_THIS_OBJECT(cx, vp);
@@ -1577,8 +1641,6 @@ static bool jsb_anysdk_framework_ProtocolPush_setActionListener(JSContext *cx, u
 		JS_ReportError(cx, "jsb_anysdk_framework_ProtocolPush_setActionListener : wrong number of arguments: %d, was expecting %d", argc, 0);
     	return false;
     }
-    if (ProtocolPushActionListener::_instance != NULL)
-    	return true;
 	jsval *argv = JS_ARGV(cx, vp);
     ProtocolPushActionListener* listener = ProtocolPushActionListener::getInstance();
     listener->setJSCallbackFunc( argv[0] );
@@ -1605,6 +1667,7 @@ static bool jsb_anysdk_framework_ProtocolPush_removeListener(JSContext *cx, uint
 
 static bool jsb_anysdk_framework_ProtocolPush_setDebugMode(JSContext *cx, uint32_t argc, jsval *vp)
 {
+    CCLOG("\n********** setDebugMode was deprecated.\n**********");
 	jsval *argv = JS_ARGV(cx, vp);
 	bool ok = true;
 	JSObject *obj = JS_THIS_OBJECT(cx, vp);
@@ -1806,8 +1869,6 @@ static bool jsb_anysdk_framework_ProtocolUser_setActionListener(JSContext *cx, u
 		JS_ReportError(cx, "jsb_anysdk_framework_ProtocolUser_setActionListener : wrong number of arguments: %d, was expecting %d", argc, 0);
     	return false;
     }
-    if (ProtocolUserActionListener::_instance != NULL)
-    	return true;
 	jsval *argv = JS_ARGV(cx, vp);
     ProtocolUserActionListener* listener = ProtocolUserActionListener::getInstance();
     listener->setJSCallbackFunc( argv[0] );
@@ -1833,6 +1894,7 @@ static bool jsb_anysdk_framework_ProtocolUser_removeListener(JSContext *cx, uint
 
 static bool jsb_anysdk_framework_ProtocolUser_setDebugMode(JSContext *cx, uint32_t argc, jsval *vp)
 {
+    CCLOG("\n********** setDebugMode was deprecated.\n**********");
 	jsval *argv = JS_ARGV(cx, vp);
 	bool ok = true;
 	JSObject *obj = JS_THIS_OBJECT(cx, vp);
@@ -1944,8 +2006,6 @@ static bool jsb_anysdk_framework_ProtocolSocial_setListener(JSContext *cx, uint3
 		JS_ReportError(cx, "jsb_anysdk_framework_ProtocolSocial_setListener : wrong number of arguments: %d, was expecting %d", argc, 0);
     	return false;
     }
-    if (ProtocolSocialListener::_instance != NULL)
-    	return true;
 	jsval *argv = JS_ARGV(cx, vp);
     ProtocolSocialListener* listener = ProtocolSocialListener::getInstance();
     listener->setJSCallbackFunc( argv[0] );
@@ -1972,6 +2032,7 @@ static bool jsb_anysdk_framework_ProtocolSocial_removeListener(JSContext *cx, ui
 
 static bool jsb_anysdk_framework_ProtocolSocial_setDebugMode(JSContext *cx, uint32_t argc, jsval *vp)
 {
+    CCLOG("\n********** setDebugMode was deprecated.\n**********");
 	jsval *argv = JS_ARGV(cx, vp);
 	bool ok = true;
 	JSObject *obj = JS_THIS_OBJECT(cx, vp);
@@ -2124,4 +2185,14 @@ void register_all_anysdk_manual(JSContext* cx, JSObject* obj) {
 	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolUser_prototype, "setActionListener", jsb_anysdk_framework_ProtocolUser_setActionListener, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolUser_prototype, "removeListener", jsb_anysdk_framework_ProtocolUser_removeListener, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolUser_prototype, "setDebugMode", jsb_anysdk_framework_ProtocolUser_setDebugMode, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+}
+
+void anysdk_jsb_cleanAllSingletons() {
+	//FIXME: ??? memory leak, Oops...
+//    ProtocolShareActionListener::purge();
+    ProtocolPushActionListener::purge();
+    ProtocolSocialListener::purge();
+    ProtocolAdsResultListener::purge();
+    ProtocolUserActionListener::purge();
+    ProtocolIAPResultListener::purge();
 }

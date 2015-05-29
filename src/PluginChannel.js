@@ -6,9 +6,9 @@
 //var appSecret = "e23ae7d6da34334d4cc11df0dc7f3de0";
 //var privateKey = "76E1D975EA4B9A4ECD0E85AF2D782E99";
 //ios
-var appKey = "CED525C0-8D41-F514-96D8-90092EB3899A";
-var appSecret = "a29b4f22aa63b8274f7f6e2dd5893d9b";
-var privateKey = "963C4B4DA71BC51C69EB11D24D0C7D49";
+var appKey = "0914CB16-BAEE-790E-808E-3A37B8FFBE3F";
+var appSecret = "62bee0ddb86bdeccb8acd959765041cc";
+var privateKey = "96C273AB03E1A798BA1AD0C38004871F";
 var oauthLoginServer = "http://oauth.anysdk.com/api/OauthLoginDemo/Login.php";
 
 var agent = null;
