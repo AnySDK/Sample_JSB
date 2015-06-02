@@ -30,7 +30,7 @@ var Push = cc.Class.extend({
 		switch(code)
 	    {
 	    	case PushActionResultCode.kPushReceiveMessage:
-	    		//do something;
+	    		//do
 	    		break;
 	    	default:
 	    		break;

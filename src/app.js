@@ -86,7 +86,8 @@ var menu_lv = {
     share:400,
     ads:500,
     social:600,
-    push:700
+    push:700,
+    analytics:800
 };
 var user_operation = {
     login:0,
@@ -100,29 +101,43 @@ var user_operation = {
     submitLoginGameRole:8
 };
 var iap_operation = {
-    pay:0
+    payForProduct:0
 };
 var share_operation = {
     share:0
 };
 var ads_operation = {
-    showAds:0,
-    hideAds:1
+    preloadAds:0,
+    showAds:1,
+    hideAds:2,
+    queryPoints:3,
+    spendPoints:4
 };
 var social_operation = {
     submitScore:0,
     showLeaderboard:1,
     unlockAchievement:2,
-    showAchievement:3
+    showAchievements:3
 };
 var push_operation = {
-    closePush:0,
-    setAlias:1,
-    delAlias:2,
-    setTags:3,
-    delTags:4
+    startPush:0,
+    closePush:1,
+    setAlias:2,
+    delAlias:3,
+    setTags:4,
+    delTags:5
 };
-
+var analytics_operation = {
+    startSession:0,
+    stopSession:1,
+    logError:2,
+    logEvent:3,
+    setAccount:4,
+    onchargeRequest:5,
+    onChargeSuccess:6,
+    onChargeOnlySuccess:7,
+    onChargeFail:8
+};
 var AgentLayer = cc.Layer.extend({
     base_menu:null,
     sec_menu:null,
@@ -140,17 +155,18 @@ var AgentLayer = cc.Layer.extend({
         _push = new Push();
         _social = new Social();
         _analytics = new Analytics();
-        _analytics.startSession();
+        // _analytics.startSession();
 
-        this.base_menu = ["User System", "IAP System", "Share System", "Ads System", "Social System", "Push System"];
+        this.base_menu = ["User System", "IAP System", "Share System", "Ads System", "Social System", "Push System", "Analytics System"];
 
         this.sec_menu = [
                     ["login", "logout", "enterPlatform", "showToolBar", "hideToolBar", "accountSwitch", "realNameRegister", "antiAddictionQuery", "submitLoginGameRole"],
-                    ["pay"],
+                    ["payForProduct"],
                     ["share"],
-                    ["show Ads", "hide Ads"],
-                    ["submit score", "show Leaderboard", "unloack Achievement", "show Achievement"],
-                    ["close Push", "set Alias", "del Alias", "set Tags", "del Tags"],
+                    ["preloadAds", "showAds", "hideAds", "queryPoints", "spendPoints"],
+                    ["submitScore", "showLeaderboard", "unloackAchievement", "showAchievements"],
+                    ["startPush", "closePush", "setAlias", "delAlias", "setTags", "delTags"],
+                    ["startSession", "stopSession", "logError", "logEvent", "setAccount", "onchargeRequest", "onChargeSuccess", "onChargeOnlySuccess", "onChargeFail"]
                     ];
 
         this.sec_lys = [];
@@ -202,6 +218,9 @@ var AgentLayer = cc.Layer.extend({
         else if (tag < menu_lv.push){
             this.onPushAction(tag - menu_lv.social);
         }
+        else if (tag < menu_lv.analytics){
+            this.onAnalyticsAction(tag - menu_lv.push);
+        }
     },
     setSecInvisible:function(){
         for (var i = this.sec_lys.length - 1; i >= 0; i--) {
@@ -244,9 +263,9 @@ var AgentLayer = cc.Layer.extend({
     },
     onUserAction:function(idx){
         switch(idx){
-            case user_operation.login:{
+            case user_operation.login:
                     plugin_channel.login();
-                }break;
+                break;
             case user_operation.logout:
                     plugin_channel.logout();
                 break;
@@ -275,60 +294,103 @@ var AgentLayer = cc.Layer.extend({
     },
     onIAPAction:function(idx){
         switch(idx){
-            case iap_operation.pay:{
+            case iap_operation.payForProduct:
                 plugin_channel.pay();
-                }break;
+                break;
         }
     },
     onShareAction:function(idx){
         switch(idx){
-            case share_operation.share:{
+            case share_operation.share:
                 _share.share();
-                }break;
+                break;
         }
     },
     onAdsAction:function(idx){
         switch(idx){
+                case ads_operation.preloadAds:
+                _ads.preloadAds(AdsType.AD_TYPE_FULLSCREEN);
+                break;
             case ads_operation.showAds:
                 _ads.showAds(AdsType.AD_TYPE_FULLSCREEN);
                 break;
             case ads_operation.hideAds:
                 _ads.hideAds(AdsType.AD_TYPE_FULLSCREEN);
                 break;
+            case ads_operation.queryPoints:
+                _ads.queryPoints();
+                break;
+            case ads_operation.spendPoints:
+                _ads.spendPoints(100);
+                break;
         }
     },
     onSocialAction:function(idx){
         switch(idx){
-            case social_operation.submitScore:{
+            case social_operation.submitScore:
                 _social.submitScore();
-                }break;
+                break;
             case social_operation.showLeaderboard:
                 _social.showLeaderboard();
                 break;
             case social_operation.unlockAchievement:
                 _social.unlockAchievement();
                 break;
-            case social_operation.showAchievement:
-                _social.showAchievement();
+            case social_operation.showAchievements:
+                _social.showAchievements();
                 break;
         }
     },
     onPushAction:function(idx){
         switch(idx){
+            case push_operation.startPush:
+                _push.startPush();
+                break;
             case push_operation.closePush:
-                    _push.closePush();
+                _push.closePush();
                 break;
             case push_operation.setAlias:
-                    _push.setAlias();
+                _push.setAlias();
                 break;
             case push_operation.delAlias:
-                    _push.delAlias();
+                _push.delAlias();
                 break;
             case push_operation.setTags:
-                    _push.setTags();
+                _push.setTags();
                 break;
             case push_operation.delTags:
-                    _push.delTags();
+                _push.delTags();
+                break;
+        }
+    },
+    onAnalyticsAction:function(idx){
+        switch(idx){
+            case analytics_operation.startSession:
+                _analytics.startSession();
+                break;
+            case analytics_operation.stopSession:
+                _analytics.stopSession();
+                break;
+            case analytics_operation.logError:
+                _analytics.logError(1, "fail");
+                break;
+            case analytics_operation.logEvent:
+                _analytics.logEvent(2, {key1:"value1", key2:"value2"});
+                break;
+            case analytics_operation.setAccount:
+                 _analytics.setAccount();
+                break;
+            case analytics_operation.onchargeRequest:
+                _analytics.onChargeRequest();
+                break;
+            case analytics_operation.onChargeSuccess:
+                _analytics.onChargeSuccess();
+                break;
+            case analytics_operation.onChargeOnlySuccess:
+                _analytics.onChargeOnlySuccess();
+                break;
+            case analytics_operation.onChargeFail:
+                _analytics.onChargeFail();
                 break;
         }
     }

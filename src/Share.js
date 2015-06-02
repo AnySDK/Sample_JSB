@@ -1,5 +1,4 @@
 
-
 var share_plugin = null;
 
 var Share = cc.Class.extend({
@@ -24,6 +23,24 @@ var Share = cc.Class.extend({
         }
 	},
     onShareResult:function(code, msg){
-        cc.log("share result, resultcode:"+code+", msg: "+msg);
+        cc.log("on ads result listener.")
+        cc.log("code:"+code+",msg:"+msg)
+        switch(code)
+        {
+            case ShareResultCode.kShareSuccess:
+                //do
+                break;
+            case ShareResultCode.kShareFail:
+                //do
+                break;
+            case ShareResultCode.kShareCancel:
+                //do
+                break;
+            case ShareResultCode.kShareNetworkError:
+                //do
+                break;         
+            default:
+                break;
+        }
     }
 });
