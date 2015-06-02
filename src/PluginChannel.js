@@ -1,11 +1,6 @@
 
 
 //注意：这里appKey, appSecret, privateKey，要替换成自己打包工具里面的值(登录打包工具，游戏管理界面上显示的那三个参数)
-//android
-//var appKey = "BA5B660B-6DD5-0F67-8CC7-8FE0BA7545D6";
-//var appSecret = "e23ae7d6da34334d4cc11df0dc7f3de0";
-//var privateKey = "76E1D975EA4B9A4ECD0E85AF2D782E99";
-//ios
 var appKey = "0914CB16-BAEE-790E-808E-3A37B8FFBE3F";
 var appSecret = "62bee0ddb86bdeccb8acd959765041cc";
 var privateKey = "96C273AB03E1A798BA1AD0C38004871F";
@@ -21,13 +16,13 @@ var PluginChannel = cc.Class.extend({
         // init
         agent.init(appKey,appSecret,privateKey,oauthLoginServer);
         // load
-        agent.loadALLPlugin();
+        agent.loadAllPlugins();
         // get plugins
         user_plugin   = agent.getUserPlugin();
         iap_pluginMap = agent.getIAPPlugin();
 
         if (user_plugin) {
-        	user_plugin.setActionListener(this.onUserLogin, this);
+        	user_plugin.setActionListener(this.onActionResult, this);
         }
 
         for(var key in iap_pluginMap){
@@ -37,13 +32,6 @@ var PluginChannel = cc.Class.extend({
 
         this.funcOfAgent();
 	},
-    onUserLogin:function(plugin, code, msg){
-        cc.log("on user result action.");
-        cc.log("msg:"+msg);
-        cc.log("code:"+code);
-        cc.log("plugin:"+plugin);
-        // cc.log(plugin+", "+code+", "+msg);
-    },
     funcOfAgent:function(){
         var customParam = agent.getCustomParam();
         cc.log("customParam:"+customParam);
@@ -83,7 +71,7 @@ var PluginChannel = cc.Class.extend({
         if ( user_plugin.isFunctionSupported("antiAddictionQuery") )
             user_plugin.callFuncWithParam("antiAddictionQuery");
     },
-    antiAddictionQuery:function(){
+    submitLoginGameRole:function(){
         if( user_plugin.isFunctionSupported("submitLoginGameRole") ){
             var data = anysdk.PluginParam.create({roleId:"123456",roleName:"test",roleLevel:"10",zoneId:"123",zoneName:"test",dataType:"1",ext:"login"});
             user_plugin.callFuncWithParam("submitLoginGameRole", data);
@@ -105,8 +93,101 @@ var PluginChannel = cc.Class.extend({
             iap_plugin.payForProduct(info);
         }
     },
-    onPayResult:function(ret, msg, info){
-        cc.log("pay result, resultcode:"+ret+", msg: "+msg+", info:"+info);
+    onActionResult:function(plugin, code, msg){
+        cc.log("on user result listener.")
+        cc.log("code:"+code+",msg:"+msg)
+        switch(code)
+        {
+        case UserActionResultCode.kInitSuccess:
+            //do
+            break;
+        case UserActionResultCode.kInitFail:
+            //do
+            break;
+        case UserActionResultCode.kLoginSuccess:
+            //do
+            break;
+        case UserActionResultCode.kLoginNetworkError:
+            //do
+            break;
+        case UserActionResultCode.kLoginNoNeed:
+            //do
+            break;
+        case UserActionResultCode.kLoginFail:
+            //do
+            break;
+        case UserActionResultCode.kLoginCancel:
+            //do
+            break;
+        case UserActionResultCode.kLogoutSuccess:
+            //do
+            break;
+        case UserActionResultCode.kLogoutFail:
+            //do
+            break;
+        case UserActionResultCode.kPlatformEnter:
+            //do
+            break;
+        case UserActionResultCode.kPlatformBack:
+            //do
+            break;
+        case UserActionResultCode.kPausePage:
+            //do
+            break;
+        case UserActionResultCode.kExitPage:
+            //do        
+            break;
+        case UserActionResultCode.kAntiAddictionQuery:
+            //do
+            break;
+        case UserActionResultCode.kRealNameRegister:
+            //do
+            break;
+        case UserActionResultCode.kAccountSwitchSuccess:
+            //do
+            break;
+        case UserActionResultCode.kAccountSwitchFail:
+            //do
+            break;
+        case UserActionResultCode.kOpenShop:
+            //do
+            break;
+        default:
+            break;
+        }
+    },
+    onPayResult:function(code, msg, info){
+        cc.log("on iap result listener.")
+        cc.log("code:"+code+",msg:"+msg)
+        switch(code)
+        {
+        case PayResultCode.kPaySuccess:
+            //do
+            break;
+        case PayResultCode.kPayFail:
+            //do
+            break;
+        case PayResultCode.kPayCancel:
+            //do
+            break;
+        case PayResultCode.kPayNetworkError:
+            //do
+            break;
+        case PayResultCode.kPayProductionInforIncomplete:
+            //do
+            break;
+        case PayResultCode.kPayInitSuccess:
+            //do
+            break;
+        case PayResultCode.kPayInitFail:
+            //do
+            break;
+        case PayResultCode.kPayNowPaying:
+            //do
+            break;
+        default:
+            break;
+        }
     }
 
 });
