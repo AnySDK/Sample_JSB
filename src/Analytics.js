@@ -105,7 +105,7 @@ var Analytics = cc.Class.extend({
 				Item_Id : "123456",
 				Item_Type : "test",
 				Item_Count : "2",
-				Vitural_Currency : "1",
+				Virtual_Currency : "1",
 				Currency_Type : agent.getChannelId()
 			}
 			var data = anysdk.PluginParam.create(paramMap);
