@@ -22,7 +22,8 @@ var REC = cc.Class.extend({
 	share:function(adType){
         if ( rec_plugin ){
             var info = {
-                Video_Title : "ShareSDK是一个神奇的SDK",
+                Video_Title : "RECSDK",
+                Video_Desc:"RECSDK是一个神奇的SDK"
             };
             rec_plugin.share(info);
         }
@@ -69,7 +70,7 @@ var REC = cc.Class.extend({
     },
     setMetaData:function(){
         if (rec_plugin) {
-            var data = anysdk.PluginParam.create({roleId:"123456",roleName:"test",roleLevel:"10",zoneId:"123",zoneName:"test",dataType:"1",ext:"login"});
+            var data = anysdk.PluginParam.create({ext:"login"});
             rec_plugin.callFuncWithParam("setMetaData", data);
         }
     },
