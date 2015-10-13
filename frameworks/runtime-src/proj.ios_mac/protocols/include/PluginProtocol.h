@@ -23,7 +23,8 @@ namespace anysdk { namespace framework {
 class PluginProtocol
 {
 public:
-
+    virtual ~PluginProtocol() {};
+    
     /**
      *@brief set plugin name
      *@param the name of plugin
@@ -39,18 +40,18 @@ public:
      *@brief get the version of plugin
      *@return the version of plugin
     */
-	virtual std::string getPluginVersion() = 0 ;
+	virtual std::string getPluginVersion();
     /**
      *@brief get the version of sdk
      *@return the version of sdk
     */
-	virtual std::string getSDKVersion() = 0 ;
+	virtual std::string getSDKVersion();
 
     /**
      *@brief switch debug plug-in on/off
      *@param the value of on/off
     */
-	CC_DEPRECATED_ATTRIBUTE virtual void setDebugMode(bool bDebug) = 0 ;
+	CC_DEPRECATED_ATTRIBUTE virtual void setDebugMode(bool bDebug);
 
     /**
      *@brief methods for reflections
@@ -58,14 +59,14 @@ public:
      *@param PluginParam* param
      *@return void
      */
-	virtual void callFuncWithParam(const char* funcName, PluginParam* param, ...) = 0 ;
+	virtual void callFuncWithParam(const char* funcName, PluginParam* param, ...);
     /**
      *@brief methods for reflections
      *@param function name
      *@param std::vector<PluginParam*> params
      *@return void
      */
-	virtual void callFuncWithParam(const char* funcName, std::vector<PluginParam*> params) = 0 ;
+	virtual void callFuncWithParam(const char* funcName, std::vector<PluginParam*> params);
 
     /**
      *@brief methods for reflections
@@ -73,14 +74,14 @@ public:
      *@param PluginParam* param
      *@return string
      */
-	virtual std::string callStringFuncWithParam(const char* funcName, PluginParam* param, ...) = 0 ;
+	virtual std::string callStringFuncWithParam(const char* funcName, PluginParam* param, ...);
     /**
      *@brief methods for reflections
      *@param function name
      *@param std::vector<PluginParam*> params
      *@return string
      */
-	virtual std::string callStringFuncWithParam(const char* funcName, std::vector<PluginParam*> params) = 0 ;
+	virtual std::string callStringFuncWithParam(const char* funcName, std::vector<PluginParam*> params);
 
     /**
      *@brief methods for reflections
@@ -88,14 +89,14 @@ public:
      *@param PluginParam* param
      *@return int
      */
-	virtual int callIntFuncWithParam(const char* funcName, PluginParam* param, ...) = 0 ;
+	virtual int callIntFuncWithParam(const char* funcName, PluginParam* param, ...);
     /**
      *@brief methods for reflections
      *@param function name
      *@param std::vector<PluginParam*> params
      *@return int
      */
-	virtual int callIntFuncWithParam(const char* funcName, std::vector<PluginParam*> params) = 0 ;
+	virtual int callIntFuncWithParam(const char* funcName, std::vector<PluginParam*> params);
 
     /**
      *@brief methods for reflections
@@ -103,14 +104,14 @@ public:
      *@param PluginParam* param
      *@return bool
      */
-	virtual bool callBoolFuncWithParam(const char* funcName, PluginParam* param, ...) = 0 ;
+	virtual bool callBoolFuncWithParam(const char* funcName, PluginParam* param, ...);
     /**
      *@brief methods for reflections
      *@param function name
      *@param std::vector<PluginParam*> params
      *@return bool
      */
-	virtual bool callBoolFuncWithParam(const char* funcName, std::vector<PluginParam*> params) = 0 ;
+	virtual bool callBoolFuncWithParam(const char* funcName, std::vector<PluginParam*> params);
 
     /**
      *@brief methods for reflections
@@ -118,14 +119,22 @@ public:
      *@param PluginParam* param
      *@return float
      */
-	virtual float callFloatFuncWithParam(const char* funcName, PluginParam* param, ...) = 0 ;
+	virtual float callFloatFuncWithParam(const char* funcName, PluginParam* param, ...);
     /**
      *@brief methods for reflections
      *@param function name
      *@param std::vector<PluginParam*> params
      *@return float
      */
-	virtual float callFloatFuncWithParam(const char* funcName, std::vector<PluginParam*> params) = 0 ;
+	virtual float callFloatFuncWithParam(const char* funcName, std::vector<PluginParam*> params);
+
+    /**
+     @brief Check function the plugin support or not
+     @param the name of plugin
+     @return if the function support ,return true
+     	 	 else retur false
+     */
+    virtual bool isFunctionSupported(std::string functionName);
 
 
 };

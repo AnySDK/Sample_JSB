@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "AB4270D015715C37B4F4F255B830CFE4643BBF8F",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "50CCBD3D4AEC4BA6BA94CB1B5C92180632BE4B8E" : 0,
+    "AB4270D015715C37B4F4F255B830CFE4643BBF8F" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "88A42DB8-F5D2-4C0A-8D82-61AA13DDC75D",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "50CCBD3D4AEC4BA6BA94CB1B5C92180632BE4B8E" : "Sample_CPP_Cocos2dx\/",
+    "AB4270D015715C37B4F4F255B830CFE4643BBF8F" : "Sample_JSB"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "sampleJS",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "frameworks\/runtime-src\/proj.ios_mac\/sampleJS.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "ssh:\/\/anygit.chinacloudapp.cn:10022\/G_Sample\/Sample_CPP_Cocos2dx.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "50CCBD3D4AEC4BA6BA94CB1B5C92180632BE4B8E"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "ssh:\/\/172.16.0.235:10022\/G_Sample\/Sample_JSB.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "AB4270D015715C37B4F4F255B830CFE4643BBF8F"
+    }
+  ]
+}

@@ -99,10 +99,6 @@ public:
      */
 	virtual void setCaptureUncaughtException(bool enabled) = 0;
 
-    /**
-     @brief Check function the plugin support or not
-     */
-    virtual bool isFunctionSupported(std::string functionName) = 0;
 };
 
 }} // namespace anysdk { namespace framework {

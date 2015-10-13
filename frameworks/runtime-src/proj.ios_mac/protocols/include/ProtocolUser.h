@@ -6,6 +6,7 @@
 #include "PluginProtocol.h"
 #include <map>
 #include <string>
+#include <functional>
 
 namespace anysdk { namespace framework {
 /// \typedef std::map<std::string, std::string> TUserDeveloperInfo
@@ -112,18 +113,22 @@ public:
     virtual  UserActionListener* getActionListener() = 0 ;
 
     /**
-     @brief Check function the plugin support or not
-     @param the name of plugin
-     @return if the function support ,return true
-     	 	 else retur false
-     */
-    virtual bool isFunctionSupported(std::string functionName) = 0 ;
-    /**
      @brief get plugin id
      @return the plugin id
      */
 	virtual std::string getPluginId() = 0 ;
+#ifndef AS_NO_USING_CPP11
+	typedef std::function<void(int, std::string&)> ProtocolUserCallback;
+    /**
+     @brief set user callback function
+     */
+    virtual void setCallback(const ProtocolUserCallback &cb) = 0;
 
+    /**
+     @brief get user callback function
+     */
+    virtual ProtocolUserCallback& getCallback() = 0;
+#endif
 
 
 };

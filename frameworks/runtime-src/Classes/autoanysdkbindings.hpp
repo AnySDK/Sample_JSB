@@ -12,6 +12,7 @@ bool js_autoanysdkbindings_PluginProtocol_constructor(JSContext *cx, uint32_t ar
 void js_autoanysdkbindings_PluginProtocol_finalize(JSContext *cx, JSObject *obj);
 void js_register_autoanysdkbindings_PluginProtocol(JSContext *cx, JSObject *global);
 void register_all_autoanysdkbindings(JSContext* cx, JSObject* obj);
+bool js_autoanysdkbindings_PluginProtocol_isFunctionSupported(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_PluginProtocol_getPluginName(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_PluginProtocol_getPluginVersion(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_PluginProtocol_setPluginName(JSContext *cx, uint32_t argc, jsval *vp);
@@ -64,7 +65,6 @@ bool js_autoanysdkbindings_ProtocolAnalytics_setCaptureUncaughtException(JSConte
 bool js_autoanysdkbindings_ProtocolAnalytics_setSessionContinueMillis(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_ProtocolAnalytics_startSession(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_ProtocolAnalytics_stopSession(JSContext *cx, uint32_t argc, jsval *vp);
-bool js_autoanysdkbindings_ProtocolAnalytics_isFunctionSupported(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_ProtocolAnalytics_logTimedEventEnd(JSContext *cx, uint32_t argc, jsval *vp);
 
 extern JSClass  *jsb_anysdk_framework_ProtocolAds_class;
@@ -103,7 +103,6 @@ void js_register_autoanysdkbindings_ProtocolUser(JSContext *cx, JSObject *global
 void register_all_autoanysdkbindings(JSContext* cx, JSObject* obj);
 bool js_autoanysdkbindings_ProtocolUser_isLogined(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_ProtocolUser_getUserID(JSContext *cx, uint32_t argc, jsval *vp);
-bool js_autoanysdkbindings_ProtocolUser_isFunctionSupported(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_ProtocolUser_login(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_ProtocolUser_getPluginId(JSContext *cx, uint32_t argc, jsval *vp);
 
@@ -118,6 +117,36 @@ bool js_autoanysdkbindings_ProtocolPush_startPush(JSContext *cx, uint32_t argc, 
 bool js_autoanysdkbindings_ProtocolPush_closePush(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_ProtocolPush_delAlias(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_ProtocolPush_setAlias(JSContext *cx, uint32_t argc, jsval *vp);
+
+extern JSClass  *jsb_anysdk_framework_ProtocolCrash_class;
+extern JSObject *jsb_anysdk_framework_ProtocolCrash_prototype;
+
+bool js_autoanysdkbindings_ProtocolCrash_constructor(JSContext *cx, uint32_t argc, jsval *vp);
+void js_autoanysdkbindings_ProtocolCrash_finalize(JSContext *cx, JSObject *obj);
+void js_register_autoanysdkbindings_ProtocolCrash(JSContext *cx, JSObject *global);
+void register_all_autoanysdkbindings(JSContext* cx, JSObject* obj);
+bool js_autoanysdkbindings_ProtocolCrash_setUserIdentifier(JSContext *cx, uint32_t argc, jsval *vp);
+bool js_autoanysdkbindings_ProtocolCrash_reportException(JSContext *cx, uint32_t argc, jsval *vp);
+bool js_autoanysdkbindings_ProtocolCrash_leaveBreadcrumb(JSContext *cx, uint32_t argc, jsval *vp);
+
+extern JSClass  *jsb_anysdk_framework_ProtocolREC_class;
+extern JSObject *jsb_anysdk_framework_ProtocolREC_prototype;
+
+bool js_autoanysdkbindings_ProtocolREC_constructor(JSContext *cx, uint32_t argc, jsval *vp);
+void js_autoanysdkbindings_ProtocolREC_finalize(JSContext *cx, JSObject *obj);
+void js_register_autoanysdkbindings_ProtocolREC(JSContext *cx, JSObject *global);
+void register_all_autoanysdkbindings(JSContext* cx, JSObject* obj);
+bool js_autoanysdkbindings_ProtocolREC_startRecording(JSContext *cx, uint32_t argc, jsval *vp);
+bool js_autoanysdkbindings_ProtocolREC_stopRecording(JSContext *cx, uint32_t argc, jsval *vp);
+
+extern JSClass  *jsb_anysdk_framework_ProtocolCustom_class;
+extern JSObject *jsb_anysdk_framework_ProtocolCustom_prototype;
+
+bool js_autoanysdkbindings_ProtocolCustom_constructor(JSContext *cx, uint32_t argc, jsval *vp);
+void js_autoanysdkbindings_ProtocolCustom_finalize(JSContext *cx, JSObject *obj);
+void js_register_autoanysdkbindings_ProtocolCustom(JSContext *cx, JSObject *global);
+void register_all_autoanysdkbindings(JSContext* cx, JSObject* obj);
+
 
 extern JSClass  *jsb_anysdk_framework_AgentManager_class;
 extern JSObject *jsb_anysdk_framework_AgentManager_prototype;
@@ -138,6 +167,9 @@ bool js_autoanysdkbindings_AgentManager_getAdsPlugin(JSContext *cx, uint32_t arg
 bool js_autoanysdkbindings_AgentManager_getPushPlugin(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_AgentManager_getSharePlugin(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_AgentManager_getAnalyticsPlugin(JSContext *cx, uint32_t argc, jsval *vp);
+bool js_autoanysdkbindings_AgentManager_getCrashPlugin(JSContext *cx, uint32_t argc, jsval *vp);
+bool js_autoanysdkbindings_AgentManager_getCustomPlugin(JSContext *cx, uint32_t argc, jsval *vp);
+bool js_autoanysdkbindings_AgentManager_getRECPlugin(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_AgentManager_getChannelId(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_AgentManager_end(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_autoanysdkbindings_AgentManager_getInstance(JSContext *cx, uint32_t argc, jsval *vp);

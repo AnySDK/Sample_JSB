@@ -19,6 +19,10 @@ LOCAL_WHOLE_STATIC_LIBRARIES := PluginProtocolStatic
 
 LOCAL_EXPORT_CFLAGS := -DCOCOS2D_DEBUG=2 -DCOCOS2D_JAVASCRIPT
 
+
+
+LOCAL_C_INCLUDES += ../protocols/android \
+../protocols/include
 include $(BUILD_SHARED_LIBRARY)
 
 
