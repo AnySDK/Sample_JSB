@@ -12,6 +12,7 @@
 #include "ProtocolUser.h"
 #include "ProtocolREC.h"
 #include "ProtocolCustom.h"
+#include "JSBRelation.h"
 
 using namespace anysdk::framework;
 
@@ -1412,14 +1413,14 @@ ProtocolIAPResultListener::STD_MAP ProtocolIAPResultListener::std_map;
 
 static bool jsb_anysdk_framework_ProtocolIAP_setResultListener(JSContext *cx, uint32_t argc, jsval *vp)
 {
-	CCLOG("in ProtocolAds_setAdsListener, argc:%d.", argc);
+	CCLOG("in ProtocolIAP_setResultListener, argc:%d.", argc);
     JSObject *obj = JS_THIS_OBJECT(cx, vp);
     js_proxy_t *proxy = jsb_get_js_proxy(obj);
     ProtocolIAP* cobj = (ProtocolIAP *)(proxy ? proxy->ptr : NULL);
     JSB_PRECONDITION2( cobj, cx, false, "Invalid Native Object");
     if (argc != 2)
     {
-		JS_ReportError(cx, "jsb_anysdk_framework_ProtocolAds_setAdsListener : wrong number of arguments: %d, was expecting %d", argc, 0);
+		JS_ReportError(cx, "jsb_anysdk_framework_ProtocolIAP_setResultListener : wrong number of arguments: %d, was expecting %d", argc, 0);
     	return true;
     }
 	jsval *argv = JS_ARGV(cx, vp);
@@ -2483,6 +2484,105 @@ static bool jsb_anysdk_framework_ProtocolCrash_setDebugMode(JSContext *cx, uint3
     return false;
 }
 
+
+JSClass  *jsb_anysdk_framework_JSBRelation_class;
+JSObject *jsb_anysdk_framework_JSBRelation_prototype;
+
+bool js_anysdk_framework_JSBRelation_getMethodsOfPlugin(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+    bool ok = true;
+    if (argc == 1) {
+        anysdk::framework::PluginProtocol* plugin;
+        JS::RootedObject arg0(cx, args.get(0).toObjectOrNull());
+        js_proxy_t *proxy = jsb_get_js_proxy(arg0);
+        plugin = (anysdk::framework::PluginProtocol*)(proxy ? proxy->ptr : NULL);
+        JSB_PRECONDITION2( plugin, cx, false, "Invalid Native Object");
+        std::string ret = JSBRelation::getMethodsOfPlugin(plugin);
+        jsval jsret = JSVAL_NULL;
+        jsret = std_string_to_jsval(cx, ret);
+        args.rval().set(jsret);
+        return true;
+    }
+    JS_ReportError(cx, "js_anysdk_framework_JSBRelation_getMethodsOfPlugin : wrong number of arguments");
+    return false;
+}
+
+
+
+void js_anysdk_framework_JSBRelation_finalize(JSFreeOp *fop, JSObject *obj) {
+    CCLOGINFO("jsbindings: finalizing JS object %p (JSBRelation)", obj);
+    js_proxy_t* nproxy;
+    js_proxy_t* jsproxy;
+    jsproxy = jsb_get_js_proxy(obj);
+    if (jsproxy) {
+        nproxy = jsb_get_native_proxy(jsproxy->ptr);
+        
+        JSBRelation *nobj = static_cast<JSBRelation *>(nproxy->ptr);
+        if (nobj)
+        delete nobj;
+        
+        jsb_remove_proxy(nproxy, jsproxy);
+    }
+}
+
+void js_register_anysdkbindings_JSBRelation(JSContext *cx, JSObject* global) {
+    jsb_anysdk_framework_JSBRelation_class = (JSClass *)calloc(1, sizeof(JSClass));
+    jsb_anysdk_framework_JSBRelation_class->name = "JSBRelation";
+    jsb_anysdk_framework_JSBRelation_class->addProperty = JS_PropertyStub;
+    jsb_anysdk_framework_JSBRelation_class->delProperty = JS_DeletePropertyStub;
+    jsb_anysdk_framework_JSBRelation_class->getProperty = JS_PropertyStub;
+    jsb_anysdk_framework_JSBRelation_class->setProperty = JS_StrictPropertyStub;
+    jsb_anysdk_framework_JSBRelation_class->enumerate = JS_EnumerateStub;
+    jsb_anysdk_framework_JSBRelation_class->resolve = JS_ResolveStub;
+    jsb_anysdk_framework_JSBRelation_class->convert = JS_ConvertStub;
+    jsb_anysdk_framework_JSBRelation_class->finalize = js_anysdk_framework_JSBRelation_finalize;
+    jsb_anysdk_framework_JSBRelation_class->flags = JSCLASS_HAS_RESERVED_SLOTS(2);
+    
+    static JSPropertySpec properties[] = {
+        {"__nativeObj", 0, JSPROP_ENUMERATE | JSPROP_PERMANENT, JSOP_WRAPPER(js_is_native_obj), JSOP_NULLWRAPPER},
+        {0, 0, 0, JSOP_NULLWRAPPER, JSOP_NULLWRAPPER}
+    };
+    
+    static JSFunctionSpec funcs[] = {
+        JS_FS_END
+    };
+    
+    static JSFunctionSpec st_funcs[] = {
+        JS_FN("getMethodsOfPlugin", js_anysdk_framework_JSBRelation_getMethodsOfPlugin, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FS_END
+    };
+    
+    jsb_anysdk_framework_JSBRelation_prototype = JS_InitClass(
+                                                              cx, global,
+                                                              NULL, // parent proto
+                                                              jsb_anysdk_framework_JSBRelation_class,
+                                                              dummy_constructor<JSBRelation>, 0, // no constructor
+                                                              properties,
+                                                              funcs,
+                                                              NULL, // no static properties
+                                                              st_funcs);
+    // make the class enumerable in the registered namespace
+    //  bool found;
+    //FIXME: Removed in Firefox v27
+    //  JS_SetPropertyAttributes(cx, global, "JSBRelation", JSPROP_ENUMERATE | JSPROP_READONLY, &found);
+    
+    // add the proto and JSClass to the type->js info hash table
+    TypeTest<JSBRelation> t;
+    js_type_class_t *p;
+    std::string typeName = t.s_name();
+    if (_js_global_type_map.find(typeName) == _js_global_type_map.end())
+    {
+        p = (js_type_class_t *)malloc(sizeof(js_type_class_t));
+        p->jsclass = jsb_anysdk_framework_JSBRelation_class;
+        p->proto = jsb_anysdk_framework_JSBRelation_prototype;
+        p->parentProto = NULL;
+        _js_global_type_map.insert(std::make_pair(typeName, p));
+    }
+}
+
+
+
 extern JSObject* jsb_anysdk_framework_PluginProtocol_prototype;
 extern JSObject* jsb_anysdk_framework_ProtocolIAP_prototype;
 extern JSObject* jsb_anysdk_framework_ProtocolAnalytics_prototype;
@@ -2494,6 +2594,8 @@ extern JSObject* jsb_anysdk_framework_ProtocolREC_prototype;
 extern JSObject* jsb_anysdk_framework_ProtocolCrash_prototype;
 extern JSObject* jsb_anysdk_framework_ProtocolCustom_prototype;
 extern JSObject* jsb_anysdk_framework_AgentManager_prototype;
+extern JSObject *jsb_anysdk_framework_JSBRelation_prototype;
+
 
 void register_all_anysdk_manual(JSContext* cx, JSObject* obj) {
 	// first, try to get the ns
@@ -2511,7 +2613,7 @@ void register_all_anysdk_manual(JSContext* cx, JSObject* obj) {
 
 	js_register_anysdkbindings_PluginParam(cx, obj);
 	js_register_anysdkbindings_ProtocolShare(cx, obj);
-
+	js_register_anysdkbindings_JSBRelation(cx, obj);
 	//PluginProtocol
 	JS_DefineFunction(cx, jsb_anysdk_framework_PluginProtocol_prototype, "callFuncWithParam", jsb_anysdk_framework_PluginProtocol_callFuncWithParam, 6, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 	JS_DefineFunction(cx, jsb_anysdk_framework_PluginProtocol_prototype, "callStringFuncWithParam", jsb_anysdk_framework_PluginProtocol_callStringFuncWithParam, 6, JSPROP_ENUMERATE | JSPROP_PERMANENT);
@@ -2579,4 +2681,6 @@ void anysdk_jsb_cleanAllSingletons() {
     ProtocolAdsResultListener::purge();
     ProtocolUserActionListener::purge();
     ProtocolIAPResultListener::purge();
+    ProtocolCustomListener::purge();
+    ProtocolRECListener::purge();
 }

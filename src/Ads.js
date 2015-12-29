@@ -3,9 +3,9 @@ var ads_plugin = null;
 
 var Ads = cc.Class.extend({
 	ctor:function(){
-		ads_plugin = anysdk.AgentManager.getInstance().getAdsPlugin();
+		ads_plugin = anysdk.agentManager.getAdsPlugin();
 		if (ads_plugin) {
-			ads_plugin.setAdsListener(this.onActionResult, this);
+			ads_plugin.setListener(this.onActionResult, this);
 		};
 	},
 	preloadAds:function(adType){
@@ -29,43 +29,36 @@ var Ads = cc.Class.extend({
 			ads_plugin.spendPoints(points);
 	},
 	onActionResult:function(param1, param2){
-		if ( typeof(param1) == "number" ){
-		     this.onAdsResult(param1, param2);
-		}else{
-		     this.onPlayerGetPoints(param1, param2);
-		}
+        this.onAdsResult(param1, param2);
 	},
-	onPlayerGetPoints:function(plugin, points){
-		cc.log("on ads player get points listener.")
-    	cc.log("points:"+points)
-	},
+
 	onAdsResult:function(code, msg){
 		cc.log("on ads result listener.")
 		cc.log("code:"+code+",msg:"+msg)
 		switch(code)
 		{
-		case AdsResultCode.kAdsReceived:
+		case anysdk.AdsResultCode.kAdsReceived:
 	        //do
 			break;
-	    case AdsResultCode.kAdsShown:
+	    case anysdk.AdsResultCode.kAdsShown:
 	        //do
 	    	break;
-	    case AdsResultCode.kAdsDismissed:
+	    case anysdk.AdsResultCode.kAdsDismissed:
 	        //do
 	    	break;
-	    case AdsResultCode.kPointsSpendSucceed:
+	    case anysdk.AdsResultCode.kPointsSpendSucceed:
 	        //do
 	    	break;
-	    case AdsResultCode.kPointsSpendFailed:
+	    case anysdk.AdsResultCode.kPointsSpendFailed:
 	        //do
 	    	break;
-	    case AdsResultCode.kNetworkError:
+	    case anysdk.AdsResultCode.kNetworkError:
 	        //do
 	    	break;
-	    case AdsResultCode.kUnknownError:
+	    case anysdk.AdsResultCode.kUnknownError:
 	        //do
 	    	break;
-	    case AdsResultCode.kOfferWallOnPointsChanged:
+	    case anysdk.AdsResultCode.kOfferWallOnPointsChanged:
 	        //do
 	    	break;
 	    default:

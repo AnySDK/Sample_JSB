@@ -3,7 +3,7 @@ var social_plugin = null;
 
 var Social = cc.Class.extend({
 	ctor:function(){
-		social_plugin = anysdk.AgentManager.getInstance().getSocialPlugin();
+		social_plugin = anysdk.agentManager.getSocialPlugin();
         // set share result listener
         if (social_plugin)
             social_plugin.setListener(this.onActionResult, this);
@@ -33,31 +33,31 @@ var Social = cc.Class.extend({
 		cc.log("code:"+code+",msg:"+msg)
 		switch(code)
 		{
-			case SocialRetCode.kScoreSubmitSucceed:
+			case anysdk.SocialRetCode.kScoreSubmitSucceed:
 				//do
 				break;
-			case SocialRetCode.kScoreSubmitfail:
+			case anysdk.SocialRetCode.kScoreSubmitfail:
 				//do
 				break;
-			case SocialRetCode.kAchUnlockSucceed:
+			case anysdk.SocialRetCode.kAchUnlockSucceed:
 				//do
 				break;
-			case SocialRetCode.kAchUnlockFail:
+			case anysdk.SocialRetCode.kAchUnlockFail:
 				//do
 				break;
-			case SocialRetCode.kSocialSignInSucceed:
+			case anysdk.SocialRetCode.kSocialSignInSucceed:
 				//do
 				break;
-			case SocialRetCode.kSocialSignOutSucceed:
+			case anysdk.SocialRetCode.kSocialSignOutSucceed:
 				//do
 				break;
-			case SocialRetCode.kSocialSignOutFail:
+			case anysdk.SocialRetCode.kSocialSignOutFail:
 				//do
 				break;
-			case SocialRetCode.kSocialSignOutFail:
+			case anysdk.SocialRetCode.kSocialSignOutFail:
 				//do
 				break;
-			case SocialRetCode.kSocialGetGameFriends:
+			case anysdk.SocialRetCode.kSocialGetGameFriends:
 				//do
 				break;
 		}

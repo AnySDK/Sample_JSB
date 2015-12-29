@@ -3,10 +3,10 @@ var push_plugin = null;
 
 var Push = cc.Class.extend({
 	ctor:function(){
-		push_plugin = anysdk.AgentManager.getInstance().getPushPlugin();
+		push_plugin = anysdk.agentManager.getPushPlugin();
         // set share result listener
         if (push_plugin)
-            push_plugin.setActionListener(this.onActionResult, this);
+            push_plugin.setListener(this.onActionResult, this);
 	},
 	closePush:function(){
 		push_plugin.closePush();
@@ -29,7 +29,7 @@ var Push = cc.Class.extend({
     onActionResult:function(plugin,code,msg){
 		switch(code)
 	    {
-	    	case PushActionResultCode.kPushReceiveMessage:
+	    	case anysdk.PushActionResultCode.kPushReceiveMessage:
 	    		//do
 	    		break;
 	    	default:
