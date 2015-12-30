@@ -11,6 +11,7 @@ anysdk.callWrapper = function(plugin, func){
                 params.push(param);
             }
         }
+                         
         if(this.returnType == "void"){
             plugin.callFuncWithParam(this.name, params);
         }else if(this.returnType == "boolean"){
@@ -47,7 +48,6 @@ anysdk.parseData = function(data){
 
 anysdk.registerAPIs = function(plugin) {
     var functionString = anysdk.JSBRelation.getMethodsOfPlugin(plugin);
-    cc.log("functionString" + functionString);
     var data = anysdk.parseData(functionString);
     for (var i = 0; i < data.length; i++ ){
         var name =  data[i].name;
@@ -72,7 +72,7 @@ anysdk.agentManager.loadAllPlugins = function (callback, target) {
 anysdk.agentManager._getUserPlugin = anysdk.agentManager.getUserPlugin;
 anysdk.agentManager.getUserPlugin = function () {
     var plugin = this._getUserPlugin();
-    if (!plugin.isInitialized) {
+    if (plugin && !plugin.isInitialized) {
         anysdk.registerAPIs(plugin);
         plugin.isInitialized = true;
         plugin.setListener = function(callback, target){
@@ -92,15 +92,16 @@ anysdk.agentManager.getUserPlugin = function () {
 anysdk.agentManager._getIAPPlugin = anysdk.agentManager.getIAPPlugin;
 anysdk.agentManager.getIAPPlugins = function () {
     var plugins = this._getIAPPlugin();
-    for (var item in plugins){
-        var plugin = plugins[item];
-        if (!plugin.isInitialized) {
-            anysdk.registerAPIs(plugin);
-            plugin.setListener = plugin.setResultListener;
-            plugin.isInitialized = true;
-        }
-    };
-    
+    if (plugins) {
+        for (var item in plugins){
+            var plugin = plugins[item];
+            if (!plugin.isInitialized) {
+                anysdk.registerAPIs(plugin);
+                plugin.setListener = plugin.setResultListener;
+                plugin.isInitialized = true;
+            }
+        };  
+    }; 
     return plugins;
 }
 
@@ -118,7 +119,7 @@ anysdk.agentManager.getIAPPlugin = function () {
 anysdk.agentManager._getAdsPlugin = anysdk.agentManager.getAdsPlugin;
 anysdk.agentManager.getAdsPlugin = function () {
     var plugin = this._getAdsPlugin();
-    if (!plugin.isInitialized) {
+    if (plugin && !plugin.isInitialized) {
         anysdk.registerAPIs(plugin);
         plugin.setListener = plugin.setAdsListener;
         plugin.isInitialized = true;
@@ -129,7 +130,7 @@ anysdk.agentManager.getAdsPlugin = function () {
 anysdk.agentManager._getSocialPlugin = anysdk.agentManager.getSocialPlugin;
 anysdk.agentManager.getSocialPlugin = function () {
     var plugin = this._getSocialPlugin();
-    if (!plugin.isInitialized) {
+    if (plugin && !plugin.isInitialized) {
         anysdk.registerAPIs(plugin);
         plugin.isInitialized = true;
     }
@@ -139,7 +140,7 @@ anysdk.agentManager.getSocialPlugin = function () {
 anysdk.agentManager._getSharePlugin = anysdk.agentManager.getSharePlugin;
 anysdk.agentManager.getSharePlugin = function () {
     var plugin = this._getSharePlugin();
-    if (!plugin.isInitialized) {
+    if (plugin && !plugin.isInitialized) {
         anysdk.registerAPIs(plugin);
         plugin.setListener = plugin.setResultListener;
         plugin.isInitialized = true;
@@ -150,7 +151,7 @@ anysdk.agentManager.getSharePlugin = function () {
 anysdk.agentManager._getPushPlugin = anysdk.agentManager.getPushPlugin;
 anysdk.agentManager.getPushPlugin = function () {
     var plugin = this._getPushPlugin();
-    if (!plugin.isInitialized) {
+    if (plugin && !plugin.isInitialized) {
         anysdk.registerAPIs(plugin);
         plugin.setListener = plugin.setActionListener;
         plugin.isInitialized = true;
@@ -171,7 +172,7 @@ anysdk.agentManager.getPushPlugin = function () {
 anysdk.agentManager._getAnalyticsPlugin = anysdk.agentManager.getAnalyticsPlugin;
 anysdk.agentManager.getAnalyticsPlugin = function () {
     var plugin = this._getAnalyticsPlugin();
-    if (!plugin.isInitialized) {
+    if (plugin && !plugin.isInitialized) {
         anysdk.registerAPIs(plugin);
         plugin.isInitialized = true;
     }
@@ -181,7 +182,7 @@ anysdk.agentManager.getAnalyticsPlugin = function () {
 anysdk.agentManager._getRECPlugin = anysdk.agentManager.getRECPlugin;
 anysdk.agentManager.getRECPlugin = function () {
     var plugin = this._getRECPlugin();
-    if (!plugin.isInitialized) {
+    if (plugin && !plugin.isInitialized) {
         anysdk.registerAPIs(plugin);
         plugin.setListener = plugin.setResultListener;
         plugin.isInitialized = true;
@@ -192,7 +193,7 @@ anysdk.agentManager.getRECPlugin = function () {
 anysdk.agentManager._getCustomPlugin = anysdk.agentManager.getCustomPlugin;
 anysdk.agentManager.getCustomPlugin = function () {
     var plugin = this._getCustomPlugin();
-    if (!plugin.isInitialized) {
+    if (plugin && !plugin.isInitialized) {
         anysdk.registerAPIs(plugin);
         plugin.setListener = plugin.setResultListener;
         plugin.isInitialized = true;
@@ -203,7 +204,7 @@ anysdk.agentManager.getCustomPlugin = function () {
 anysdk.agentManager._getCrashPlugin = anysdk.agentManager.getCrashPlugin;
 anysdk.agentManager.getCrashPlugin = function () {
     var plugin = this._getCrashPlugin();
-    if (!plugin.isInitialized) {
+    if (plugin && !plugin.isInitialized) {
         anysdk.registerAPIs(plugin);
         plugin.isInitialized = true;
     }
