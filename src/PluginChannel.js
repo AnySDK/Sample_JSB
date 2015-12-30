@@ -94,7 +94,7 @@ var PluginChannel = cc.Class.extend({
         iap_plugin.payForProduct(info);
         
     },
-    onActionResult:function(plugin, code, msg){
+    onActionResult:function(code, msg){
         cc.log("on user result listener.")
         cc.log("code:"+code+",msg:"+msg)
         switch(code)
@@ -157,7 +157,7 @@ var PluginChannel = cc.Class.extend({
             break;
         }
     },
-    onPayResult:function(code, msg, info){
+    onPayResult:function(code, msg){
         cc.log("on iap result listener.")
         cc.log("code:"+code+",msg:"+msg)
         switch(code)

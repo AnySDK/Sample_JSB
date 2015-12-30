@@ -26,7 +26,7 @@ var Push = cc.Class.extend({
     delTags:function(){
     	push_plugin.delTags(["easy","qwe"]);
     },
-    onActionResult:function(plugin,code,msg){
+    onActionResult:function(code,msg){
 		switch(code)
 	    {
 	    	case anysdk.PushActionResultCode.kPushReceiveMessage:
