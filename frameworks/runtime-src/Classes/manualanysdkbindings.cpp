@@ -13,6 +13,7 @@
 #include "ProtocolREC.h"
 #include "ProtocolCustom.h"
 #include "JSBRelation.h"
+#include "ProtocolAdTracking.h"
 
 using namespace anysdk::framework;
 
@@ -2484,9 +2485,256 @@ static bool jsb_anysdk_framework_ProtocolCrash_setDebugMode(JSContext *cx, uint3
     return false;
 }
 
+static bool jsb_anysdk_framework_ProtocolAdTracking_setDebugMode(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    CCLOG("\n********** setDebugMode was deprecated.\n**********");
+    jsval *argv = JS_ARGV(cx, vp);
+    bool ok = true;
+    JSObject *obj = JS_THIS_OBJECT(cx, vp);
+    js_proxy_t *proxy = jsb_get_js_proxy(obj);
+    ProtocolAdTracking* cobj = (ProtocolAdTracking *)(proxy ? proxy->ptr : NULL);
+    JSB_PRECONDITION2( cobj, cx, false, "js_autoanysdkbindings_PluginProtocol_setDebugMode : Invalid Native Object");
+    if (argc == 1) {
+        bool arg0;
+        arg0 = JS::ToBoolean(JS::RootedValue(cx, argv[0]));
+        JSB_PRECONDITION2(ok, cx, false, "js_autoanysdkbindings_PluginProtocol_setDebugMode : Error processing arguments");
+        cobj->setDebugMode(arg0);
+        JS_SET_RVAL(cx, vp, JSVAL_VOID);
+        return true;
+    }
+    
+    JS_ReportError(cx, "js_autoanysdkbindings_PluginProtocol_setDebugMode : wrong number of arguments: %d, was expecting %d", argc, 1);
+    return false;
+}
+
+
+static bool jsb_anysdk_framework_ProtocolAdTRacking_onLogin(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    CCLOG("in ProtocolAdTRacking_onLogin, argc:%d.", argc);
+    JSObject *obj = JS_THIS_OBJECT(cx, vp);
+    js_proxy_t *proxy = jsb_get_js_proxy(obj);
+    ProtocolAdTracking* cobj = (ProtocolAdTracking *)(proxy ? proxy->ptr : NULL);
+    JSB_PRECONDITION2( cobj, cx, false, "Invalid Native Object");
+    if (argc != 1)
+    {
+        JS_ReportError(cx, "jsb_anysdk_framework_ProtocolAdTRacking_onLogin : wrong number of arguments: %d, was expecting %d", argc, 0);
+        return true;
+    }
+    jsval *argv = JS_ARGV(cx, vp);
+    jsval arg0 = argv[0];
+    if ( arg0.isObject() ){
+        JSObject* tmp = JSVAL_TO_OBJECT(arg0);
+        if (!tmp) {
+            CCLOG("%s", "jsval_to_ccvaluemap: the jsval is not an object.");
+            return false;
+        }
+        
+        JSObject* it = JS_NewPropertyIterator(cx, tmp);
+        
+         std::map<std::string,std::string> arg;
+        
+        while (true)
+        {
+            jsid idp;
+            jsval key;
+            if (! JS_NextProperty(cx, it, &idp) || ! JS_IdToValue(cx, idp, &key)) {
+                return false; // error
+            }
+            
+            if (key == JSVAL_VOID) {
+                break; // end of iteration
+            }
+            
+            if (!JSVAL_IS_STRING(key)) {
+                continue; // ignore integer properties
+            }
+            
+            JSStringWrapper keyWrapper(JSVAL_TO_STRING(key), cx);
+            
+            std::string v1;
+            std::string v2;
+            
+            v1 = keyWrapper.get();
+            JS::RootedValue value(cx);
+            JS_GetPropertyById(cx, tmp, idp, &value);
+            if (value.isString())
+            {
+                bool ok = jsval_to_std_string(cx, value, &v2);
+                if (ok){
+                    arg.insert( std::map<std::string,std::string>::value_type(v1, v2) );
+                }
+                else{
+                    CCLOG("wrong param in stringmap.\n");
+                }
+            }
+        }
+        cobj->onLogin( arg );
+    }
+    return true;
+
+}
+
+static bool jsb_anysdk_framework_ProtocolAdTRacking_onPay(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    CCLOG("in ProtocolAdTRacking_onPay, argc:%d.", argc);
+    JSObject *obj = JS_THIS_OBJECT(cx, vp);
+    js_proxy_t *proxy = jsb_get_js_proxy(obj);
+    ProtocolAdTracking* cobj = (ProtocolAdTracking *)(proxy ? proxy->ptr : NULL);
+    JSB_PRECONDITION2( cobj, cx, false, "Invalid Native Object");
+    if (argc != 1)
+    {
+        JS_ReportError(cx, "jsb_anysdk_framework_ProtocolAdTRacking_onPay : wrong number of arguments: %d, was expecting %d", argc, 0);
+        return true;
+    }
+    jsval *argv = JS_ARGV(cx, vp);
+    jsval arg0 = argv[0];
+    if ( arg0.isObject() ){
+        JSObject* tmp = JSVAL_TO_OBJECT(arg0);
+        if (!tmp) {
+            CCLOG("%s", "jsval_to_ccvaluemap: the jsval is not an object.");
+            return false;
+        }
+        
+        JSObject* it = JS_NewPropertyIterator(cx, tmp);
+        
+        std::map<std::string,std::string> arg;
+        
+        while (true)
+        {
+            jsid idp;
+            jsval key;
+            if (! JS_NextProperty(cx, it, &idp) || ! JS_IdToValue(cx, idp, &key)) {
+                return false; // error
+            }
+            
+            if (key == JSVAL_VOID) {
+                break; // end of iteration
+            }
+            
+            if (!JSVAL_IS_STRING(key)) {
+                continue; // ignore integer properties
+            }
+            
+            JSStringWrapper keyWrapper(JSVAL_TO_STRING(key), cx);
+            
+            std::string v1;
+            std::string v2;
+            
+            v1 = keyWrapper.get();
+            JS::RootedValue value(cx);
+            JS_GetPropertyById(cx, tmp, idp, &value);
+            if (value.isString())
+            {
+                bool ok = jsval_to_std_string(cx, value, &v2);
+                if (ok){
+                    arg.insert( std::map<std::string,std::string>::value_type(v1, v2) );
+                }
+                else{
+                    CCLOG("wrong param in stringmap.\n");
+                }
+            }
+        }
+        cobj->onPay( arg );
+    }
+    return true;
+
+}
+
+static bool jsb_anysdk_framework_ProtocolAdTRacking_trackEvent(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    JSObject *obj = JS_THIS_OBJECT(cx, vp);
+    js_proxy_t *proxy = jsb_get_js_proxy(obj);
+    ProtocolAdTracking* cobj = (ProtocolAdTracking *)(proxy ? proxy->ptr : NULL);
+
+	jsval *argv = JS_ARGV(cx, vp);
+	jsval arg0 = argv[0];
+	std::string arg;
+	bool ok = jsval_to_std_string(cx, arg0, &arg);
+	CCLOG("logevent, argc: %d, str: %s.", argc, arg.c_str());
+	if (!ok)
+	{
+		CCLOG("ProtocolAdTRacking_trackEvent param type is wrong.");
+		return false;
+	}
+    if (argc == 1)
+    {
+    	cobj->trackEvent(arg.c_str());
+    	return true;
+    }
+    else if(argc == 2)
+    {
+    	JSObject* tmp = JSVAL_TO_OBJECT(argv[1]);
+	    if (!tmp) {
+	        CCLOG("%s", "jsval_to_stdmap: the jsval is not an object.");
+	        return false;
+	    }
+	    
+	    JSObject* it = JS_NewPropertyIterator(cx, tmp);
+
+    	std::map<std::string,std::string> params;
+	    
+	    while (true)
+	    {
+	        jsid idp;
+	        jsval key;
+	        if (! JS_NextProperty(cx, it, &idp) || ! JS_IdToValue(cx, idp, &key)) {
+	            return false; // error
+	        }
+	        
+	        if (key == JSVAL_VOID) {
+	            break; // end of iteration
+	        }
+	        
+	        if (!JSVAL_IS_STRING(key)) {
+	            continue; // ignore integer properties
+	        }
+	        
+	        JSStringWrapper keyWrapper(JSVAL_TO_STRING(key), cx);
+
+			std::string v1;
+			std::string v2;
+
+	        v1 = keyWrapper.get();
+	        JS::RootedValue value(cx);
+	        JS_GetPropertyById(cx, tmp, idp, &value);
+	        if (value.isString())
+	        {
+	            bool ok = jsval_to_std_string(cx, value, &v2);
+	            if (ok){
+	        		params.insert( std::map<std::string,std::string>::value_type(v1, v2) );
+	            }
+	            else{
+	            	CCLOG("wrong param in stringmap.\n");
+	            }
+	        }
+	    }
+	    cobj->trackEvent(arg.c_str(), &params);
+
+    	return true;
+    }
+	JS_ReportError(cx, "jsb_anysdk_framework_ProtocolAdTRacking_trackEvent : wrong number of arguments: %d, was expecting %d", argc, 0);
+	return true;
+}
+
 
 JSClass  *jsb_anysdk_framework_JSBRelation_class;
 JSObject *jsb_anysdk_framework_JSBRelation_prototype;
+
+void js_anysdk_framework_JSBRelation_finalize(JSFreeOp *fop, JSObject *obj) {
+    CCLOGINFO("jsbindings: finalizing JS object %p (JSBRelation)", obj);
+    js_proxy_t* nproxy;
+    js_proxy_t* jsproxy;
+    jsproxy = jsb_get_js_proxy(obj);
+    if (jsproxy) {
+        nproxy = jsb_get_native_proxy(jsproxy->ptr);
+        
+        JSBRelation *nobj = static_cast<JSBRelation *>(nproxy->ptr);
+        if (nobj)
+        delete nobj;
+        
+        jsb_remove_proxy(nproxy, jsproxy);
+    }
+}
 
 bool js_anysdk_framework_JSBRelation_getMethodsOfPlugin(JSContext *cx, uint32_t argc, jsval *vp)
 {
@@ -2505,25 +2753,7 @@ bool js_anysdk_framework_JSBRelation_getMethodsOfPlugin(JSContext *cx, uint32_t 
         return true;
     }
     JS_ReportError(cx, "js_anysdk_framework_JSBRelation_getMethodsOfPlugin : wrong number of arguments");
-    return false;
-}
-
-
-
-void js_anysdk_framework_JSBRelation_finalize(JSFreeOp *fop, JSObject *obj) {
-    CCLOGINFO("jsbindings: finalizing JS object %p (JSBRelation)", obj);
-    js_proxy_t* nproxy;
-    js_proxy_t* jsproxy;
-    jsproxy = jsb_get_js_proxy(obj);
-    if (jsproxy) {
-        nproxy = jsb_get_native_proxy(jsproxy->ptr);
-        
-        JSBRelation *nobj = static_cast<JSBRelation *>(nproxy->ptr);
-        if (nobj)
-        delete nobj;
-        
-        jsb_remove_proxy(nproxy, jsproxy);
-    }
+    return false;    
 }
 
 void js_register_anysdkbindings_JSBRelation(JSContext *cx, JSObject* global) {
@@ -2582,7 +2812,6 @@ void js_register_anysdkbindings_JSBRelation(JSContext *cx, JSObject* global) {
 }
 
 
-
 extern JSObject* jsb_anysdk_framework_PluginProtocol_prototype;
 extern JSObject* jsb_anysdk_framework_ProtocolIAP_prototype;
 extern JSObject* jsb_anysdk_framework_ProtocolAnalytics_prototype;
@@ -2593,6 +2822,7 @@ extern JSObject* jsb_anysdk_framework_ProtocolUser_prototype;
 extern JSObject* jsb_anysdk_framework_ProtocolREC_prototype;
 extern JSObject* jsb_anysdk_framework_ProtocolCrash_prototype;
 extern JSObject* jsb_anysdk_framework_ProtocolCustom_prototype;
+extern JSObject* jsb_anysdk_framework_ProtocolAdTracking_prototype;
 extern JSObject* jsb_anysdk_framework_AgentManager_prototype;
 extern JSObject *jsb_anysdk_framework_JSBRelation_prototype;
 
@@ -2671,6 +2901,12 @@ void register_all_anysdk_manual(JSContext* cx, JSObject* obj) {
     
     //ProtocolCrash
     JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolCrash_prototype, "setDebugMode", jsb_anysdk_framework_ProtocolCrash_setDebugMode, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+	//ProtocolAdTRacking
+    JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolAdTracking_prototype, "setDebugMode", jsb_anysdk_framework_ProtocolAdTracking_setDebugMode, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+    JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolAdTracking_prototype, "onPay", jsb_anysdk_framework_ProtocolAdTRacking_onPay, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+    JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolAdTracking_prototype, "onLogin", jsb_anysdk_framework_ProtocolAdTRacking_onLogin, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolAdTracking_prototype, "logEvent", jsb_anysdk_framework_ProtocolAdTRacking_trackEvent, 2, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+
 }
 
 void anysdk_jsb_cleanAllSingletons() {

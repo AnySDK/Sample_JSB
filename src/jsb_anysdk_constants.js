@@ -9,7 +9,9 @@ anysdk.PluginType = {
     kPluginPush:64,/**< enum value is  the type of Push. */
     kPluginCrash:128,/**< enum value is  the type of Crash. */
     kPluginCustom:256,/**< enum value is  the type of Custom. */
-    kPluginREC:512/**< enum value is  the type of REC. */
+    kPluginREC:512,/**< enum value is  the type of REC. */
+    kPluginAdTracking:1024/**< enum value is  the type of AdTracking. */
+
 };	//plugin type
 
 //for Custom
@@ -73,7 +75,7 @@ anysdk.PayResultCode = {
 	kPayNowPaying:7, 	/**< enum value is callback of paying now . */
 	kPayRechargeSuccess:8,/**< enum value is callback of  succeeding in recharging. */
 	kPayExtension : 30000, /**< enum value is  extension code . */
-    kPayNeedLoginAgain : 31001 /**< enum value is  callback of  logining again . */
+    kPayNeedLoginAgain : 31002 /**< enum value is  callback of  logining again . */
 };
 
 anysdk.RequestResultCode = {
@@ -203,7 +205,8 @@ var PluginType = {
     kPluginPush:64,/**< enum value is  the type of Push. */
     kPluginCrash:128,/**< enum value is  the type of Crash. */
     kPluginCustom:256,/**< enum value is  the type of Custom. */
-    kPluginREC:512/**< enum value is  the type of REC. */
+    kPluginREC:512,/**< enum value is  the type of REC. */
+    kPluginAdTracking:1024/**< enum value is  the type of AdTracking. */
 };  //plugin type
 
 //for Custom
@@ -267,7 +270,7 @@ var PayResultCode = {
     kPayNowPaying:7,    /**< enum value is callback of paying now . */
     kPayRechargeSuccess:8,/**< enum value is callback of  succeeding in recharging. */
     kPayExtension : 30000, /**< enum value is  extension code . */
-    kPayNeedLoginAgain : 31001 /**< enum value is  callback of  logining again . */
+    kPayNeedLoginAgain : 31002 /**< enum value is  callback of  logining again . */
 };
 
 var RequestResultCode = {

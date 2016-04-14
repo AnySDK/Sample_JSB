@@ -94,11 +94,13 @@ anysdk.agentManager.getIAPPlugins = function () {
     var plugins = this._getIAPPlugin();
     if (plugins) {
         for (var item in plugins){
-            var plugin = plugins[item];
-            if (!plugin.isInitialized) {
-                anysdk.registerAPIs(plugin);
-                plugin.setListener = plugin.setResultListener;
-                plugin.isInitialized = true;
+            if (plugins.hasOwnProperty(item)){
+                var plugin = plugins[item];
+                if (!plugin.isInitialized) {
+                    anysdk.registerAPIs(plugin);
+                    plugin.setListener = plugin.setResultListener;
+                    plugin.isInitialized = true;
+                }
             }
         };  
     }; 
@@ -109,7 +111,9 @@ anysdk.agentManager.getIAPPlugin = function () {
     var iapPlugins = anysdk.agentManager.getIAPPlugins();
     if(iapPlugins != null){
         for(var item in iapPlugins){
-            return iapPlugins[item];
+            if (iapPlugins.hasOwnProperty(item)) {
+               return iapPlugins[item]; 
+            }  
         }
     }
     return null;
@@ -204,6 +208,16 @@ anysdk.agentManager.getCustomPlugin = function () {
 anysdk.agentManager._getCrashPlugin = anysdk.agentManager.getCrashPlugin;
 anysdk.agentManager.getCrashPlugin = function () {
     var plugin = this._getCrashPlugin();
+    if (plugin && !plugin.isInitialized) {
+        anysdk.registerAPIs(plugin);
+        plugin.isInitialized = true;
+    }
+    return plugin;
+}
+
+anysdk.agentManager._getAdTrackingPlugin = anysdk.agentManager.getAdTrackingPlugin;
+anysdk.agentManager.getAdTrackingPlugin = function () {
+    var plugin = this._getAdTrackingPlugin();
     if (plugin && !plugin.isInitialized) {
         anysdk.registerAPIs(plugin);
         plugin.isInitialized = true;

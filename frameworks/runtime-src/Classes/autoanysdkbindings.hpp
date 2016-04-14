@@ -147,6 +147,16 @@ void js_autoanysdkbindings_ProtocolCustom_finalize(JSContext *cx, JSObject *obj)
 void js_register_autoanysdkbindings_ProtocolCustom(JSContext *cx, JSObject *global);
 void register_all_autoanysdkbindings(JSContext* cx, JSObject* obj);
 
+extern JSClass  *jsb_anysdk_framework_ProtocolAdTracking_class;
+extern JSObject *jsb_anysdk_framework_ProtocolAdTracking_prototype;
+
+bool js_autoanysdkbindings_ProtocolAdTracking_constructor(JSContext *cx, uint32_t argc, jsval *vp);
+void js_autoanysdkbindings_ProtocolAdTracking_finalize(JSContext *cx, JSObject *obj);
+void js_register_autoanysdkbindings_ProtocolAdTracking(JSContext *cx, JSObject *global);
+void register_all_autoanysdkbindings(JSContext* cx, JSObject* obj);
+bool js_autoanysdkbindings_ProtocolAdTracking_onRegister(JSContext *cx, uint32_t argc, jsval *vp);
+
+
 
 extern JSClass  *jsb_anysdk_framework_AgentManager_class;
 extern JSObject *jsb_anysdk_framework_AgentManager_prototype;
