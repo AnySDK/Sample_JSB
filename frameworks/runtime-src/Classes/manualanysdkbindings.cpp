@@ -2905,7 +2905,7 @@ void register_all_anysdk_manual(JSContext* cx, JSObject* obj) {
     JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolAdTracking_prototype, "setDebugMode", jsb_anysdk_framework_ProtocolAdTracking_setDebugMode, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
     JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolAdTracking_prototype, "onPay", jsb_anysdk_framework_ProtocolAdTRacking_onPay, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
     JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolAdTracking_prototype, "onLogin", jsb_anysdk_framework_ProtocolAdTRacking_onLogin, 1, JSPROP_ENUMERATE | JSPROP_PERMANENT);
-	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolAdTracking_prototype, "logEvent", jsb_anysdk_framework_ProtocolAdTRacking_trackEvent, 2, JSPROP_ENUMERATE | JSPROP_PERMANENT);
+	JS_DefineFunction(cx, jsb_anysdk_framework_ProtocolAdTracking_prototype, "trackEvent", jsb_anysdk_framework_ProtocolAdTRacking_trackEvent, 2, JSPROP_ENUMERATE | JSPROP_PERMANENT);
 
 }
 

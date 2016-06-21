@@ -1276,19 +1276,21 @@ bool js_autoanysdkbindings_ProtocolUser_login(JSContext *cx, uint32_t argc, jsva
 	JSB_PRECONDITION2( cobj, cx, false, "js_autoanysdkbindings_ProtocolUser_login : Invalid Native Object");
 	do {
 		if (argc == 1) {
-			std::map<std::string, std::string> arg0;
-			ok &= jsval_to_std_map_string_string(cx, argv[0], &arg0);
-			if (!ok) { 
-				std::string arg1;
-				ok &= jsval_to_std_string(cx, argv[0], &arg1);
-				if (!ok) { ok = true; break; }
-				cobj->login(arg1);
-				JS_SET_RVAL(cx, vp, JSVAL_VOID);
-				return true;
-			}
-			cobj->login(arg0);
-			JS_SET_RVAL(cx, vp, JSVAL_VOID);
-			return true;
+			if(JSVAL_IS_STRING(argv[0])){
+                std::string arg1;
+                ok &= jsval_to_std_string(cx, argv[0], &arg1);
+                if (!ok) { ok = true; break; }
+                cobj->login(arg1);
+                JS_SET_RVAL(cx, vp, JSVAL_VOID);
+                return true;
+            }else{
+                std::map<std::string, std::string> arg0;
+                ok &= jsval_to_std_map_string_string(cx, argv[0], &arg0);
+                if (!ok) { ok = true; break; }
+                cobj->login(arg0);
+                JS_SET_RVAL(cx, vp, JSVAL_VOID);
+                return true;
+            }
 		}
 		else if(argc == 2){
 			std::string arg0;
