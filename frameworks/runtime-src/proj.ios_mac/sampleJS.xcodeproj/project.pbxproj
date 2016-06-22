@@ -42,7 +42,7 @@
 		AB2B98691B67888E00FAEBC9 /* manualanysdkbindings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB2B98661B67888E00FAEBC9 /* manualanysdkbindings.cpp */; };
 		ABBBD0EC1B184D1F001E6AF6 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ABBBD0EB1B184D1F001E6AF6 /* CFNetwork.framework */; };
 		ABBBD0EE1B184D2B001E6AF6 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ABBBD0ED1B184D2B001E6AF6 /* MobileCoreServices.framework */; };
-		ABE6EA8A1C313E0B00CAD324 /* libPluginProtocol.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ABE6EA891C313E0B00CAD324 /* libPluginProtocol.a */; };
+		ABF775361CB6844800F5FD6B /* libPluginProtocol.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ABF775351CB6844800F5FD6B /* libPluginProtocol.a */; };
 		BAF426FB19484B3E002B22EF /* script in Resources */ = {isa = PBXBuildFile; fileRef = BAF426FA19484B3E002B22EF /* script */; };
 		C03780EB18BEE0E400FE4F13 /* src in Resources */ = {isa = PBXBuildFile; fileRef = C03780EA18BEE0E400FE4F13 /* src */; };
 		C037820C18BF77C500FE4F13 /* libjsbindings iOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C037820918BF76AF00FE4F13 /* libjsbindings iOS.a */; };
@@ -151,49 +151,52 @@
 		AB2B98671B67888E00FAEBC9 /* manualanysdkbindings.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = manualanysdkbindings.hpp; sourceTree = "<group>"; };
 		ABBBD0EB1B184D1F001E6AF6 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/System/Library/Frameworks/CFNetwork.framework; sourceTree = DEVELOPER_DIR; };
 		ABBBD0ED1B184D2B001E6AF6 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/System/Library/Frameworks/MobileCoreServices.framework; sourceTree = DEVELOPER_DIR; };
-		ABE6EA5F1C313E0B00CAD324 /* AdsUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AdsUtil.h; sourceTree = "<group>"; };
-		ABE6EA601C313E0B00CAD324 /* AdsWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AdsWrapper.h; sourceTree = "<group>"; };
-		ABE6EA611C313E0B00CAD324 /* AgentManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AgentManager.h; sourceTree = "<group>"; };
-		ABE6EA621C313E0B00CAD324 /* AnalyticsWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnalyticsWrapper.h; sourceTree = "<group>"; };
-		ABE6EA631C313E0B00CAD324 /* CustomWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomWrapper.h; sourceTree = "<group>"; };
-		ABE6EA641C313E0B00CAD324 /* IAPWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IAPWrapper.h; sourceTree = "<group>"; };
-		ABE6EA651C313E0B00CAD324 /* InterfaceAds.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InterfaceAds.h; sourceTree = "<group>"; };
-		ABE6EA661C313E0B00CAD324 /* InterfaceAnalytics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InterfaceAnalytics.h; sourceTree = "<group>"; };
-		ABE6EA671C313E0B00CAD324 /* InterfaceCrash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InterfaceCrash.h; sourceTree = "<group>"; };
-		ABE6EA681C313E0B00CAD324 /* InterfaceCustom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InterfaceCustom.h; sourceTree = "<group>"; };
-		ABE6EA691C313E0B00CAD324 /* InterfaceIAP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InterfaceIAP.h; sourceTree = "<group>"; };
-		ABE6EA6A1C313E0B00CAD324 /* InterfacePush.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InterfacePush.h; sourceTree = "<group>"; };
-		ABE6EA6B1C313E0B00CAD324 /* InterfaceREC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InterfaceREC.h; sourceTree = "<group>"; };
-		ABE6EA6C1C313E0B00CAD324 /* InterfaceShare.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InterfaceShare.h; sourceTree = "<group>"; };
-		ABE6EA6D1C313E0B00CAD324 /* InterfaceSocial.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InterfaceSocial.h; sourceTree = "<group>"; };
-		ABE6EA6E1C313E0B00CAD324 /* InterfaceUser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InterfaceUser.h; sourceTree = "<group>"; };
-		ABE6EA6F1C313E0B00CAD324 /* JSBRelation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSBRelation.h; sourceTree = "<group>"; };
-		ABE6EA701C313E0B00CAD324 /* JsonParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JsonParser.h; sourceTree = "<group>"; };
-		ABE6EA711C313E0B00CAD324 /* PluginApplicationDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PluginApplicationDelegate.h; sourceTree = "<group>"; };
-		ABE6EA721C313E0B00CAD324 /* PluginFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PluginFactory.h; sourceTree = "<group>"; };
-		ABE6EA731C313E0B00CAD324 /* PluginHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PluginHelper.h; sourceTree = "<group>"; };
-		ABE6EA741C313E0B00CAD324 /* PluginManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PluginManager.h; sourceTree = "<group>"; };
-		ABE6EA751C313E0B00CAD324 /* PluginParam.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PluginParam.h; sourceTree = "<group>"; };
-		ABE6EA761C313E0B00CAD324 /* PluginProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PluginProtocol.h; sourceTree = "<group>"; };
-		ABE6EA771C313E0B00CAD324 /* PluginWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PluginWrapper.h; sourceTree = "<group>"; };
-		ABE6EA781C313E0B00CAD324 /* ProtocolAds.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtocolAds.h; sourceTree = "<group>"; };
-		ABE6EA791C313E0B00CAD324 /* ProtocolAnalytics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtocolAnalytics.h; sourceTree = "<group>"; };
-		ABE6EA7A1C313E0B00CAD324 /* ProtocolCrash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtocolCrash.h; sourceTree = "<group>"; };
-		ABE6EA7B1C313E0B00CAD324 /* ProtocolCustom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtocolCustom.h; sourceTree = "<group>"; };
-		ABE6EA7C1C313E0B00CAD324 /* ProtocolIAP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtocolIAP.h; sourceTree = "<group>"; };
-		ABE6EA7D1C313E0B00CAD324 /* ProtocolPush.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtocolPush.h; sourceTree = "<group>"; };
-		ABE6EA7E1C313E0B00CAD324 /* ProtocolREC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtocolREC.h; sourceTree = "<group>"; };
-		ABE6EA7F1C313E0B00CAD324 /* ProtocolShare.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtocolShare.h; sourceTree = "<group>"; };
-		ABE6EA801C313E0B00CAD324 /* ProtocolSocial.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtocolSocial.h; sourceTree = "<group>"; };
-		ABE6EA811C313E0B00CAD324 /* ProtocolUser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtocolUser.h; sourceTree = "<group>"; };
-		ABE6EA821C313E0B00CAD324 /* PushWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PushWrapper.h; sourceTree = "<group>"; };
-		ABE6EA831C313E0B00CAD324 /* RECWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RECWrapper.h; sourceTree = "<group>"; };
-		ABE6EA841C313E0B00CAD324 /* SdkHttpListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SdkHttpListener.h; sourceTree = "<group>"; };
-		ABE6EA851C313E0B00CAD324 /* ShareWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShareWrapper.h; sourceTree = "<group>"; };
-		ABE6EA861C313E0B00CAD324 /* SocialWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SocialWrapper.h; sourceTree = "<group>"; };
-		ABE6EA871C313E0B00CAD324 /* UserWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UserWrapper.h; sourceTree = "<group>"; };
-		ABE6EA881C313E0B00CAD324 /* Wrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Wrapper.h; sourceTree = "<group>"; };
-		ABE6EA891C313E0B00CAD324 /* libPluginProtocol.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libPluginProtocol.a; sourceTree = "<group>"; };
+		ABF775081CB6844800F5FD6B /* AdsUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AdsUtil.h; sourceTree = "<group>"; };
+		ABF775091CB6844800F5FD6B /* AdsWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AdsWrapper.h; sourceTree = "<group>"; };
+		ABF7750A1CB6844800F5FD6B /* AgentManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AgentManager.h; sourceTree = "<group>"; };
+		ABF7750B1CB6844800F5FD6B /* AnalyticsWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnalyticsWrapper.h; sourceTree = "<group>"; };
+		ABF7750C1CB6844800F5FD6B /* CocosRuntimeDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CocosRuntimeDelegate.h; sourceTree = "<group>"; };
+		ABF7750D1CB6844800F5FD6B /* CustomWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomWrapper.h; sourceTree = "<group>"; };
+		ABF7750E1CB6844800F5FD6B /* IAPWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IAPWrapper.h; sourceTree = "<group>"; };
+		ABF7750F1CB6844800F5FD6B /* InterfaceAds.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InterfaceAds.h; sourceTree = "<group>"; };
+		ABF775101CB6844800F5FD6B /* InterfaceAdTracking.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InterfaceAdTracking.h; sourceTree = "<group>"; };
+		ABF775111CB6844800F5FD6B /* InterfaceAnalytics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InterfaceAnalytics.h; sourceTree = "<group>"; };
+		ABF775121CB6844800F5FD6B /* InterfaceCrash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InterfaceCrash.h; sourceTree = "<group>"; };
+		ABF775131CB6844800F5FD6B /* InterfaceCustom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InterfaceCustom.h; sourceTree = "<group>"; };
+		ABF775141CB6844800F5FD6B /* InterfaceIAP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InterfaceIAP.h; sourceTree = "<group>"; };
+		ABF775151CB6844800F5FD6B /* InterfacePush.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InterfacePush.h; sourceTree = "<group>"; };
+		ABF775161CB6844800F5FD6B /* InterfaceREC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InterfaceREC.h; sourceTree = "<group>"; };
+		ABF775171CB6844800F5FD6B /* InterfaceShare.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InterfaceShare.h; sourceTree = "<group>"; };
+		ABF775181CB6844800F5FD6B /* InterfaceSocial.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InterfaceSocial.h; sourceTree = "<group>"; };
+		ABF775191CB6844800F5FD6B /* InterfaceUser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InterfaceUser.h; sourceTree = "<group>"; };
+		ABF7751A1CB6844800F5FD6B /* JSBRelation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSBRelation.h; sourceTree = "<group>"; };
+		ABF7751B1CB6844800F5FD6B /* JsonParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JsonParser.h; sourceTree = "<group>"; };
+		ABF7751C1CB6844800F5FD6B /* PluginApplicationDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PluginApplicationDelegate.h; sourceTree = "<group>"; };
+		ABF7751D1CB6844800F5FD6B /* PluginFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PluginFactory.h; sourceTree = "<group>"; };
+		ABF7751E1CB6844800F5FD6B /* PluginHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PluginHelper.h; sourceTree = "<group>"; };
+		ABF7751F1CB6844800F5FD6B /* PluginManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PluginManager.h; sourceTree = "<group>"; };
+		ABF775201CB6844800F5FD6B /* PluginParam.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PluginParam.h; sourceTree = "<group>"; };
+		ABF775211CB6844800F5FD6B /* PluginProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PluginProtocol.h; sourceTree = "<group>"; };
+		ABF775221CB6844800F5FD6B /* PluginWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PluginWrapper.h; sourceTree = "<group>"; };
+		ABF775231CB6844800F5FD6B /* ProtocolAds.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtocolAds.h; sourceTree = "<group>"; };
+		ABF775241CB6844800F5FD6B /* ProtocolAdTracking.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtocolAdTracking.h; sourceTree = "<group>"; };
+		ABF775251CB6844800F5FD6B /* ProtocolAnalytics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtocolAnalytics.h; sourceTree = "<group>"; };
+		ABF775261CB6844800F5FD6B /* ProtocolCrash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtocolCrash.h; sourceTree = "<group>"; };
+		ABF775271CB6844800F5FD6B /* ProtocolCustom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtocolCustom.h; sourceTree = "<group>"; };
+		ABF775281CB6844800F5FD6B /* ProtocolIAP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtocolIAP.h; sourceTree = "<group>"; };
+		ABF775291CB6844800F5FD6B /* ProtocolPush.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtocolPush.h; sourceTree = "<group>"; };
+		ABF7752A1CB6844800F5FD6B /* ProtocolREC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtocolREC.h; sourceTree = "<group>"; };
+		ABF7752B1CB6844800F5FD6B /* ProtocolShare.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtocolShare.h; sourceTree = "<group>"; };
+		ABF7752C1CB6844800F5FD6B /* ProtocolSocial.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtocolSocial.h; sourceTree = "<group>"; };
+		ABF7752D1CB6844800F5FD6B /* ProtocolUser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtocolUser.h; sourceTree = "<group>"; };
+		ABF7752E1CB6844800F5FD6B /* PushWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PushWrapper.h; sourceTree = "<group>"; };
+		ABF7752F1CB6844800F5FD6B /* RECWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RECWrapper.h; sourceTree = "<group>"; };
+		ABF775301CB6844800F5FD6B /* SdkHttpListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SdkHttpListener.h; sourceTree = "<group>"; };
+		ABF775311CB6844800F5FD6B /* ShareWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShareWrapper.h; sourceTree = "<group>"; };
+		ABF775321CB6844800F5FD6B /* SocialWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SocialWrapper.h; sourceTree = "<group>"; };
+		ABF775331CB6844800F5FD6B /* UserWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UserWrapper.h; sourceTree = "<group>"; };
+		ABF775341CB6844800F5FD6B /* Wrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Wrapper.h; sourceTree = "<group>"; };
+		ABF775351CB6844800F5FD6B /* libPluginProtocol.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libPluginProtocol.a; sourceTree = "<group>"; };
 		BA4E718019EB6E3E00932425 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.0.sdk/System/Library/Frameworks/MediaPlayer.framework; sourceTree = DEVELOPER_DIR; };
 		BA4E718219EB6E4600932425 /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.0.sdk/System/Library/Frameworks/GameController.framework; sourceTree = DEVELOPER_DIR; };
 		BAF426FA19484B3E002B22EF /* script */ = {isa = PBXFileReference; lastKnownFileType = folder; name = script; path = "../../js-bindings/bindings/script"; sourceTree = "<group>"; };
@@ -224,7 +227,7 @@
 				1A676839180E9C1E0076BC67 /* libcocos2d iOS.a in Frameworks */,
 				D6B061241803AB9F0077942B /* CoreMotion.framework in Frameworks */,
 				1A82F5FB169AC92500C4B13A /* libsqlite3.dylib in Frameworks */,
-				ABE6EA8A1C313E0B00CAD324 /* libPluginProtocol.a in Frameworks */,
+				ABF775361CB6844800F5FD6B /* libPluginProtocol.a in Frameworks */,
 				D454520C156E22BD00887EB5 /* libz.dylib in Frameworks */,
 				A92275421517C094001B78AA /* QuartzCore.framework in Frameworks */,
 				A92275441517C094001B78AA /* OpenGLES.framework in Frameworks */,
@@ -294,7 +297,7 @@
 		A92275321517C094001B78AA = {
 			isa = PBXGroup;
 			children = (
-				ABE6EA5D1C313E0B00CAD324 /* protocols */,
+				ABF775061CB6844800F5FD6B /* protocols */,
 				C037820118BF76AF00FE4F13 /* cocos2d_js_bindings.xcodeproj */,
 				1AC6FB34180E9ACB004C840B /* cocos2d_libs.xcodeproj */,
 				BAF426FA19484B3E002B22EF /* script */,
@@ -345,60 +348,63 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		ABE6EA5D1C313E0B00CAD324 /* protocols */ = {
+		ABF775061CB6844800F5FD6B /* protocols */ = {
 			isa = PBXGroup;
 			children = (
-				ABE6EA5E1C313E0B00CAD324 /* include */,
-				ABE6EA891C313E0B00CAD324 /* libPluginProtocol.a */,
+				ABF775071CB6844800F5FD6B /* include */,
+				ABF775351CB6844800F5FD6B /* libPluginProtocol.a */,
 			);
 			path = protocols;
 			sourceTree = "<group>";
 		};
-		ABE6EA5E1C313E0B00CAD324 /* include */ = {
+		ABF775071CB6844800F5FD6B /* include */ = {
 			isa = PBXGroup;
 			children = (
-				ABE6EA5F1C313E0B00CAD324 /* AdsUtil.h */,
-				ABE6EA601C313E0B00CAD324 /* AdsWrapper.h */,
-				ABE6EA611C313E0B00CAD324 /* AgentManager.h */,
-				ABE6EA621C313E0B00CAD324 /* AnalyticsWrapper.h */,
-				ABE6EA631C313E0B00CAD324 /* CustomWrapper.h */,
-				ABE6EA641C313E0B00CAD324 /* IAPWrapper.h */,
-				ABE6EA651C313E0B00CAD324 /* InterfaceAds.h */,
-				ABE6EA661C313E0B00CAD324 /* InterfaceAnalytics.h */,
-				ABE6EA671C313E0B00CAD324 /* InterfaceCrash.h */,
-				ABE6EA681C313E0B00CAD324 /* InterfaceCustom.h */,
-				ABE6EA691C313E0B00CAD324 /* InterfaceIAP.h */,
-				ABE6EA6A1C313E0B00CAD324 /* InterfacePush.h */,
-				ABE6EA6B1C313E0B00CAD324 /* InterfaceREC.h */,
-				ABE6EA6C1C313E0B00CAD324 /* InterfaceShare.h */,
-				ABE6EA6D1C313E0B00CAD324 /* InterfaceSocial.h */,
-				ABE6EA6E1C313E0B00CAD324 /* InterfaceUser.h */,
-				ABE6EA6F1C313E0B00CAD324 /* JSBRelation.h */,
-				ABE6EA701C313E0B00CAD324 /* JsonParser.h */,
-				ABE6EA711C313E0B00CAD324 /* PluginApplicationDelegate.h */,
-				ABE6EA721C313E0B00CAD324 /* PluginFactory.h */,
-				ABE6EA731C313E0B00CAD324 /* PluginHelper.h */,
-				ABE6EA741C313E0B00CAD324 /* PluginManager.h */,
-				ABE6EA751C313E0B00CAD324 /* PluginParam.h */,
-				ABE6EA761C313E0B00CAD324 /* PluginProtocol.h */,
-				ABE6EA771C313E0B00CAD324 /* PluginWrapper.h */,
-				ABE6EA781C313E0B00CAD324 /* ProtocolAds.h */,
-				ABE6EA791C313E0B00CAD324 /* ProtocolAnalytics.h */,
-				ABE6EA7A1C313E0B00CAD324 /* ProtocolCrash.h */,
-				ABE6EA7B1C313E0B00CAD324 /* ProtocolCustom.h */,
-				ABE6EA7C1C313E0B00CAD324 /* ProtocolIAP.h */,
-				ABE6EA7D1C313E0B00CAD324 /* ProtocolPush.h */,
-				ABE6EA7E1C313E0B00CAD324 /* ProtocolREC.h */,
-				ABE6EA7F1C313E0B00CAD324 /* ProtocolShare.h */,
-				ABE6EA801C313E0B00CAD324 /* ProtocolSocial.h */,
-				ABE6EA811C313E0B00CAD324 /* ProtocolUser.h */,
-				ABE6EA821C313E0B00CAD324 /* PushWrapper.h */,
-				ABE6EA831C313E0B00CAD324 /* RECWrapper.h */,
-				ABE6EA841C313E0B00CAD324 /* SdkHttpListener.h */,
-				ABE6EA851C313E0B00CAD324 /* ShareWrapper.h */,
-				ABE6EA861C313E0B00CAD324 /* SocialWrapper.h */,
-				ABE6EA871C313E0B00CAD324 /* UserWrapper.h */,
-				ABE6EA881C313E0B00CAD324 /* Wrapper.h */,
+				ABF775081CB6844800F5FD6B /* AdsUtil.h */,
+				ABF775091CB6844800F5FD6B /* AdsWrapper.h */,
+				ABF7750A1CB6844800F5FD6B /* AgentManager.h */,
+				ABF7750B1CB6844800F5FD6B /* AnalyticsWrapper.h */,
+				ABF7750C1CB6844800F5FD6B /* CocosRuntimeDelegate.h */,
+				ABF7750D1CB6844800F5FD6B /* CustomWrapper.h */,
+				ABF7750E1CB6844800F5FD6B /* IAPWrapper.h */,
+				ABF7750F1CB6844800F5FD6B /* InterfaceAds.h */,
+				ABF775101CB6844800F5FD6B /* InterfaceAdTracking.h */,
+				ABF775111CB6844800F5FD6B /* InterfaceAnalytics.h */,
+				ABF775121CB6844800F5FD6B /* InterfaceCrash.h */,
+				ABF775131CB6844800F5FD6B /* InterfaceCustom.h */,
+				ABF775141CB6844800F5FD6B /* InterfaceIAP.h */,
+				ABF775151CB6844800F5FD6B /* InterfacePush.h */,
+				ABF775161CB6844800F5FD6B /* InterfaceREC.h */,
+				ABF775171CB6844800F5FD6B /* InterfaceShare.h */,
+				ABF775181CB6844800F5FD6B /* InterfaceSocial.h */,
+				ABF775191CB6844800F5FD6B /* InterfaceUser.h */,
+				ABF7751A1CB6844800F5FD6B /* JSBRelation.h */,
+				ABF7751B1CB6844800F5FD6B /* JsonParser.h */,
+				ABF7751C1CB6844800F5FD6B /* PluginApplicationDelegate.h */,
+				ABF7751D1CB6844800F5FD6B /* PluginFactory.h */,
+				ABF7751E1CB6844800F5FD6B /* PluginHelper.h */,
+				ABF7751F1CB6844800F5FD6B /* PluginManager.h */,
+				ABF775201CB6844800F5FD6B /* PluginParam.h */,
+				ABF775211CB6844800F5FD6B /* PluginProtocol.h */,
+				ABF775221CB6844800F5FD6B /* PluginWrapper.h */,
+				ABF775231CB6844800F5FD6B /* ProtocolAds.h */,
+				ABF775241CB6844800F5FD6B /* ProtocolAdTracking.h */,
+				ABF775251CB6844800F5FD6B /* ProtocolAnalytics.h */,
+				ABF775261CB6844800F5FD6B /* ProtocolCrash.h */,
+				ABF775271CB6844800F5FD6B /* ProtocolCustom.h */,
+				ABF775281CB6844800F5FD6B /* ProtocolIAP.h */,
+				ABF775291CB6844800F5FD6B /* ProtocolPush.h */,
+				ABF7752A1CB6844800F5FD6B /* ProtocolREC.h */,
+				ABF7752B1CB6844800F5FD6B /* ProtocolShare.h */,
+				ABF7752C1CB6844800F5FD6B /* ProtocolSocial.h */,
+				ABF7752D1CB6844800F5FD6B /* ProtocolUser.h */,
+				ABF7752E1CB6844800F5FD6B /* PushWrapper.h */,
+				ABF7752F1CB6844800F5FD6B /* RECWrapper.h */,
+				ABF775301CB6844800F5FD6B /* SdkHttpListener.h */,
+				ABF775311CB6844800F5FD6B /* ShareWrapper.h */,
+				ABF775321CB6844800F5FD6B /* SocialWrapper.h */,
+				ABF775331CB6844800F5FD6B /* UserWrapper.h */,
+				ABF775341CB6844800F5FD6B /* Wrapper.h */,
 			);
 			path = include;
 			sourceTree = "<group>";
@@ -475,7 +481,7 @@
 				LastUpgradeCheck = 0500;
 				TargetAttributes = {
 					A922753C1517C094001B78AA = {
-						DevelopmentTeam = MDDB52YB8L;
+						DevelopmentTeam = NQ596S94Q5;
 					};
 				};
 			};
@@ -663,7 +669,9 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COMPRESS_PNG_FILES = NO;
+				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
@@ -677,11 +685,10 @@
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = ios/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
-				LIBRARY_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/protocols",
-					"$(SRCROOT)/sampleJS.xcodeproj/packages/AnySDK_JS_iOS-2.0.0/AnySDK_Framework_JS(iOS)/framework/protocols_libc++",
-				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/protocols";
 				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_BUNDLE_IDENTIFIER = com.cocos.sample;
+				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "$(inherited) $(SRCROOT)/../../js-bindings/cocos2d-x/cocos/platform/ios $(SRCROOT)/../../js-bindings/external/spidermonkey/include/ios $(SRCROOT)/../../js-bindings/cocos2d-x/plugin/jsbindings/auto $(SRCROOT)/../../js-bindings/cocos2d-x/plugin/jsbindings/manual";
@@ -694,7 +701,9 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COMPRESS_PNG_FILES = NO;
+				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -707,11 +716,10 @@
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = ios/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
-				LIBRARY_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/protocols",
-					"$(SRCROOT)/sampleJS.xcodeproj/packages/AnySDK_JS_iOS-2.0.0/AnySDK_Framework_JS(iOS)/framework/protocols_libc++",
-				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/protocols";
 				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_BUNDLE_IDENTIFIER = com.cocos.sample;
+				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "$(inherited) $(SRCROOT)/../../js-bindings/cocos2d-x/cocos/platform/ios $(SRCROOT)/../../js-bindings/external/spidermonkey/include/ios $(SRCROOT)/../../js-bindings/cocos2d-x/plugin/jsbindings/auto $(SRCROOT)/../../js-bindings/cocos2d-x/plugin/jsbindings/manual";

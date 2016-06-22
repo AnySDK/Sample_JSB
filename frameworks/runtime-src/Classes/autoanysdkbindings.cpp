@@ -13,6 +13,7 @@
 #include "ProtocolCustom.h"
 #include "ProtocolREC.h"
 #include "ProtocolCrash.h"
+#include "ProtocolAdTracking.h"
 
 template<class T>
 static bool dummy_constructor(JSContext *cx, uint32_t argc, jsval *vp) {
@@ -1212,6 +1213,56 @@ bool js_autoanysdkbindings_ProtocolUser_getUserID(JSContext *cx, uint32_t argc, 
 	return false;
 }
 
+bool jsval_to_std_map_string_string(JSContext *cx, jsval v, std::map<std::string, std::string>* ret)
+{
+    if (JSVAL_IS_NULL(v) || JSVAL_IS_VOID(v))
+    {
+        return true;
+    }
+    
+    JSObject* tmp = JSVAL_TO_OBJECT(v);
+    if (!tmp) {
+        CCLOG("%s", "jsval_to_ccvaluemap: the jsval is not an object.");
+        return false;
+    }
+    
+    JSObject* it = JS_NewPropertyIterator(cx, tmp);
+    
+    while (true)
+    {
+        jsid idp;
+        jsval key;
+        if (! JS_NextProperty(cx, it, &idp) || ! JS_IdToValue(cx, idp, &key)) {
+            return false; // error
+        }
+        
+        if (key == JSVAL_VOID) {
+            break; // end of iteration
+        }
+        
+        if (!JSVAL_IS_STRING(key)) {
+            continue; // ignore integer properties
+        }
+        
+        JSStringWrapper keyWrapper(JSVAL_TO_STRING(key), cx);
+        
+        JS::RootedValue value(cx);
+        JS_GetPropertyById(cx, tmp, idp, &value);
+        if (value.isString())
+        {
+            JSStringWrapper valueWapper(JSVAL_TO_STRING(value), cx);
+            ret->insert(std::make_pair(keyWrapper.get(), valueWapper.get()));
+        }
+        else
+        {
+            CCASSERT(false, "not a string");
+        }
+    }
+    
+    return true;
+}
+
+
 bool js_autoanysdkbindings_ProtocolUser_login(JSContext *cx, uint32_t argc, jsval *vp)
 {
 	jsval *argv = JS_ARGV(cx, vp);
@@ -1225,12 +1276,21 @@ bool js_autoanysdkbindings_ProtocolUser_login(JSContext *cx, uint32_t argc, jsva
 	JSB_PRECONDITION2( cobj, cx, false, "js_autoanysdkbindings_ProtocolUser_login : Invalid Native Object");
 	do {
 		if (argc == 1) {
-			std::string arg0;
-			ok &= jsval_to_std_string(cx, argv[0], &arg0);
-			if (!ok) { ok = true; break; }
-			cobj->login(arg0);
-			JS_SET_RVAL(cx, vp, JSVAL_VOID);
-			return true;
+			if(JSVAL_IS_STRING(argv[0])){
+                std::string arg1;
+                ok &= jsval_to_std_string(cx, argv[0], &arg1);
+                if (!ok) { ok = true; break; }
+                cobj->login(arg1);
+                JS_SET_RVAL(cx, vp, JSVAL_VOID);
+                return true;
+            }else{
+                std::map<std::string, std::string> arg0;
+                ok &= jsval_to_std_map_string_string(cx, argv[0], &arg0);
+                if (!ok) { ok = true; break; }
+                cobj->login(arg0);
+                JS_SET_RVAL(cx, vp, JSVAL_VOID);
+                return true;
+            }
 		}
 		else if(argc == 2){
 			std::string arg0;
@@ -1718,8 +1778,6 @@ void js_register_autoanysdkbindings_ProtocolCustom(JSContext *cx, JSObject *glob
     };
     
     static JSFunctionSpec funcs[] = {
-        JS_FN("startCustomording", js_autoanysdkbindings_ProtocolCrash_setUserIdentifier, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-        JS_FN("stopCustomording", js_autoanysdkbindings_ProtocolCrash_leaveBreadcrumb, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FS_END
     };
     
@@ -1753,6 +1811,88 @@ void js_register_autoanysdkbindings_ProtocolCustom(JSContext *cx, JSObject *glob
     }
 }
 
+JSClass  *jsb_anysdk_framework_ProtocolAdTracking_class;
+JSObject *jsb_anysdk_framework_ProtocolAdTracking_prototype;
+
+extern JSObject *jsb_anysdk_framework_PluginProtocol_prototype;
+
+void js_anysdk_framework_ProtocolAdTracking_finalize(JSFreeOp *fop, JSObject *obj) {
+    CCLOGINFO("jsbindings: finalizing JS object %p (ProtocolAdTracking)", obj);
+}
+
+void js_register_autoanysdkbindings_ProtocolAdTracking(JSContext *cx, JSObject *global) {
+    jsb_anysdk_framework_ProtocolAdTracking_class = (JSClass *)calloc(1, sizeof(JSClass));
+    jsb_anysdk_framework_ProtocolAdTracking_class->name = "ProtocolAdTracking";
+    jsb_anysdk_framework_ProtocolAdTracking_class->addProperty = JS_PropertyStub;
+    jsb_anysdk_framework_ProtocolAdTracking_class->delProperty = JS_DeletePropertyStub;
+    jsb_anysdk_framework_ProtocolAdTracking_class->getProperty = JS_PropertyStub;
+    jsb_anysdk_framework_ProtocolAdTracking_class->setProperty = JS_StrictPropertyStub;
+    jsb_anysdk_framework_ProtocolAdTracking_class->enumerate = JS_EnumerateStub;
+    jsb_anysdk_framework_ProtocolAdTracking_class->resolve = JS_ResolveStub;
+    jsb_anysdk_framework_ProtocolAdTracking_class->convert = JS_ConvertStub;
+    jsb_anysdk_framework_ProtocolAdTracking_class->finalize = js_anysdk_framework_ProtocolAdTracking_finalize;
+    jsb_anysdk_framework_ProtocolAdTracking_class->flags = JSCLASS_HAS_RESERVED_SLOTS(2);
+    
+    static JSPropertySpec properties[] = {
+        {"__nativeObj", 0, JSPROP_ENUMERATE | JSPROP_PERMANENT, JSOP_WRAPPER(js_is_native_obj), JSOP_NULLWRAPPER},
+        {0, 0, 0, JSOP_NULLWRAPPER, JSOP_NULLWRAPPER}
+    };
+    
+    static JSFunctionSpec funcs[] = {
+        JS_FN("onRegister", js_autoanysdkbindings_ProtocolAdTracking_onRegister, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FS_END
+    };
+    
+    JSFunctionSpec *st_funcs = NULL;
+    
+    jsb_anysdk_framework_ProtocolAdTracking_prototype = JS_InitClass(
+                                                              cx, global,
+                                                              jsb_anysdk_framework_PluginProtocol_prototype,
+                                                              jsb_anysdk_framework_ProtocolAdTracking_class,
+                                                              dummy_constructor<anysdk::framework::ProtocolAdTracking>, 0, // no constructor
+                                                              properties,
+                                                              funcs,
+                                                              NULL, // no static properties
+                                                              st_funcs);
+    // make the class enumerable in the registered namespace
+    //	bool found;
+    //FIXME: Removed in Firefox v27
+    //	JS_SetPropertyAttributes(cx, global, "ProtocolAdTracking", JSPROP_ENUMERATE | JSPROP_READONLY, &found);
+    
+    // add the proto and JSClass to the type->js info hash table
+    TypeTest<anysdk::framework::ProtocolAdTracking> t;
+    js_type_class_t *p;
+    std::string typeName = t.s_name();
+    if (_js_global_type_map.find(typeName) == _js_global_type_map.end())
+    {
+        p = (js_type_class_t *)malloc(sizeof(js_type_class_t));
+        p->jsclass = jsb_anysdk_framework_ProtocolAdTracking_class;
+        p->proto = jsb_anysdk_framework_ProtocolAdTracking_prototype;
+        p->parentProto = jsb_anysdk_framework_PluginProtocol_prototype;
+        _js_global_type_map.insert(std::make_pair(typeName, p));
+    }
+}
+
+bool js_autoanysdkbindings_ProtocolAdTracking_onRegister(JSContext *cx, uint32_t argc, jsval *vp)
+{
+	jsval *argv = JS_ARGV(cx, vp);
+	bool ok = true;
+	JSObject *obj = JS_THIS_OBJECT(cx, vp);
+	js_proxy_t *proxy = jsb_get_js_proxy(obj);
+	anysdk::framework::ProtocolAdTracking* cobj = (anysdk::framework::ProtocolAdTracking *)(proxy ? proxy->ptr : NULL);
+	JSB_PRECONDITION2( cobj, cx, false, "js_autoanysdkbindings_ProtocolAdTracking_onRegister : Invalid Native Object");
+	if (argc == 1) {
+		const char* arg0;
+		std::string arg0_tmp; ok &= jsval_to_std_string(cx, argv[0], &arg0_tmp); arg0 = arg0_tmp.c_str();
+		JSB_PRECONDITION2(ok, cx, false, "js_autoanysdkbindings_ProtocolAdTracking_onRegister : Error processing arguments");
+		cobj->onRegister(arg0);
+		JS_SET_RVAL(cx, vp, JSVAL_VOID);
+		return true;
+	}
+
+	JS_ReportError(cx, "js_autoanysdkbindings_ProtocolAdTracking_onRegister : wrong number of arguments: %d, was expecting %d", argc, 1);
+	return false;
+}
 
 JSClass  *jsb_anysdk_framework_AgentManager_class;
 JSObject *jsb_anysdk_framework_AgentManager_prototype;
@@ -2085,6 +2225,30 @@ bool js_autoanysdkbindings_AgentManager_getAnalyticsPlugin(JSContext *cx, uint32
 	JS_ReportError(cx, "js_autoanysdkbindings_AgentManager_getAnalyticsPlugin : wrong number of arguments: %d, was expecting %d", argc, 0);
 	return false;
 }
+bool js_autoanysdkbindings_AgentManager_getAdTrackingPlugin(JSContext *cx, uint32_t argc, jsval *vp)
+{
+	JSObject *obj = JS_THIS_OBJECT(cx, vp);
+	js_proxy_t *proxy = jsb_get_js_proxy(obj);
+	anysdk::framework::AgentManager* cobj = (anysdk::framework::AgentManager *)(proxy ? proxy->ptr : NULL);
+	JSB_PRECONDITION2( cobj, cx, false, "js_autoanysdkbindings_AgentManager_getAdTrackingPlugin : Invalid Native Object");
+	if (argc == 0) {
+		anysdk::framework::ProtocolAdTracking* ret = cobj->getAdTrackingPlugin();
+		jsval jsret = JSVAL_NULL;
+		do {
+			if (ret) {
+				js_proxy_t *jsProxy = js_get_or_create_proxy<anysdk::framework::ProtocolAdTracking>(cx, (anysdk::framework::ProtocolAdTracking*)ret);
+				jsret = OBJECT_TO_JSVAL(jsProxy->obj);
+			} else {
+				jsret = JSVAL_NULL;
+			}
+		} while (0);
+		JS_SET_RVAL(cx, vp, jsret);
+		return true;
+	}
+
+	JS_ReportError(cx, "js_autoanysdkbindings_AgentManager_getAdTrackingPlugin : wrong number of arguments: %d, was expecting %d", argc, 0);
+	return false;
+}
 bool js_autoanysdkbindings_AgentManager_getChannelId(JSContext *cx, uint32_t argc, jsval *vp)
 {
 	JSObject *obj = JS_THIS_OBJECT(cx, vp);
@@ -2206,6 +2370,7 @@ void js_register_autoanysdkbindings_AgentManager(JSContext *cx, JSObject *global
 		JS_FN("getPushPlugin", js_autoanysdkbindings_AgentManager_getPushPlugin, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("getSharePlugin", js_autoanysdkbindings_AgentManager_getSharePlugin, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("getAnalyticsPlugin", js_autoanysdkbindings_AgentManager_getAnalyticsPlugin, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("getAdTrackingPlugin", js_autoanysdkbindings_AgentManager_getAdTrackingPlugin, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("getChannelId", js_autoanysdkbindings_AgentManager_getChannelId, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("setIsAnaylticsEnabled", js_autoanysdkbindings_AgentManager_setIsAnaylticsEnabled, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("isAnaylticsEnabled", js_autoanysdkbindings_AgentManager_isAnaylticsEnabled, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
@@ -2273,5 +2438,6 @@ void register_all_autoanysdkbindings(JSContext* cx, JSObject* obj) {
     js_register_autoanysdkbindings_ProtocolREC(cx, obj);
     js_register_autoanysdkbindings_ProtocolCrash(cx, obj);
     js_register_autoanysdkbindings_ProtocolCustom(cx, obj);
+    js_register_autoanysdkbindings_ProtocolAdTracking(cx, obj);
 }
 
