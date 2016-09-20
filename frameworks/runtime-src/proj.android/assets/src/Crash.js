@@ -3,7 +3,7 @@ var crash_plugin = null;
 
 var Crash = cc.Class.extend({
 	ctor:function(){
-		crash_plugin = anysdk.AgentManager.getInstance().getCrashPlugin();
+		crash_plugin = anysdk.agentManager.getCrashPlugin();
 	},
 	setUserIdentifier:function(){
 		if (crash_plugin) {

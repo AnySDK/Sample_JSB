@@ -3,10 +3,10 @@ var share_plugin = null;
 
 var Share = cc.Class.extend({
 	ctor:function(){
-		share_plugin = anysdk.AgentManager.getInstance().getSharePlugin();
+		share_plugin = anysdk.agentManager.getSharePlugin();
         // set share result listener
         if (share_plugin)
-            share_plugin.setResultListener(this.onShareResult, this);
+            share_plugin.setListener(this.onShareResult, this);
 	},
 	share:function(adType){
         if ( share_plugin ){
@@ -27,16 +27,16 @@ var Share = cc.Class.extend({
         cc.log("code:"+code+",msg:"+msg)
         switch(code)
         {
-            case ShareResultCode.kShareSuccess:
+            case anysdk.ShareResultCode.kShareSuccess:
                 //do
                 break;
-            case ShareResultCode.kShareFail:
+            case anysdk.ShareResultCode.kShareFail:
                 //do
                 break;
-            case ShareResultCode.kShareCancel:
+            case anysdk.ShareResultCode.kShareCancel:
                 //do
                 break;
-            case ShareResultCode.kShareNetworkError:
+            case anysdk.ShareResultCode.kShareNetworkError:
                 //do
                 break;         
             default:

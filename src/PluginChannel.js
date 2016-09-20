@@ -18,8 +18,12 @@ var PluginChannel = cc.Class.extend({
         agent.init(appKey,appSecret,privateKey,oauthLoginServer);
         //cc.log("getChannelId"+ agent.getChannelId());
         //cc.log("getFrameworkVersion"+ agent.getFrameworkVersion());
-        // load
-        agent.loadAllPlugins();
+        if (cc.sys.os != cc.sys.OS_ANDROID) {
+            // load
+            // Android建议在onCreate里调用PluginWrapper.loadAllPlugins();来进行插件初始化
+            agent.loadAllPlugins();
+        }
+        
         // get plugins
         user_plugin   = agent.getUserPlugin();
         var iapPlugins = anysdk.agentManager.getIAPPlugins();

@@ -8,82 +8,81 @@ var oauthLoginServer = "http://oauth.anysdk.com/api/OauthLoginDemo/Login.php";
 
 var agent = null;
 var user_plugin = null;
-var iap_pluginMap = null;
+var iap_plugin = null;
 var analytics_plugin = null;
 
 var PluginChannel = cc.Class.extend({
 	loadPlugins:function(){
-        agent = anysdk.AgentManager.getInstance();
+        agent = anysdk.agentManager;
         // init
         agent.init(appKey,appSecret,privateKey,oauthLoginServer);
         //cc.log("getChannelId"+ agent.getChannelId());
         //cc.log("getFrameworkVersion"+ agent.getFrameworkVersion());
-        // load
-        agent.loadAllPlugins();
+        if (cc.sys.os != cc.sys.OS_ANDROID) {
+            // load
+            // Android建议在onCreate里调用PluginWrapper.loadAllPlugins();来进行插件初始化
+            agent.loadAllPlugins();
+        }
+        
         // get plugins
         user_plugin   = agent.getUserPlugin();
-        iap_pluginMap = agent.getIAPPlugin();
-                                    analytics_plugin = agent.getAnalyticsPlugin();
-
+        var iapPlugins = anysdk.agentManager.getIAPPlugins();
+        iap_plugin = agent.getIAPPlugin();
+        analytics_plugin = agent.getAnalyticsPlugin();
         //cc.log("");
         if (user_plugin) {
-        	user_plugin.setActionListener(this.onActionResult, this);
+        	user_plugin.setListener(this.onActionResult, this);
         }
 
-        for(var key in iap_pluginMap){
-            var iap_plugin = iap_pluginMap[key];
-            iap_plugin.setResultListener(this.onPayResult, this);
+        if(analytics_plugin){
+            analytics_plugin.startSession();
+            var data = {roleId:"123456",roleName:"test",roleLevel:"10",zoneId:"123",zoneName:"test",dataType:"1",ext:"login"};
+            analytics_plugin.setAccount(data);
         }
-                                    if(analytics_plugin){
-                                    analytics_plugin.startSession();
-                                    var data = anysdk.PluginParam.create({roleId:"123456",roleName:"test",roleLevel:"10",zoneId:"123",zoneName:"test",dataType:"1",ext:"login"});
-                                    analytics_plugin.callFuncWithParam("setAccount", data);
-                                    }
         this.funcOfAgent();
 	},
     funcOfAgent:function(){
         var customParam = agent.getCustomParam();
         cc.log("customParam:"+customParam);
-//        var channelId = agent.getChannelId();
-//        cc.log("channelId:"+channelId);
+        var channelId = agent.getChannelId();
+        cc.log("channelId:"+channelId);
     },
     login:function(){
     	user_plugin.login();
     },
     logout:function(){
     	if ( user_plugin.isFunctionSupported("logout") )
-    		user_plugin.callFuncWithParam("logout");
+    		user_plugin.logout();
     },
     enterPlatform:function(){
     	if ( user_plugin.isFunctionSupported("enterPlatform") )
-    		user_plugin.callFuncWithParam("enterPlatform");
+    		user_plugin.enterPlatform();
     },
     showToolbar:function(pos){
         if ( user_plugin.isFunctionSupported("showToolBar") ){
-            var param1 = anysdk.PluginParam.create(pos);
-            user_plugin.callFuncWithParam("showToolBar", param1);
+            user_plugin.showToolBar(pos);
         }
     },
     hideToolbar:function(){
         if ( user_plugin.isFunctionSupported("hideToolBar") )
-            user_plugin.callFuncWithParam("hideToolBar");
+            user_plugin.hideToolBar();
     },
     accountSwitch:function(){
         if ( user_plugin.isFunctionSupported("accountSwitch") )
-            user_plugin.callFuncWithParam("accountSwitch");
+            user_plugin.accountSwitch();
     },
     realNameRegister:function(){
         if ( user_plugin.isFunctionSupported("realNameRegister") )
-            user_plugin.callFuncWithParam("realNameRegister");
+            user_plugin.realNameRegister();
     },
     antiAddictionQuery:function(){
         if ( user_plugin.isFunctionSupported("antiAddictionQuery") )
-            user_plugin.callFuncWithParam("antiAddictionQuery");
+            user_plugin.antiAddictionQuery();
     },
     submitLoginGameRole:function(){
         if( user_plugin.isFunctionSupported("submitLoginGameRole") ){
-            var data = anysdk.PluginParam.create({roleId:"123456",roleName:"test",roleLevel:"10",zoneId:"123",zoneName:"test",dataType:"1",ext:"login"});
-            user_plugin.callFuncWithParam("submitLoginGameRole", data);
+            var data = {roleId:"123456",roleName:"test",roleLevel:"10",zoneId:"123",zoneName:"test",dataType:"1",ext:"login"};
+            user_plugin.submitLoginGameRole(data);
         }
     },
     pay:function(){
@@ -96,104 +95,99 @@ var PluginChannel = cc.Class.extend({
             Role_Id:"1001",  
             Role_Name:"asd"
         };
-        for(var p in iap_pluginMap){
-            var iap_plugin = iap_pluginMap[p];
-            cc.log("will pay for product");
-            //iap_plugin.payForProduct(info);
-            var param1 = anysdk.PluginParam.create("PD_10005");
-            iap_plugin.callFuncWithParam("requestProducts", param1);
-        }
+        iap_plugin.payForProduct(info);
+        
     },
-    onActionResult:function(plugin, code, msg){
+    onActionResult:function(code, msg){
         cc.log("on user result listener.")
         cc.log("code:"+code+",msg:"+msg)
         switch(code)
         {
-        case UserActionResultCode.kInitSuccess:
+        case anysdk.UserActionResultCode.kInitSuccess:
             //do
             break;
-        case UserActionResultCode.kInitFail:
+        case anysdk.UserActionResultCode.kInitFail:
             //do
             break;
-        case UserActionResultCode.kLoginSuccess:
+        case anysdk.UserActionResultCode.kLoginSuccess:
             //do
             break;
-        case UserActionResultCode.kLoginNetworkError:
+        case anysdk.UserActionResultCode.kLoginNetworkError:
             //do
             break;
-        case UserActionResultCode.kLoginNoNeed:
+        case anysdk.UserActionResultCode.kLoginNoNeed:
             //do
             break;
-        case UserActionResultCode.kLoginFail:
+        case anysdk.UserActionResultCode.kLoginFail:
             //do
             break;
-        case UserActionResultCode.kLoginCancel:
+        case anysdk.UserActionResultCode.kLoginCancel:
             //do
             break;
-        case UserActionResultCode.kLogoutSuccess:
+        case anysdk.UserActionResultCode.kLogoutSuccess:
             //do
             break;
-        case UserActionResultCode.kLogoutFail:
+        case anysdk.UserActionResultCode.kLogoutFail:
             //do
             break;
-        case UserActionResultCode.kPlatformEnter:
+        case anysdk.UserActionResultCode.kPlatformEnter:
             //do
             break;
-        case UserActionResultCode.kPlatformBack:
+        case anysdk.UserActionResultCode.kPlatformBack:
             //do
             break;
-        case UserActionResultCode.kPausePage:
+        case anysdk.UserActionResultCode.kPausePage:
             //do
             break;
-        case UserActionResultCode.kExitPage:
+        case anysdk.UserActionResultCode.kExitPage:
             //do        
             break;
-        case UserActionResultCode.kAntiAddictionQuery:
+        case anysdk.UserActionResultCode.kAntiAddictionQuery:
             //do
             break;
-        case UserActionResultCode.kRealNameRegister:
+        case anysdk.UserActionResultCode.kRealNameRegister:
             //do
             break;
-        case UserActionResultCode.kAccountSwitchSuccess:
+        case anysdk.UserActionResultCode.kAccountSwitchSuccess:
             //do
             break;
-        case UserActionResultCode.kAccountSwitchFail:
+        case anysdk.UserActionResultCode.kAccountSwitchFail:
             //do
             break;
-        case UserActionResultCode.kOpenShop:
+        case anysdk.UserActionResultCode.kOpenShop:
             //do
             break;
         default:
             break;
         }
     },
-    onPayResult:function(code, msg, info){
+    onPayResult:function(code, msg){
         cc.log("on iap result listener.")
         cc.log("code:"+code+",msg:"+msg)
         switch(code)
         {
-        case PayResultCode.kPaySuccess:
+        case anysdk.PayResultCode.kPaySuccess:
             //do
             break;
-        case PayResultCode.kPayFail:
+        case anysdk.PayResultCode.kPayFail:
             //do
             break;
-        case PayResultCode.kPayCancel:
+        case anysdk.PayResultCode.kPayCancel:
             //do
             break;
-        case PayResultCode.kPayNetworkError:
+        case anysdk.PayResultCode.kPayNetworkError:
             //do
             break;
-        case PayResultCode.kPayProductionInforIncomplete:
+        case anysdk.PayResultCode.kPayProductionInforIncomplete:
             //do
             break;
-        case PayResultCode.kPayInitSuccess:
+        case anysdk.PayResultCode.kPayInitSuccess:
             //do
             break;
-        case PayResultCode.kPayInitFail:
+        case anysdk.PayResultCode.kPayInitFail:
             //do
             break;
-        case PayResultCode.kPayNowPaying:
+        case anysdk.PayResultCode.kPayNowPaying:
             //do
             break;
         default:

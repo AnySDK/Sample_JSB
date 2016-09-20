@@ -3,11 +3,11 @@ var analytics_plugin = null;
 
 var Analytics = cc.Class.extend({
 	ctor:function(){
-		analytics_plugin = anysdk.AgentManager.getInstance().getAnalyticsPlugin();
+		analytics_plugin = anysdk.agentManager.getAnalyticsPlugin();
 	},
 	startSession:function(){
 		if (analytics_plugin) {
-            var data = anysdk.PluginParam.create({roleId:"123456",roleName:"test",roleLevel:"10",zoneId:"123",zoneName:"test",dataType:"1",ext:"login"});
+            var data = /*anysdk.PluginParam.create(*/{roleId:"123456",roleName:"test",roleLevel:"10",zoneId:"123",zoneName:"test",dataType:"1",ext:"login"}/*)*/;
             analytics_plugin.logEvent("onChargeRequest",data);
                                 
 		}
@@ -46,15 +46,14 @@ var Analytics = cc.Class.extend({
 			 var paramMap = {
 				Account_Id : "123456",
 				Account_Name : "test",
-				Account_Type : (AccountType.ANONYMOUS).toString(),
+				Account_Type : (anysdk.AccountType.ANONYMOUS).toString(),
 				Account_Level : "1",
 				Account_Age : "1",
-				Account_Operate : (AccountOperate.LOGIN).toString(),
-				Account_Gender : (AccountGender.MALE).toString(),
+				Account_Operate : (anysdk.AccountOperate.LOGIN).toString(),
+				Account_Gender : (anysdk.AccountGender.MALE).toString(),
 				Server_Id : "1"
 			}
-			var data = anysdk.PluginParam.create(paramMap);
-			analytics_plugin.callFuncWithParam("setAccount", data);
+			analytics_plugin.setAccount(paramMap);
 		}
 	},
 	onChargeRequest:function(){
@@ -67,8 +66,7 @@ var Analytics = cc.Class.extend({
 				Payment_Type : "渠道",
 				Virtual_Currency_Amount : "100"
 			}
-			var data = anysdk.PluginParam.create(paramMap);
-			analytics_plugin.callFuncWithParam("onChargeRequest",data);
+			analytics_plugin.onChargeRequest(paramMap);
 		}
 	},
 	onChargeOnlySuccess:function(){
@@ -81,14 +79,12 @@ var Analytics = cc.Class.extend({
 				Payment_Type : "1",
 				Virtual_Currency_Amount : "100"
 			}
-			var data = anysdk.PluginParam.create(paramMap);
-			analytics_plugin.callFuncWithParam("onChargeOnlySuccess",data);
+			analytics_plugin.onChargeOnlySuccess(paramMap);
 		}
 	},
 	onChargeSuccess:function(){
 		if(analytics_plugin && analytics_plugin.isFunctionSupported("onChargeSuccess")){
-			var data = anysdk.PluginParam.create("123456");
-			analytics_plugin.callFuncWithParam("onChargeSuccess",data);
+			analytics_plugin.onChargeSuccess("123456");
 		}
 	},
 	onChargeFail:function(){
@@ -97,8 +93,7 @@ var Analytics = cc.Class.extend({
 				Order_Id : "123456",
 				Fail_Reason : "test"
 			}
-			var data = anysdk.PluginParam.create(paramMap);
-			analytics_plugin.callFuncWithParam("onChargeFail",data);
+			analytics_plugin.onChargeFail(paramMap);
 		}
 	},
 	onPurchase:function(){
@@ -110,8 +105,7 @@ var Analytics = cc.Class.extend({
 				Virtual_Currency : "1",
 				Currency_Type : agent.getChannelId()
 			}
-			var data = anysdk.PluginParam.create(paramMap);
-			analytics_plugin.callFuncWithParam("onPurchase",data);
+			analytics_plugin.onPurchase(paramMap);
 		}
 	},
 	onUse:function(){
@@ -122,8 +116,7 @@ var Analytics = cc.Class.extend({
 				Item_Count : "2",
 				Use_Reason : "1"
 		    }
-			var data = anysdk.PluginParam.create(paramMap);
-			analytics_plugin.callFuncWithParam("onUse",data);	
+			analytics_plugin.onUse(paramMap);
 		}
 	},
 	onReward:function(){
@@ -134,24 +127,17 @@ var Analytics = cc.Class.extend({
 				Item_Count : "2",
 				Use_Reason : "1"
 			}
-			var data = anysdk.PluginParam.create(paramMap);
-			analytics_plugin.callFuncWithParam("onReward",data);	
+			analytics_plugin.onReward(paramMap);
 		}
 	},
 	startLevel:function(){
 		if(analytics_plugin && analytics_plugin.isFunctionSupported("startLevel")){
-			var paramMap = {
-				Level_Id : "123456",
-				Seq_Num : "1"
-			}
-			var data = anysdk.PluginParam.create(paramMap);
-			analytics_plugin.callFuncWithParam("startLevel", data);
+			analytics_plugin.startLevel(paramMap);
 		}
 	},
 	finishLevel:function(){
 		if(analytics_plugin && analytics_plugin.isFunctionSupported("finishLevel")){
-			var data = anysdk.PluginParam.create("123456");
-			analytics_plugin.callFuncWithParam("finishLevel",data);
+			analytics_plugin.finishLevel("123456");
 		}
 	},
 	failLevel:function(){
@@ -160,24 +146,21 @@ var Analytics = cc.Class.extend({
 				Level_Id : "123456",
 				Fail_Reason : "test"
 			}
-			var data = anysdk.PluginParam.create(paramMap);
-			analytics_plugin.callFuncWithParam("failLevel",data);
+			analytics_plugin.failLevel(paramMap);
 		}
 	},
 	startTask:function(){
 		if(analytics_plugin && analytics_plugin.isFunctionSupported("startTask")){
 			var paramMap  ={
 				Task_Id : "123456",
-				Task_Type : (TaskType.GUIDE_LINE).toString()
+				Task_Type : (anysdk.TaskType.GUIDE_LINE).toString()
 			}
-			var data = anysdk.PluginParam.create(paramMap);
-			analytics_plugin.callFuncWithParam("startTask",data);
+			analytics_plugin.startTask(paramMap);
 		}
 	},
 	finishTask:function(){
 		if(analytics_plugin && analytics_plugin.isFunctionSupported("finishTask")){
-			var data = anysdk.PluginParam.create("123456");
-			analytics_plugin.callFuncWithParam("finishTask",data);	
+			analytics_plugin.finishTask("123456");
 		}
 	},
 	failTask:function(){
@@ -185,9 +168,8 @@ var Analytics = cc.Class.extend({
 			var paramMap = {
 				Task_Id : "123456",
 				Fail_Reason : "test"
-			}		
-			var data = anysdk.PluginParam.create(paramMap);
-			analytics_plugin.callFuncWithParam("failTask",data);
+			}
+			analytics_plugin.failTask(paramMap);
 		}
 	}
 });
