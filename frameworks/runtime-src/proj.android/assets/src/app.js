@@ -80,6 +80,7 @@ var _social = null;
 var _analytics = null;
 var _rec = null;
 var _crash = null;
+var _adtracking = null;
 
 var menu_lv = {
     base:100,
@@ -92,6 +93,7 @@ var menu_lv = {
     analytics:800,
     rec:900,
     crash:1000,
+    adtracking: 1100
 };
 var user_operation = {
     login:0,
@@ -161,6 +163,17 @@ var crash_action = {
     leaveBreadcrumb:2,
 };
 
+var adtracking_action = {
+    onRegister:0,
+    onLogin:1,
+    onPay:2,
+    trackEvent:3,
+    onCreateRole:4,
+    onLevelUp:5,
+    onStartToPay:6
+};
+
+
 var AgentLayer = cc.Layer.extend({
     base_menu:null,
     sec_menu:null,
@@ -181,9 +194,10 @@ var AgentLayer = cc.Layer.extend({
         _rec = new REC();
         _crash = new Crash();
         _analytics.startSession();
+        _adtracking = new AdTracking();
         var custom = new Custom();
 
-        this.base_menu = ["User System", "IAP System", "Share System", "Ads System", "Social System", "Push System", "Analytics System", "REC System","Crash System"];
+        this.base_menu = ["User System", "IAP System", "Share System", "Ads System", "Social System", "Push System", "Analytics System", "REC System","Crash System","AdTracking System"];
 
         this.sec_menu = [
                     ["login", "logout", "enterPlatform", "showToolBar", "hideToolBar", "accountSwitch", "realNameRegister", "antiAddictionQuery", "submitLoginGameRole"],
@@ -195,11 +209,12 @@ var AgentLayer = cc.Layer.extend({
                     ["startSession", "stopSession", "logError", "logEvent", "setAccount", "onchargeRequest", "onChargeSuccess", "onChargeOnlySuccess", "onChargeFail"],
                     ["start record", "stop record", "share", "pause Record", "resume Record", "showToolBar" , "hideToolBar" ,"showVideoCenter", "enterPlatform"],
                     ["setUserIdentifier", "reportException", "leaveBreadcrumb"],
+                    ["onRegister", "onLogin", "onPay", "trackEvent", "onCreateRole", "onLevelUp", "onStartToPay"],
                     ];
 
         this.sec_lys = [];
         var b_x = 130.0;
-        var b_y = 400.0;
+        var b_y = 500.0;
         var b_h = 45.0;
         //var menu = cc.Menu.create();
         var arrBtns = [];
@@ -258,6 +273,9 @@ var AgentLayer = cc.Layer.extend({
         else if (tag < menu_lv.crash){
             this.onCrashAction(tag - menu_lv.rec);
         }
+        else if (tag < menu_lv.adtracking){
+            this.onAdTrackingAction(tag - menu_lv.crash);
+        }
     },
     setSecInvisible:function(){
         for (var i = this.sec_lys.length - 1; i >= 0; i--) {
@@ -274,7 +292,7 @@ var AgentLayer = cc.Layer.extend({
             this.sec_lys[idx].setVisible(true);
         else{
             var b_x = 530.0;
-            var b_y = 400.0;
+            var b_y = 500.0;
             var b_h = 45.0;
             if (idx == 0){
                 b_y = 440.0;
@@ -477,6 +495,31 @@ var AgentLayer = cc.Layer.extend({
             case crash_action.leaveBreadcrumb:
                 _crash.leaveBreadcrumb("reportException");
             break;
+        }
+    },
+    onAdTrackingAction:function(idx){
+        switch(idx){
+            case adtracking_action.onRegister:
+                _adtracking.onRegister();
+                break;
+            case adtracking_action.onLogin:
+                _adtracking.onLogin();
+                break;
+            case adtracking_action.onPay:
+                _adtracking.onPay();
+                break;
+            case adtracking_action.trackEvent:
+                _adtracking.trackEvent();
+                break;
+            case adtracking_action.onCreateRole:
+                _adtracking.onCreateRole();
+                break;
+            case adtracking_action.onLevelUp:
+                _adtracking.onLevelUp();
+                break;
+            case adtracking_action.onStartToPay:
+                _adtracking.onStartToPay();
+                break;                
         }
     }
 });

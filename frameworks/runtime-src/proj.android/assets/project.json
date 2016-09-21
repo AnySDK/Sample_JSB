@@ -12,7 +12,8 @@
 
     "jsList" : [
         "src/resource.js",
-        "src/anysdkConst.js",
+        "src/jsb_anysdk.js",
+        "src/jsb_anysdk_constants.js",
         "src/app.js",
         "src/Analytics.js",
         "src/Share.js",
@@ -22,6 +23,7 @@
         "src/REC.js",
         "src/Custom.js",
         "src/Crash.js",
-        "src/PluginChannel.js"
+        "src/PluginChannel.js",
+        "src/AdTracking.js"
     ]
 }
