@@ -81,6 +81,7 @@ var _analytics = null;
 var _rec = null;
 var _crash = null;
 var _adtracking = null;
+var _a8csdk = null;
 
 var menu_lv = {
     base:100,
@@ -93,7 +94,8 @@ var menu_lv = {
     analytics:800,
     rec:900,
     crash:1000,
-    adtracking: 1100
+    adtracking: 1100,
+    a8csdk: 1200
 };
 var user_operation = {
     login:0,
@@ -173,6 +175,18 @@ var adtracking_action = {
     onStartToPay:6
 };
 
+var a8csdk_action = {
+    onCreateRole:0,
+    onEnterGame:1,
+    onLogin:2,
+    onPay:3,
+    onExit:4,
+    onLevelUp:5,
+    onRegister:6,
+    onCustomEvent:7,
+    getLastGameServerInfo:8
+};
+
 
 var AgentLayer = cc.Layer.extend({
     base_menu:null,
@@ -196,8 +210,9 @@ var AgentLayer = cc.Layer.extend({
         _analytics.startSession();
         _adtracking = new AdTracking();
         var custom = new Custom();
+        _a8csdk = new A8CSDK();
 
-        this.base_menu = ["User System", "IAP System", "Share System", "Ads System", "Social System", "Push System", "Analytics System", "REC System","Crash System","AdTracking System"];
+        this.base_menu = ["User System", "IAP System", "Share System", "Ads System", "Social System", "Push System", "Analytics System", "REC System","Crash System","AdTracking System","A8CSDK"];
 
         this.sec_menu = [
                     ["login", "logout", "enterPlatform", "showToolBar", "hideToolBar", "accountSwitch", "realNameRegister", "antiAddictionQuery", "submitLoginGameRole"],
@@ -210,6 +225,7 @@ var AgentLayer = cc.Layer.extend({
                     ["start record", "stop record", "share", "pause Record", "resume Record", "showToolBar" , "hideToolBar" ,"showVideoCenter", "enterPlatform"],
                     ["setUserIdentifier", "reportException", "leaveBreadcrumb"],
                     ["onRegister", "onLogin", "onPay", "trackEvent", "onCreateRole", "onLevelUp", "onStartToPay"],
+                    ["onCreateRole", "onEnterGame", "onLogin", "onPay", "onExit", "onLevelUp", "onRegister", "onCustomEvent", "getLastGameServerInfo"],
                     ];
 
         this.sec_lys = [];
@@ -275,6 +291,9 @@ var AgentLayer = cc.Layer.extend({
         }
         else if (tag < menu_lv.adtracking){
             this.onAdTrackingAction(tag - menu_lv.crash);
+        }
+        else if (tag < menu_lv.a8csdk){
+            this.onA8CSDKAction(tag - menu_lv.adtracking);
         }
     },
     setSecInvisible:function(){
@@ -520,6 +539,37 @@ var AgentLayer = cc.Layer.extend({
             case adtracking_action.onStartToPay:
                 _adtracking.onStartToPay();
                 break;                
+        }
+    },
+    onA8CSDKAction:function(idx){
+        switch(idx){
+        case a8csdk_action.onCreateRole:
+            _a8csdk.onCreateRole();
+            break;
+        case a8csdk_action.onEnterGame:
+            _a8csdk.onEnterGame();
+            break;
+        case a8csdk_action.onLogin:
+            _a8csdk.onLogin();
+            break;
+        case a8csdk_action.onPay:
+            _a8csdk.onPay();
+            break;
+        case a8csdk_action.onExit:
+            _a8csdk.onExit();
+            break;
+        case a8csdk_action.onLevelUp:
+            _a8csdk.onLevelUp();
+            break;
+        case a8csdk_action.onRegister:
+            _a8csdk.onRegister();
+            break;
+        case a8csdk_action.onCustomEvent:
+            _a8csdk.onCustomEvent();
+            break;
+        case a8csdk_action.getLastGameServerInfo:
+            _a8csdk.getLastGameServerInfo();
+            break;
         }
     }
 });
