@@ -24,6 +24,7 @@
         "src/Custom.js",
         "src/Crash.js",
         "src/PluginChannel.js",
-        "src/AdTracking.js"
+        "src/AdTracking.js",
+        "src/A8CSDK.js"
     ]
 }
