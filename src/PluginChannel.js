@@ -81,19 +81,40 @@ var PluginChannel = cc.Class.extend({
     },
     submitLoginGameRole:function(){
         if( user_plugin.isFunctionSupported("submitLoginGameRole") ){
-            var data = {roleId:"123456",roleName:"test",roleLevel:"10",zoneId:"123",zoneName:"test",dataType:"1",ext:"login"};
+            var data = {
+                dataType:"1",
+                roleId:"123456",
+                roleName:"test",
+                roleLevel:"1",
+                zoneId:"1",
+                zoneName:"test",
+                balance:"1",
+                partyName:"test",
+                vipLevel:"1",
+                roleCTime:"1480318110",
+                roleLevelMTime:"-1"
+            };
             user_plugin.submitLoginGameRole(data);
         }
     },
     pay:function(){
         var info = {
+            Product_Id:"1",
+            Product_Name:"10元宝",
             Product_Price:"1", 
-            Product_Id:"monthly",  
-            Product_Name:"gold",  
-            Server_Id:"13",  
             Product_Count:"1",  
-            Role_Id:"1001",  
-            Role_Name:"asd"
+            Product_Desc:"gold",
+            Coin_Name:"元宝",
+            Coin_Rate:"10",
+            Role_Id:"123456",  
+            Role_Name:"test",
+            Role_Grade:"1",
+            Role_Balance:"1",
+            Vip_Level:"1", 
+            Party_Name:"1",
+            Server_Id:"1",  
+            Server_Name:"test",   
+            EXT:"test"
         };
         iap_plugin.payForProduct(info);
         
