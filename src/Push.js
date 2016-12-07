@@ -6,7 +6,7 @@ var Push = cc.Class.extend({
 		push_plugin = anysdk.agentManager.getPushPlugin();
         // set share result listener
         if (push_plugin)
-            push_plugin.setListener(this.onActionResult, this);
+            push_plugin.setListener(this.onPushResult, this);
 	},
 	closePush:function(){
 		push_plugin.closePush();
@@ -26,7 +26,7 @@ var Push = cc.Class.extend({
     delTags:function(){
     	push_plugin.delTags(["easy","qwe"]);
     },
-    onActionResult:function(code,msg){
+    onPushResult:function(code,msg){
 		switch(code)
 	    {
 	    	case anysdk.PushActionResultCode.kPushReceiveMessage:

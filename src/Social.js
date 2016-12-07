@@ -6,7 +6,7 @@ var Social = cc.Class.extend({
 		social_plugin = anysdk.agentManager.getSocialPlugin();
         // set share result listener
         if (social_plugin)
-            social_plugin.setListener(this.onActionResult, this);
+            social_plugin.setListener(this.onSocialResult, this);
 	},
 	submitScore:function(){
         var score = 131;
@@ -28,7 +28,7 @@ var Social = cc.Class.extend({
 	signOut:function(){
 		social_plugin.signOut();
 	},
-	onActionResult:function(code, msg){
+	onSocialResult:function(code, msg){
 		cc.log("on social result listener.")
 		cc.log("code:"+code+",msg:"+msg)
 		switch(code)

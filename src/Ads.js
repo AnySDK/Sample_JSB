@@ -5,7 +5,7 @@ var Ads = cc.Class.extend({
 	ctor:function(){
 		ads_plugin = anysdk.agentManager.getAdsPlugin();
 		if (ads_plugin) {
-			ads_plugin.setListener(this.onActionResult, this);
+			ads_plugin.setListener(this.onAdsResult, this);
 		};
 	},
 	preloadAds:function(adType){
@@ -28,10 +28,6 @@ var Ads = cc.Class.extend({
 		if ( ads_plugin )
 			ads_plugin.spendPoints(points);
 	},
-	onActionResult:function(param1, param2){
-        this.onAdsResult(param1, param2);
-	},
-
 	onAdsResult:function(code, msg){
 		cc.log("on ads result listener.")
 		cc.log("code:"+code+",msg:"+msg)

@@ -26,12 +26,16 @@ var PluginChannel = cc.Class.extend({
         
         // get plugins
         user_plugin   = agent.getUserPlugin();
-        var iapPlugins = anysdk.agentManager.getIAPPlugins();
-        iap_plugin = agent.getIAPPlugin();
+        // var iapPlugins = agent.getIAPPlugins(); // 多支付插件时获取所有插件 
+        iap_plugin = agent.getIAPPlugin(); // 单支付插件时获取该唯一的插件 
         analytics_plugin = agent.getAnalyticsPlugin();
-        //cc.log("");
+        
         if (user_plugin) {
-        	user_plugin.setListener(this.onActionResult, this);
+        	user_plugin.setListener(this.onUserResult, this);
+        }
+
+        if (iap_plugin) {
+            iap_plugin.setListener(this.onPayResult, this);
         }
 
         if(analytics_plugin){
@@ -119,7 +123,7 @@ var PluginChannel = cc.Class.extend({
         iap_plugin.payForProduct(info);
         
     },
-    onActionResult:function(code, msg){
+    onUserResult:function(code, msg){
         cc.log("on user result listener.")
         cc.log("code:"+code+",msg:"+msg)
         switch(code)
